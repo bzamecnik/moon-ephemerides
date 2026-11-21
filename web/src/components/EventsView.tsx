@@ -19,6 +19,7 @@ import {
   type Zone,
 } from '../format'
 import { BeatChart } from '../charts/BeatChart'
+import { DistanceChart } from '../charts/DistanceChart'
 import { PhaseChart } from '../charts/PhaseChart'
 import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
@@ -29,9 +30,10 @@ const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
 const PAGE = 10
 
-type View = 'table' | 'beat' | 'phase' | 'ranking'
+type View = 'table' | 'distance' | 'beat' | 'phase' | 'ranking'
 const VIEWS: { id: View; label: string }[] = [
   { id: 'table', label: 'Table' },
+  { id: 'distance', label: 'Distance' },
   { id: 'beat', label: 'Beat of the rhythms' },
   { id: 'phase', label: 'Phase vs. distance' },
   { id: 'ranking', label: 'Best alignments' },
@@ -192,6 +194,16 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
             nextIndex={nextIndex}
             anchor={anchor}
             zone={zone}
+          />
+        )}
+        {view === 'distance' && (
+          <DistanceChart
+            events={allEvents}
+            apsides={catalog.apsides}
+            anchor={anchor}
+            closestTime={closestEvent?.syzygy.time}
+            zone={zone}
+            onSelect={setAnchor}
           />
         )}
         {view === 'beat' && (

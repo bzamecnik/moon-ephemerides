@@ -16,8 +16,9 @@ M1 done: the Python catalog reproduces the astropixels supermoon/micromoon
 tables for 1901–2100 (same events, times to the minute, Δ to 0.008 d), see
 `validation.md`. M3 done. M4: the table, the beat chart, the phase-vs-distance
 chart (linear interpolation between events) and the ranking of the best
-alignments are in, as tabs sharing the selected moment. Next: the distance
-curve around a date (needs astronomy-engine or sampled data), eclipses.
+alignments are in, as tabs sharing the selected moment, plus a distance-vs-time
+chart (half-cosine interpolation between apsides, no astronomy-engine needed
+yet) and arrow-key navigation. Next: eclipses and nodes, explanations.
 
 ## M1 – Compute and validate (Python, `compute/`) ✅
 
@@ -56,13 +57,16 @@ curve around a date (needs astronomy-engine or sampled data), eclipses.
 - [ ] consider wording Δ the same way in the summary and the table (now:
       "22.0 h after perigee" vs. Δ = −0.917 d, apsis − syzygy)
 
-- [ ] around a date (today by default): Moon distance curve, syzygy and apsis
-      markers, Δ labels (like Espenak's SuperMicroMoon chart, but interactive)
+- [x] around a date: Moon distance curve, syzygy and apsis markers, perigee
+      and apogee envelopes (like Espenak's SuperMicroMoon chart, but
+      interactive); the curve is half a cosine wave between apsides (median
+      error ~400 km, max ~4400 km against the true syzygy distances)
+- [x] ← / → step through the events in every view (Shift: by ten)
 - [x] beat view: Δ to the nearest perigee of every New/Full Moon over 2/6/20
       years, lines through consecutive New and Full Moons, click to select
 - [x] phase-phase plot (synodic phase × anomalistic phase), see `astronomy.md`;
       phases interpolated linearly in time between events (crude but exact at events)
-- [x] ranked list of best alignments (per century / era), with links to astropixels
+- [x] ranked list of best alignments (per century / era)
 - [x] views as tabs, the view kept in the URL (`#date=…&view=beat`)
 - [ ] keyboard access to chart marks (now: the table is the accessible alternative)
 - [ ] smooth phases from astronomy-engine instead of linear interpolation

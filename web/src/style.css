@@ -504,3 +504,21 @@ kbd {
   border: 1px solid var(--line);
   border-radius: 4px;
 }
+
+.distance-curve {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
+.envelope {
+  fill: none;
+  stroke: var(--axis);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.apsis-tick {
+  stroke: var(--muted);
+  stroke-width: 2;
+}

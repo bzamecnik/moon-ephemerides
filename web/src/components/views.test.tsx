@@ -77,4 +77,15 @@ describe('views', () => {
     expect(screen.getByRole('tab', { name: 'Table' })).toHaveAttribute('aria-selected', 'true')
     expect(summary()).toHaveTextContent('2023-01-21 20:53')
   })
+
+  it('distance chart: the curve, the apsides and the New and Full Moons at their distance', () => {
+    setup('distance')
+    const chart = screen.getByRole('img', { name: /distance of the moon/i })
+    expect(chart.querySelector('.distance-curve')?.getAttribute('points')).toBeTruthy()
+    expect(chart.querySelectorAll('.event-mark')).toHaveLength(6)
+    expect(chart).toHaveTextContent('perigee, 2023-01-21 20:57 UTC, 356,569 km')
+    const jan21 = [...chart.querySelectorAll('.event-mark')].find((m) => m.textContent?.includes('2023-01-21'))!
+    fireEvent.click(jan21)
+    expect(summary()).toHaveTextContent('Closest: New Supermoon on 2023-01-21 20:53')
+  })
 })
