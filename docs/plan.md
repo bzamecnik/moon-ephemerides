@@ -1,0 +1,64 @@
+# Plan
+
+## Goal
+
+An interactive page showing how the Moon's phases (synodic month) and its
+distance (anomalistic month) beat against each other: the events around any
+date, the long-term pattern, and the moments where the two rhythms line up
+best (Δ between syzygy and apsis ≈ 0, symmetric neighbours), plus nodes and
+eclipses as the third rhythm. Valuable on its own; a possible later use is a
+careful statistical test of the earthquake hypothesis (see
+`../moon-earthquake-experiments/`).
+
+## Status
+
+M1 done: the Python catalog reproduces the astropixels supermoon/micromoon
+tables for 1901–2100 (same events, times to the minute, Δ to 0.008 d), see
+`validation.md`. Next: M2 (data format) and M3 (web app skeleton).
+
+## M1 – Compute and validate (Python, `compute/`) ✅
+
+- [x] uv project, skyfield + DE440s (1850–2149), pytest, ruff
+- [x] phases, perigees/apogees, nodes, lunar eclipses
+- [x] tests against independent facts (mean month lengths, known events)
+- [x] pairing of syzygies with the nearest perigee/apogee: Δ, relative distance, super/micromoon
+- [x] parser of the saved astropixels pages
+- [x] validation report, write-up in `validation.md`
+- [x] JSON export (columnar, Unix seconds) and CLI
+
+## M2 – Data for the web
+
+- [ ] decide where the generated JSON lives (`web/public/data/`, committed) and how it is regenerated
+- [ ] solar eclipses (total/annular/hybrid/partial) – skyfield has none; compute
+      from geometry (Moon's latitude and distances at New Moon) and validate
+      against NASA's Five Millennium Canon
+- [ ] per-syzygy alignment score: |Δ|, neighbour symmetry, rank within its 411.8-day season
+- [ ] distance curve for plots: sampled in Python or computed in the browser
+      (e.g. astronomy-engine); decide
+
+## M3 – Web app skeleton (`web/`)
+
+- [ ] Vite + strict TypeScript + Vitest, lint, GitHub Pages deploy (Actions)
+- [ ] load and decode the JSON; pure modules for queries (events around a date, seasons)
+
+## M4 – Views
+
+- [ ] around a date (today by default): Moon distance curve, syzygy and apsis
+      markers, Δ labels (like Espenak's SuperMicroMoon chart, but interactive)
+- [ ] beat view: Δ of every syzygy over years, best alignments highlighted
+- [ ] phase-phase plot (synodic phase × anomalistic phase), see `astronomy.md`
+- [ ] ranked list of best alignments (per century / era), with links to astropixels
+- [ ] nodes and eclipses in all views
+- [ ] plain-language explanations in the page
+
+## M5 – Envelopes and scores
+
+- [ ] envelope of perigee/apogee distances: empirical hull and a fit to
+      periodic terms (Sun–apse angle, Sun's anomaly)
+- [ ] normalised "how extreme" score of an event within the envelope
+- [ ] envelope of the season-best Δ
+
+## Later
+
+- [ ] earthquake catalog (USGS) vs. a metric fixed in advance, with a permutation test
+- [ ] longer span with DE441
