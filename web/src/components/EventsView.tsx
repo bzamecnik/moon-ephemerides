@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'preact/hooks'
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { Catalog } from '../data/catalog'
 import {
   eventLabel,
@@ -85,6 +85,20 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
     onChange?.(a, view)
   }
   const step = (n: number) => setAnchor(stepAnchor(times, anchor, n))
+
+  // ← / → step by one event, with Shift by ten; not while typing in a field
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      if (e.altKey || e.ctrlKey || e.metaKey) return
+      const target = e.target as HTMLElement | null
+      if (target?.closest('input, select, textarea, [contenteditable]')) return
+      e.preventDefault()
+      step((e.key === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? PAGE : 1))
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
   const toggleKind = (k: NotableKind) => {
     const s = new Set(kinds)
     if (s.has(k)) s.delete(k)
@@ -104,10 +118,10 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
             <button type="button" onClick={() => step(-PAGE)} aria-label={`${PAGE} events earlier`}>
               ⏪
             </button>
-            <button type="button" onClick={() => step(-1)}>
+            <button type="button" onClick={() => step(-1)} title="Previous event (← key, Shift+← for ten)">
               ◀ Previous event
             </button>
-            <button type="button" onClick={() => step(1)}>
+            <button type="button" onClick={() => step(1)} title="Next event (→ key, Shift+→ for ten)">
               Next event ▶
             </button>
             <button type="button" onClick={() => step(PAGE)} aria-label={`${PAGE} events later`}>
@@ -137,6 +151,9 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
             Other New and Full Moons
           </label>
         </fieldset>
+        <p class="hint keys">
+          Tip: <kbd>←</kbd> and <kbd>→</kbd> step through the events, with <kbd>Shift</kbd> by ten.
+        </p>
       </section>
 
       <p class="summary" data-testid="summary" aria-live="polite">

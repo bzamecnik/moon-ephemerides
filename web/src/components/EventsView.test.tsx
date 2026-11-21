@@ -131,4 +131,22 @@ describe('EventsView', () => {
     expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-07 00:08 (UTC+1)')
     expect(screen.getByRole('columnheader', { name: /date and time/i })).toHaveTextContent('Europe/Prague')
   })
+
+  it('steps by event with the arrow keys', async () => {
+    const user = setup() // closest: Full Micromoon 2023-01-06
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-21 20:53')
+    await user.keyboard('{ArrowLeft}{ArrowLeft}')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
+    await user.keyboard('{Shift>}{ArrowRight}{/Shift}')
+    // ten events later, clipped to the last one
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-20 07:06')
+  })
+
+  it('leaves the arrow keys to the date field while typing', async () => {
+    const user = setup()
+    await user.click(dateBox())
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-06 23:08')
+  })
 })
