@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { closestIndex, firstIndexAtOrAfter, stepAnchor, windowAround } from './timeline'
+import { BEAT_DAYS, closestIndex, firstIndexAtOrAfter, stepAnchor, stepByTime, windowAround } from './timeline'
 
 const times = [10, 20, 30, 40, 50]
 
@@ -44,5 +44,28 @@ describe('stepAnchor', () => {
   it('stops at the ends', () => {
     expect(stepAnchor(times, 25, -10)).toBe(10)
     expect(stepAnchor(times, 25, 10)).toBe(50)
+  })
+})
+
+describe('stepByTime', () => {
+  const DAY = 86_400_000
+  // every New and Full Moon: half a synodic month apart
+  const syzygies = Array.from({ length: 200 }, (_, i) => i * 14.765 * DAY)
+
+  it('one beat later is the same phase 14 synodic months later', () => {
+    expect(BEAT_DAYS).toBeCloseTo(411.78, 1)
+    expect(stepByTime(syzygies, syzygies[10], BEAT_DAYS * DAY)).toBe(syzygies[38])
+    expect(stepByTime(syzygies, syzygies[38] + 3 * DAY, -BEAT_DAYS * DAY)).toBe(syzygies[10])
+  })
+
+  it('moves at least one event even when the nearest one to the target is the current one', () => {
+    const sparse = [0, 1000 * DAY, 2000 * DAY]
+    expect(stepByTime(sparse, 0, BEAT_DAYS * DAY)).toBe(1000 * DAY)
+    expect(stepByTime(sparse, 1000 * DAY, -BEAT_DAYS * DAY)).toBe(0)
+  })
+
+  it('stays at the ends', () => {
+    expect(stepByTime(syzygies, syzygies[199], BEAT_DAYS * DAY)).toBe(syzygies[199])
+    expect(stepByTime([], 5, DAY)).toBe(5)
   })
 })

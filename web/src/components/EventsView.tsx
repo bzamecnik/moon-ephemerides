@@ -24,11 +24,11 @@ import { PhaseChart } from '../charts/PhaseChart'
 import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
 import { RankingView } from './RankingView'
-import { closestIndex, firstIndexAtOrAfter, stepAnchor, windowAround } from '../timeline'
+import { BEAT_DAYS, closestIndex, firstIndexAtOrAfter, stepAnchor, stepByTime, windowAround } from '../timeline'
 
 const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
-const PAGE = 10
+const BEAT_MS = BEAT_DAYS * 86_400_000
 
 type View = 'table' | 'distance' | 'beat' | 'phase' | 'ranking'
 const VIEWS: { id: View; label: string }[] = [
@@ -87,8 +87,9 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
     onChange?.(a, view)
   }
   const step = (n: number) => setAnchor(stepAnchor(times, anchor, n))
+  const stepBeat = (n: number) => setAnchor(stepByTime(times, anchor, n * BEAT_MS))
 
-  // ← / → step by one event, with Shift by ten; not while typing in a field
+  // ← / → step by one event, with Shift by one beat; not while typing in a field
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
@@ -96,7 +97,9 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
       const target = e.target as HTMLElement | null
       if (target?.closest('input, select, textarea, [contenteditable]')) return
       e.preventDefault()
-      step((e.key === 'ArrowRight' ? 1 : -1) * (e.shiftKey ? PAGE : 1))
+      const dir = e.key === 'ArrowRight' ? 1 : -1
+      if (e.shiftKey) stepBeat(dir)
+      else step(dir)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -117,16 +120,26 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
             Now
           </button>
           <span class="button-group">
-            <button type="button" onClick={() => step(-PAGE)} aria-label={`${PAGE} events earlier`}>
+            <button
+              type="button"
+              onClick={() => stepBeat(-1)}
+              aria-label="One beat earlier"
+              title="One beat (about 14 months) earlier (Shift+←)"
+            >
               ⏪
             </button>
-            <button type="button" onClick={() => step(-1)} title="Previous event (← key, Shift+← for ten)">
+            <button type="button" onClick={() => step(-1)} title="Previous event (← key)">
               ◀ Previous event
             </button>
-            <button type="button" onClick={() => step(1)} title="Next event (→ key, Shift+→ for ten)">
+            <button type="button" onClick={() => step(1)} title="Next event (→ key)">
               Next event ▶
             </button>
-            <button type="button" onClick={() => step(PAGE)} aria-label={`${PAGE} events later`}>
+            <button
+              type="button"
+              onClick={() => stepBeat(1)}
+              aria-label="One beat later"
+              title="One beat (about 14 months) later (Shift+→)"
+            >
               ⏩
             </button>
           </span>
@@ -154,7 +167,8 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
           </label>
         </fieldset>
         <p class="hint keys">
-          Tip: <kbd>←</kbd> and <kbd>→</kbd> step through the events, with <kbd>Shift</kbd> by ten.
+          Tip: <kbd>←</kbd> and <kbd>→</kbd> step through the events, with <kbd>Shift</kbd> by one beat (about 14
+          months, the same phase at the same point of the distance cycle).
         </p>
       </section>
 

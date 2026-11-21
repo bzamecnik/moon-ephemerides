@@ -147,7 +147,7 @@ describe('EventsView', () => {
     await user.keyboard('{ArrowLeft}{ArrowLeft}')
     expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
     await user.keyboard('{Shift>}{ArrowRight}{/Shift}')
-    // ten events later, clipped to the last one
+    // one beat later, clipped to the last one
     expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-20 07:06')
   })
 
