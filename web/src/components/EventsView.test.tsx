@@ -28,15 +28,20 @@ describe('EventsView', () => {
     expect(labels()).toEqual(['New Supermoon', 'Full Micromoon', 'New Supermoon', 'Full Micromoon', 'New Supermoon'])
   })
 
-  it('marks the next event after the selected moment and summarises it', () => {
-    setup()
-    const next = eventRows().find((r) => r.getAttribute('aria-current'))
-    expect(next?.dataset.time).toBe(String(utc('2023-01-21T20:53:15')))
-    const summary = screen.getByTestId('next-summary')
-    expect(summary).toHaveTextContent('New Supermoon')
-    expect(summary).toHaveTextContent('2023-01-21 20:53 UTC')
-    expect(summary).toHaveTextContent('in 12 days')
-    expect(summary).toHaveTextContent('4 min before perigee')
+  it('marks the event closest to the selected moment and summarises it', () => {
+    setup() // 2023-01-10 00:00: Full Moon Jan 6 is 3 days before, New Moon Jan 21 12 days after
+    const closest = eventRows().find((r) => r.getAttribute('aria-current'))
+    expect(closest?.dataset.time).toBe(String(utc('2023-01-06T23:07:54')))
+    const summary = screen.getByTestId('summary')
+    expect(summary).toHaveTextContent('Closest: Full Micromoon')
+    expect(summary).toHaveTextContent('2023-01-06 23:08 UTC')
+    expect(summary).toHaveTextContent('3 days ago')
+    expect(summary).toHaveTextContent('34.2 h before apogee')
+  })
+
+  it('prefers a recent event to a later one', () => {
+    setup(utc('2023-02-06T00:00'))
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-05 18:29 UTC (6 hours ago)')
   })
 
   it('shows the time difference to the perigee or apogee', () => {
@@ -49,30 +54,38 @@ describe('EventsView', () => {
   it('steps to the next and previous event', async () => {
     const user = setup()
     await user.click(screen.getByRole('button', { name: /next event/i }))
-    expect(screen.getByTestId('next-summary')).toHaveTextContent('2023-02-05 18:29')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-21 20:53')
     await user.click(screen.getByRole('button', { name: /previous event/i }))
     await user.click(screen.getByRole('button', { name: /previous event/i }))
-    expect(screen.getByTestId('next-summary')).toHaveTextContent('2023-01-06 23:08')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
   })
 
   it('jumps to now', async () => {
     const user = setup()
     await user.click(screen.getByRole('button', { name: /^now$/i }))
-    expect(screen.getByTestId('next-summary')).toHaveTextContent('2023-02-05 18:29')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-05 18:29')
   })
 
   const dateBox = () => screen.getByRole('textbox', { name: /date/i })
 
-  it('shows the selected date as YYYY-MM-DD', () => {
+  it('jumps to a typed date and time', async () => {
+    const user = setup()
+    await user.clear(dateBox())
+    await user.type(dateBox(), '2023-02-13 12:00')
+    // Feb 5 18:29 is 7.7 days before, Feb 20 07:06 is 6.8 days after
+    expect(screen.getByTestId('summary')).toHaveTextContent('Closest: New Supermoon on 2023-02-20 07:06')
+  })
+
+  it('shows the selected date as YYYY-MM-DD HH:MM', () => {
     setup()
-    expect(dateBox()).toHaveValue('2023-01-10')
+    expect(dateBox()).toHaveValue('2023-01-10 00:00')
   })
 
   it('jumps to a typed date', async () => {
     const user = setup()
     await user.clear(dateBox())
     await user.type(dateBox(), '2022-12-01')
-    expect(screen.getByTestId('next-summary')).toHaveTextContent('2022-12-23 10:17')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
   })
 
   it('jumps to a typed year while keeping what is being typed', async () => {
@@ -81,9 +94,9 @@ describe('EventsView', () => {
     await user.type(dateBox(), '1989')
     expect(dateBox()).toHaveValue('1989')
     // the fixture has no events before Dec 2022, so the first one is next
-    expect(screen.getByTestId('next-summary')).toHaveTextContent('2022-12-23 10:17')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
     await user.type(dateBox(), '{Enter}')
-    expect(dateBox()).toHaveValue('1989-01-01')
+    expect(dateBox()).toHaveValue('1989-01-01 00:00')
   })
 
   it('restores the date when leaving an unfinished one', async () => {
@@ -92,14 +105,14 @@ describe('EventsView', () => {
     await user.type(dateBox(), '19')
     expect(dateBox()).toHaveAttribute('aria-invalid', 'true')
     await user.tab()
-    expect(dateBox()).toHaveValue('2023-01-10')
+    expect(dateBox()).toHaveValue('2023-01-10 00:00')
   })
 
   it('picks a date from the calendar', () => {
     setup()
     fireEvent.change(screen.getByTestId('date-picker'), { target: { value: '2022-12-01' } })
-    expect(screen.getByTestId('next-summary')).toHaveTextContent('2022-12-23 10:17')
-    expect(dateBox()).toHaveValue('2022-12-01')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
+    expect(dateBox()).toHaveValue('2022-12-01 00:00')
   })
 
   it('filters the kinds of events', async () => {
@@ -114,6 +127,8 @@ describe('EventsView', () => {
     const user = setup()
     await user.click(screen.getByRole('radio', { name: /local/i }))
     // TZ=Europe/Prague in the tests
-    expect(screen.getByTestId('next-summary')).toHaveTextContent('2023-01-21 21:53')
+    expect(screen.getByRole('radio', { name: /local/i }).parentElement).toHaveTextContent('Europe/Prague')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-07 00:08 (UTC+1)')
+    expect(screen.getByRole('columnheader', { name: /date and time/i })).toHaveTextContent('Europe/Prague')
   })
 })

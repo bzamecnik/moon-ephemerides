@@ -14,11 +14,14 @@ import {
   formatDateTime,
   formatDelta,
   formatDuration,
+  formatOffset,
   formatRelative,
-  parseDate,
+  formatZoned,
+  localZoneName,
+  parseDateTime,
   type Zone,
 } from '../format'
-import { firstIndexAtOrAfter, stepAnchor, windowAround } from '../timeline'
+import { closestIndex, firstIndexAtOrAfter, stepAnchor, windowAround } from '../timeline'
 
 const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
@@ -53,9 +56,11 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
     [catalog, kinds, includeOrdinary],
   )
   const times = useMemo(() => events.map((e) => e.syzygy.time), [events])
+  const closest = closestIndex(times, anchor)
+  // the line marking the selected moment goes before this event
   const nextIndex = firstIndexAtOrAfter(times, anchor)
-  const { start, end } = windowAround(events.length, nextIndex, ROWS_BEFORE, ROWS_AFTER)
-  const next: MoonEvent | undefined = events[nextIndex]
+  const { start, end } = windowAround(events.length, closest, ROWS_BEFORE, ROWS_AFTER)
+  const closestEvent: MoonEvent | undefined = events[closest]
 
   const setAnchor = (a: number) => {
     setAnchorState(a)
@@ -68,7 +73,7 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
     else s.add(k)
     setKinds(s)
   }
-  const zoneName = zone === 'utc' ? 'UTC' : 'local time'
+  const zoneName = zone === 'utc' ? 'UTC' : localZoneName()
 
   return (
     <div class="events-view">
@@ -99,7 +104,7 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
             </label>
             <label>
               <input type="radio" name="zone" checked={zone === 'local'} onChange={() => setZone('local')} /> Local
-              time
+              time ({localZoneName()}, {formatOffset(anchor)})
             </label>
           </fieldset>
         </div>
@@ -117,15 +122,14 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
         </fieldset>
       </section>
 
-      <p class="next-summary" data-testid="next-summary" aria-live="polite">
-        {next ? (
+      <p class="summary" data-testid="summary" aria-live="polite">
+        {closestEvent ? (
           <>
-            Next: <strong>{eventLabel(next)}</strong> on {formatDateTime(next.syzygy.time, zone)}{' '}
-            {zone === 'utc' ? 'UTC' : ''} ({formatRelative(next.syzygy.time, anchor)}),{' '}
-            {describeDelta(next)}.
+            Closest: <strong>{eventLabel(closestEvent)}</strong> on {formatZoned(closestEvent.syzygy.time, zone)} (
+            {formatRelative(closestEvent.syzygy.time, anchor)}), {describeDelta(closestEvent)}.
           </>
         ) : (
-          'No more events in the data.'
+          'No events of the chosen kinds.'
         )}
       </p>
 
@@ -135,7 +139,7 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
           <thead>
             <tr>
               <th scope="col">When</th>
-              <th scope="col">Date and time ({zone === 'utc' ? 'UTC' : 'local'})</th>
+              <th scope="col">Date and time ({zoneName})</th>
               <th scope="col">Event</th>
               <th scope="col" class="num" title="Distance between the centres of the Earth and the Moon">
                 Distance (km)
@@ -161,7 +165,13 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
               const index = start + i
               return [
                 index === nextIndex && <AnchorRow key="anchor" anchor={anchor} zone={zone} />,
-                <EventRow key={e.syzygy.time} event={e} anchor={anchor} zone={zone} isNext={index === nextIndex} />,
+                <EventRow
+                  key={e.syzygy.time}
+                  event={e}
+                  anchor={anchor}
+                  zone={zone}
+                  isClosest={index === closest}
+                />,
               ]
             })}
             {nextIndex >= end && <AnchorRow anchor={anchor} zone={zone} />}
@@ -173,38 +183,39 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
 }
 
 /**
- * The selected date as editable 'YYYY-MM-DD' text (a native date input would
- * show the browser's locale format and is awkward for typing years), plus the
- * browser's calendar behind a button. While typing, every valid prefix
- * ('1989', '1989-05', '1989-05-07') already moves the selection.
+ * The selected moment as editable 'YYYY-MM-DD HH:MM' text (a native date input
+ * would show the browser's locale format and is awkward for typing years),
+ * plus the browser's calendar behind a button. While typing, every valid
+ * prefix ('1989', '1989-05', '1989-05-07', '1989-05-07 13:45') already moves
+ * the selection.
  */
 function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onChange: (a: number) => void }) {
   // the text being typed; null when not editing
   const [draft, setDraft] = useState<string | null>(null)
   const picker = useRef<HTMLInputElement>(null)
-  const date = formatDate(anchor, zone)
-  const invalid = draft !== null && parseDate(draft, zone) === null
+  const shown = formatDateTime(anchor, zone)
+  const invalid = draft !== null && parseDateTime(draft, zone) === null
 
   return (
     <span class="date-field">
       <label>
-        Date{' '}
+        Date and time{' '}
         <input
           type="text"
           inputMode="numeric"
-          placeholder="YYYY-MM-DD"
-          size={10}
-          maxLength={10}
+          placeholder="YYYY-MM-DD HH:MM"
+          size={16}
+          maxLength={16}
           spellcheck={false}
           autoComplete="off"
-          value={draft ?? date}
+          value={draft ?? shown}
           aria-invalid={invalid ? 'true' : undefined}
-          title="Year, year-month or year-month-day, e.g. 1989, 1989-05 or 1989-05-07"
+          title="A date and optionally a time, e.g. 1989, 1989-05, 1989-05-07 or 1989-05-07 13:45"
           onFocus={(e) => setDraft(e.currentTarget.value)}
           onInput={(e) => {
             const text = e.currentTarget.value
             setDraft(text)
-            const a = parseDate(text, zone)
+            const a = parseDateTime(text, zone)
             if (a !== null) onChange(a)
           }}
           onBlur={() => setDraft(null)}
@@ -233,9 +244,9 @@ function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onC
         aria-hidden="true"
         min="1850-01-01"
         max="2149-12-31"
-        value={date}
+        value={formatDate(anchor, zone)}
         onChange={(e) => {
-          const a = parseDate(e.currentTarget.value, zone)
+          const a = parseDateTime(e.currentTarget.value, zone)
           if (a !== null) onChange(a)
         }}
       />
@@ -252,17 +263,31 @@ function describeDelta(e: MoonEvent): string {
 function AnchorRow({ anchor, zone }: { anchor: number; zone: Zone }) {
   return (
     <tr class="anchor-row">
-      <td colSpan={8}>▼ selected moment: {formatDateTime(anchor, zone)}</td>
+      <td colSpan={8}>▼ selected moment: {formatZoned(anchor, zone)}</td>
     </tr>
   )
 }
 
-function EventRow({ event: e, anchor, zone, isNext }: { event: MoonEvent; anchor: number; zone: Zone; isNext: boolean }) {
+function EventRow({
+  event: e,
+  anchor,
+  zone,
+  isClosest,
+}: {
+  event: MoonEvent
+  anchor: number
+  zone: Zone
+  isClosest: boolean
+}) {
   const kind = notableKind(e) ?? 'ordinary'
   const close = Math.abs(e.deltaDays) < CLOSE_ALIGNMENT_DAYS
-  const classes = [e.syzygy.time < anchor ? 'past' : '', isNext ? 'next' : '', close ? 'close-alignment' : '']
+  const classes = [e.syzygy.time < anchor ? 'past' : '', isClosest ? 'closest' : '', close ? 'close-alignment' : '']
   return (
-    <tr class={classes.filter(Boolean).join(' ')} data-time={e.syzygy.time} aria-current={isNext ? 'true' : undefined}>
+    <tr
+      class={classes.filter(Boolean).join(' ')}
+      data-time={e.syzygy.time}
+      aria-current={isClosest ? 'true' : undefined}
+    >
       <td class="when">{formatRelative(e.syzygy.time, anchor)}</td>
       <td class="time">{formatDateTime(e.syzygy.time, zone)}</td>
       <td>

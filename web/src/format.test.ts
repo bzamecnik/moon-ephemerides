@@ -5,7 +5,9 @@ import {
   formatDelta,
   formatDuration,
   formatRelative,
-  parseDate,
+  formatOffset,
+  formatZoned,
+  parseDateTime,
   parseHash,
   formatHash,
 } from './format'
@@ -34,29 +36,52 @@ describe('dates', () => {
   })
 
   it('parses a date as the start of that day', () => {
-    expect(parseDate('2023-01-21', 'utc')).toBe(utc('2023-01-21T00:00'))
-    expect(parseDate('2023-01-21', 'local')).toBe(utc('2023-01-20T23:00'))
-    expect(parseDate('not a date', 'utc')).toBeNull()
+    expect(parseDateTime('2023-01-21', 'utc')).toBe(utc('2023-01-21T00:00'))
+    expect(parseDateTime('2023-01-21', 'local')).toBe(utc('2023-01-20T23:00'))
+    expect(parseDateTime('not a date', 'utc')).toBeNull()
   })
 
   it('accepts a year or a year and month alone', () => {
-    expect(parseDate('1989', 'utc')).toBe(utc('1989-01-01T00:00'))
-    expect(parseDate('1989-05', 'utc')).toBe(utc('1989-05-01T00:00'))
-    expect(parseDate('1989-5-7', 'utc')).toBe(utc('1989-05-07T00:00'))
-    expect(parseDate(' 1989-05-07 ', 'utc')).toBe(utc('1989-05-07T00:00'))
+    expect(parseDateTime('1989', 'utc')).toBe(utc('1989-01-01T00:00'))
+    expect(parseDateTime('1989-05', 'utc')).toBe(utc('1989-05-01T00:00'))
+    expect(parseDateTime('1989-5-7', 'utc')).toBe(utc('1989-05-07T00:00'))
+    expect(parseDateTime(' 1989-05-07 ', 'utc')).toBe(utc('1989-05-07T00:00'))
   })
 
   it('does not map years below 100 to the 1900s', () => {
-    expect(new Date(parseDate('0001-01-10', 'utc')!).getUTCFullYear()).toBe(1)
-    expect(new Date(parseDate('0019-01-10', 'local')!).getFullYear()).toBe(19)
+    expect(new Date(parseDateTime('0001-01-10', 'utc')!).getUTCFullYear()).toBe(1)
+    expect(new Date(parseDateTime('0019-01-10', 'local')!).getFullYear()).toBe(19)
+  })
+
+  it('accepts a time of day after the date', () => {
+    expect(parseDateTime('2023-02-06 13:45', 'utc')).toBe(utc('2023-02-06T13:45'))
+    expect(parseDateTime('2023-02-06T13:45', 'utc')).toBe(utc('2023-02-06T13:45'))
+    expect(parseDateTime('2023-02-06 7', 'utc')).toBe(utc('2023-02-06T07:00'))
+    expect(parseDateTime('2023-02-06 13:45', 'local')).toBe(utc('2023-02-06T12:45'))
+    expect(parseDateTime('2023-02-06 24:00', 'utc')).toBeNull()
+    expect(parseDateTime('2023-02-06 13:60', 'utc')).toBeNull()
+    expect(parseDateTime('2023-02-06 13:', 'utc')).toBeNull()
+    expect(parseDateTime('2023-02 13:45', 'utc')).toBeNull()
   })
 
   it('rejects impossible and unfinished dates', () => {
-    expect(parseDate('2023-02-30', 'utc')).toBeNull()
-    expect(parseDate('2023-13', 'utc')).toBeNull()
-    expect(parseDate('2023-00', 'utc')).toBeNull()
-    expect(parseDate('198', 'utc')).toBeNull()
-    expect(parseDate('1989-', 'utc')).toBeNull()
+    expect(parseDateTime('2023-02-30', 'utc')).toBeNull()
+    expect(parseDateTime('2023-13', 'utc')).toBeNull()
+    expect(parseDateTime('2023-00', 'utc')).toBeNull()
+    expect(parseDateTime('198', 'utc')).toBeNull()
+    expect(parseDateTime('1989-', 'utc')).toBeNull()
+  })
+})
+
+describe('time zones', () => {
+  it('gives the UTC offset of local time at a moment (with summer time)', () => {
+    expect(formatOffset(utc('2023-01-21T12:00'))).toBe('UTC+1')
+    expect(formatOffset(utc('2023-07-21T12:00'))).toBe('UTC+2')
+  })
+
+  it('formats a time with its zone', () => {
+    expect(formatZoned(t, 'utc')).toBe('2023-01-21 20:53 UTC')
+    expect(formatZoned(t, 'local')).toBe('2023-01-21 21:53 (UTC+1)')
   })
 })
 
@@ -85,9 +110,11 @@ describe('durations', () => {
 })
 
 describe('URL hash', () => {
-  it('round-trips the selected date', () => {
-    expect(formatHash('2023-01-21')).toBe('#date=2023-01-21')
-    expect(parseHash('#date=2023-01-21')).toBe('2023-01-21')
+  it('keeps the selected moment in UTC, the time only when not midnight', () => {
+    expect(formatHash(utc('2023-01-21T00:00'))).toBe('#date=2023-01-21')
+    expect(formatHash(utc('2023-01-21T13:45:20'))).toBe('#date=2023-01-21T13:45')
+    expect(parseHash('#date=2023-01-21')).toBe(utc('2023-01-21T00:00'))
+    expect(parseHash('#date=2023-01-21T13:45')).toBe(utc('2023-01-21T13:45'))
     expect(parseHash('')).toBeNull()
     expect(parseHash('#date=garbage')).toBeNull()
   })

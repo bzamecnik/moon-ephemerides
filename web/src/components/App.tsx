@@ -1,18 +1,17 @@
 import { useEffect, useState } from 'preact/hooks'
 import { loadCatalog, type Catalog } from '../data/catalog'
-import { formatDate, formatHash, parseDate, parseHash } from '../format'
+import { formatHash, parseHash } from '../format'
 import { EventsView } from './EventsView'
 
 const DATA_URL = `${import.meta.env.BASE_URL}data/lunar-events.json`
 
-/** The moment selected in the URL (#date=YYYY-MM-DD, UTC), else now. */
+/** The moment selected in the URL (#date=YYYY-MM-DD[THH:MM], UTC), else now. */
 function initialAnchor(now: number): number {
-  const date = parseHash(window.location.hash)
-  return (date === null ? null : parseDate(date, 'utc')) ?? now
+  return parseHash(window.location.hash) ?? now
 }
 
 function keepInUrl(anchor: number) {
-  window.history.replaceState(null, '', formatHash(formatDate(anchor, 'utc')))
+  window.history.replaceState(null, '', formatHash(anchor))
 }
 
 export function App() {

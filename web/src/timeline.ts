@@ -1,6 +1,6 @@
 /**
  * Navigating a time-sorted list of events around a selected moment (the "anchor").
- * The event at index `firstIndexAtOrAfter(times, anchor)` is the "next" one.
+ * The event nearest to the anchor (before or after) is the "closest" one.
  */
 
 /** Index of the first time ≥ t (binary search); `times.length` if there is none. */
@@ -15,14 +15,23 @@ export function firstIndexAtOrAfter(times: readonly number[], t: number): number
   return lo
 }
 
-/** Range [start, end) with `before` events before the next one and `after` from it on. */
-export function windowAround(count: number, nextIndex: number, before: number, after: number) {
-  return { start: Math.max(0, nextIndex - before), end: Math.min(count, nextIndex + after) }
+/** Index of the time nearest to t (the earlier one in a tie); -1 if there are none. */
+export function closestIndex(times: readonly number[], t: number): number {
+  if (times.length === 0) return -1
+  const i = firstIndexAtOrAfter(times, t)
+  if (i === 0) return 0
+  if (i === times.length) return i - 1
+  return times[i] - t < t - times[i - 1] ? i : i - 1
 }
 
-/** A new anchor moved by `steps` events: the event `steps` places away becomes the next one. */
+/** Range [start, end) with `before` events before `center` and `after` from it on. */
+export function windowAround(count: number, center: number, before: number, after: number) {
+  return { start: Math.max(0, center - before), end: Math.min(count, center + after) }
+}
+
+/** A new anchor at the event `steps` places away from the closest one (it becomes the closest). */
 export function stepAnchor(times: readonly number[], anchor: number, steps: number): number {
   if (times.length === 0) return anchor
-  const i = Math.min(Math.max(firstIndexAtOrAfter(times, anchor) + steps, 0), times.length)
-  return i < times.length ? times[i] : times[times.length - 1] + 1
+  const i = Math.min(Math.max(closestIndex(times, anchor) + steps, 0), times.length - 1)
+  return times[i]
 }

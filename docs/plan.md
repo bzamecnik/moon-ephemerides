@@ -47,10 +47,13 @@ eclipses and astronomy-engine postponed.
 ## M4 – Views
 
 - [x] table of New/Full super- and micromoons (all four kinds together) around
-      a selected date: next event highlighted and summarised, stepping by
-      event or by ten, jump to now or to a date (also via `#date=` in the URL),
-      kind filters, optionally all other New/Full Moons, UTC or local time,
-      close alignments (|Δ| < 6 h) highlighted
+      a selected moment: the closest event (before or after) highlighted and
+      summarised, stepping by event or by ten, jump to now or to a typed
+      date and time (`YYYY[-MM[-DD[ HH:MM]]]`, also via `#date=` in the URL),
+      kind filters, optionally all other New/Full Moons, UTC or local time
+      (with zone name and offset), close alignments (|Δ| < 6 h) highlighted
+- [ ] consider wording Δ the same way in the summary and the table (now:
+      "22.0 h after perigee" vs. Δ = −0.917 d, apsis − syzygy)
 
 - [ ] around a date (today by default): Moon distance curve, syzygy and apsis
       markers, Δ labels (like Espenak's SuperMicroMoon chart, but interactive)

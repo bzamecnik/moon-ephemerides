@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { firstIndexAtOrAfter, stepAnchor, windowAround } from './timeline'
+import { closestIndex, firstIndexAtOrAfter, stepAnchor, windowAround } from './timeline'
 
 const times = [10, 20, 30, 40, 50]
 
@@ -20,19 +20,29 @@ describe('windowAround', () => {
   })
 })
 
-describe('stepAnchor', () => {
-  it('moving forward by one makes the following event the next one', () => {
-    const anchor = stepAnchor(times, 25, 1) // next was 30 (index 2)
-    expect(firstIndexAtOrAfter(times, anchor)).toBe(3)
+describe('closestIndex', () => {
+  it('finds the nearest event on either side', () => {
+    expect([0, 14, 16, 26, 99].map((t) => closestIndex(times, t))).toEqual([0, 0, 1, 2, 4])
   })
 
-  it('moving back by one makes the previous event the next one', () => {
-    const anchor = stepAnchor(times, 25, -1)
-    expect(firstIndexAtOrAfter(times, anchor)).toBe(1)
+  it('prefers the earlier one in a tie', () => {
+    expect(closestIndex(times, 25)).toBe(1)
+  })
+
+  it('is -1 without events', () => {
+    expect(closestIndex([], 5)).toBe(-1)
+  })
+})
+
+describe('stepAnchor', () => {
+  it('moves to the event after or before the closest one', () => {
+    expect(stepAnchor(times, 22, 1)).toBe(30)
+    expect(stepAnchor(times, 22, -1)).toBe(10)
+    expect(stepAnchor(times, 28, 1)).toBe(40)
   })
 
   it('stops at the ends', () => {
-    expect(firstIndexAtOrAfter(times, stepAnchor(times, 25, -10))).toBe(0)
-    expect(firstIndexAtOrAfter(times, stepAnchor(times, 25, 10))).toBe(5)
+    expect(stepAnchor(times, 25, -10)).toBe(10)
+    expect(stepAnchor(times, 25, 10)).toBe(50)
   })
 })
