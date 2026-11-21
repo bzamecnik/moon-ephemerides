@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'preact/hooks'
+import { useMemo, useRef, useState } from 'preact/hooks'
 import type { Catalog } from '../data/catalog'
 import {
   apparentDiameterArcmin,
@@ -74,19 +74,7 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
     <div class="events-view">
       <section class="controls" aria-label="Navigation and filters">
         <div class="control-row">
-          <label>
-            Date{' '}
-            <input
-              type="date"
-              value={formatDate(anchor, zone)}
-              min="1850-01-01"
-              max="2149-12-31"
-              onInput={(e) => {
-                const a = parseDate(e.currentTarget.value, zone)
-                if (a !== null) setAnchor(a)
-              }}
-            />
-          </label>
+          <DateField anchor={anchor} zone={zone} onChange={setAnchor} />
           <button type="button" onClick={() => setAnchor(now)}>
             Now
           </button>
@@ -181,6 +169,77 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
         </table>
       </div>
     </div>
+  )
+}
+
+/**
+ * The selected date as editable 'YYYY-MM-DD' text (a native date input would
+ * show the browser's locale format and is awkward for typing years), plus the
+ * browser's calendar behind a button. While typing, every valid prefix
+ * ('1989', '1989-05', '1989-05-07') already moves the selection.
+ */
+function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onChange: (a: number) => void }) {
+  // the text being typed; null when not editing
+  const [draft, setDraft] = useState<string | null>(null)
+  const picker = useRef<HTMLInputElement>(null)
+  const date = formatDate(anchor, zone)
+  const invalid = draft !== null && parseDate(draft, zone) === null
+
+  return (
+    <span class="date-field">
+      <label>
+        Date{' '}
+        <input
+          type="text"
+          inputMode="numeric"
+          placeholder="YYYY-MM-DD"
+          size={10}
+          maxLength={10}
+          spellcheck={false}
+          autoComplete="off"
+          value={draft ?? date}
+          aria-invalid={invalid ? 'true' : undefined}
+          title="Year, year-month or year-month-day, e.g. 1989, 1989-05 or 1989-05-07"
+          onFocus={(e) => setDraft(e.currentTarget.value)}
+          onInput={(e) => {
+            const text = e.currentTarget.value
+            setDraft(text)
+            const a = parseDate(text, zone)
+            if (a !== null) onChange(a)
+          }}
+          onBlur={() => setDraft(null)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === 'Escape') {
+              setDraft(null)
+              e.currentTarget.select()
+            }
+          }}
+        />
+      </label>
+      <button
+        type="button"
+        aria-label="Choose a date from a calendar"
+        title="Choose a date from a calendar"
+        onClick={() => picker.current?.showPicker?.()}
+      >
+        📅
+      </button>
+      <input
+        ref={picker}
+        type="date"
+        class="date-picker"
+        data-testid="date-picker"
+        tabIndex={-1}
+        aria-hidden="true"
+        min="1850-01-01"
+        max="2149-12-31"
+        value={date}
+        onChange={(e) => {
+          const a = parseDate(e.currentTarget.value, zone)
+          if (a !== null) onChange(a)
+        }}
+      />
+    </span>
   )
 }
 

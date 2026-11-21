@@ -30,17 +30,35 @@ export function formatDateTime(ms: number, zone: Zone): string {
 
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
 
+/** A complete 'YYYY-MM-DD' (as in the URL) */
 export function isDate(text: string): boolean {
   return DATE_RE.test(text)
 }
 
-/** Start of the day 'YYYY-MM-DD' in the given zone, or null. */
+const PARTIAL_DATE_RE = /^(\d{4})(?:-(\d{1,2})(?:-(\d{1,2}))?)?$/
+
+/**
+ * Start of the day in the given zone, or null for an invalid date.
+ * Accepts 'YYYY-MM-DD', 'YYYY-MM' (1st of the month) and 'YYYY' (1 January).
+ */
 export function parseDate(text: string, zone: Zone): number | null {
-  const m = DATE_RE.exec(text)
+  const m = PARTIAL_DATE_RE.exec(text.trim())
   if (!m) return null
-  const [y, mo, d] = [Number(m[1]), Number(m[2]) - 1, Number(m[3])]
-  const ms = zone === 'utc' ? Date.UTC(y, mo, d) : new Date(y, mo, d).getTime()
-  return Number.isNaN(ms) ? null : ms
+  const year = Number(m[1])
+  const month = m[2] === undefined ? 0 : Number(m[2]) - 1
+  const day = m[3] === undefined ? 1 : Number(m[3])
+  // setFullYear, unlike Date.UTC or the Date constructor, keeps years 0-99 as they are
+  const d = new Date(0)
+  if (zone === 'utc') {
+    d.setUTCFullYear(year, month, day)
+    d.setUTCHours(0, 0, 0, 0)
+  } else {
+    d.setFullYear(year, month, day)
+    d.setHours(0, 0, 0, 0)
+  }
+  // reject overflows such as February 30 or month 13
+  const [y, mo, dd] = zone === 'utc' ? [d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()] : [d.getFullYear(), d.getMonth(), d.getDate()]
+  return y === year && mo === month && dd === day ? d.getTime() : null
 }
 
 const sign = (x: number) => (x < 0 ? MINUS : '+')

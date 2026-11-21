@@ -38,6 +38,26 @@ describe('dates', () => {
     expect(parseDate('2023-01-21', 'local')).toBe(utc('2023-01-20T23:00'))
     expect(parseDate('not a date', 'utc')).toBeNull()
   })
+
+  it('accepts a year or a year and month alone', () => {
+    expect(parseDate('1989', 'utc')).toBe(utc('1989-01-01T00:00'))
+    expect(parseDate('1989-05', 'utc')).toBe(utc('1989-05-01T00:00'))
+    expect(parseDate('1989-5-7', 'utc')).toBe(utc('1989-05-07T00:00'))
+    expect(parseDate(' 1989-05-07 ', 'utc')).toBe(utc('1989-05-07T00:00'))
+  })
+
+  it('does not map years below 100 to the 1900s', () => {
+    expect(new Date(parseDate('0001-01-10', 'utc')!).getUTCFullYear()).toBe(1)
+    expect(new Date(parseDate('0019-01-10', 'local')!).getFullYear()).toBe(19)
+  })
+
+  it('rejects impossible and unfinished dates', () => {
+    expect(parseDate('2023-02-30', 'utc')).toBeNull()
+    expect(parseDate('2023-13', 'utc')).toBeNull()
+    expect(parseDate('2023-00', 'utc')).toBeNull()
+    expect(parseDate('198', 'utc')).toBeNull()
+    expect(parseDate('1989-', 'utc')).toBeNull()
+  })
 })
 
 describe('durations', () => {

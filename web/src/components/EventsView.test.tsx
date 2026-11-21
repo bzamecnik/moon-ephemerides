@@ -61,10 +61,45 @@ describe('EventsView', () => {
     expect(screen.getByTestId('next-summary')).toHaveTextContent('2023-02-05 18:29')
   })
 
-  it('jumps to a chosen date', () => {
+  const dateBox = () => screen.getByRole('textbox', { name: /date/i })
+
+  it('shows the selected date as YYYY-MM-DD', () => {
     setup()
-    fireEvent.input(screen.getByLabelText(/date/i), { target: { value: '2022-12-01' } })
+    expect(dateBox()).toHaveValue('2023-01-10')
+  })
+
+  it('jumps to a typed date', async () => {
+    const user = setup()
+    await user.clear(dateBox())
+    await user.type(dateBox(), '2022-12-01')
     expect(screen.getByTestId('next-summary')).toHaveTextContent('2022-12-23 10:17')
+  })
+
+  it('jumps to a typed year while keeping what is being typed', async () => {
+    const user = setup()
+    await user.clear(dateBox())
+    await user.type(dateBox(), '1989')
+    expect(dateBox()).toHaveValue('1989')
+    // the fixture has no events before Dec 2022, so the first one is next
+    expect(screen.getByTestId('next-summary')).toHaveTextContent('2022-12-23 10:17')
+    await user.type(dateBox(), '{Enter}')
+    expect(dateBox()).toHaveValue('1989-01-01')
+  })
+
+  it('restores the date when leaving an unfinished one', async () => {
+    const user = setup()
+    await user.clear(dateBox())
+    await user.type(dateBox(), '19')
+    expect(dateBox()).toHaveAttribute('aria-invalid', 'true')
+    await user.tab()
+    expect(dateBox()).toHaveValue('2023-01-10')
+  })
+
+  it('picks a date from the calendar', () => {
+    setup()
+    fireEvent.change(screen.getByTestId('date-picker'), { target: { value: '2022-12-01' } })
+    expect(screen.getByTestId('next-summary')).toHaveTextContent('2022-12-23 10:17')
+    expect(dateBox()).toHaveValue('2022-12-01')
   })
 
   it('filters the kinds of events', async () => {

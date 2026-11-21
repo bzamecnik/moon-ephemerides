@@ -108,7 +108,7 @@ fieldset {
 }
 
 button,
-input[type='date'] {
+input[type='text'] {
   font: inherit;
   padding: 4px 10px;
   border: 1px solid var(--line);
@@ -127,6 +127,35 @@ button:hover {
 
 .kind {
   white-space: nowrap;
+}
+
+.date-field {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.date-field input[type='text'] {
+  width: 10ch;
+  font-variant-numeric: tabular-nums;
+}
+
+input[aria-invalid='true'] {
+  outline: 2px solid var(--super);
+}
+
+/* the native date input only serves its calendar popup (showPicker) */
+.date-picker {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
+  padding: 0;
 }
 
 .next-summary {
