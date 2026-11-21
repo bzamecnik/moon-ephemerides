@@ -9,6 +9,7 @@ import {
   formatZoned,
   parseDateTime,
   parseHash,
+  parseHashView,
   formatHash,
 } from './format'
 import { utc } from './test/fixture'
@@ -117,5 +118,13 @@ describe('URL hash', () => {
     expect(parseHash('#date=2023-01-21T13:45')).toBe(utc('2023-01-21T13:45'))
     expect(parseHash('')).toBeNull()
     expect(parseHash('#date=garbage')).toBeNull()
+  })
+
+  it('also keeps the view, unless it is the default one', () => {
+    expect(formatHash(utc('2023-01-21T00:00'), 'beat')).toBe('#date=2023-01-21&view=beat')
+    expect(formatHash(utc('2023-01-21T00:00'), 'table')).toBe('#date=2023-01-21')
+    expect(parseHashView('#date=2023-01-21&view=beat')).toBe('beat')
+    expect(parseHash('#date=2023-01-21&view=beat')).toBe(utc('2023-01-21T00:00'))
+    expect(parseHashView('#date=2023-01-21')).toBeNull()
   })
 })

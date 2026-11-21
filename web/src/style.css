@@ -13,6 +13,12 @@
   --ordinary: #6b6f80;
   --ordinary-bg: #eeede8;
   --close: #b7791f;
+  /* chart marks (validated: categorical, CVD-safe on the light surface) */
+  --mark-super: #b4432c;
+  --mark-micro: #2c5fa8;
+  --mark-ordinary: #a3a5af;
+  --grid: #ebe9e3;
+  --axis: #c9c6bd;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   line-height: 1.45;
   color: var(--fg);
@@ -36,6 +42,12 @@
     --ordinary: #9a9eae;
     --ordinary-bg: #262833;
     --close: #e0a94a;
+    /* validated separately for the dark surface */
+    --mark-super: #d4664b;
+    --mark-micro: #5a8bd4;
+    --mark-ordinary: #5c606e;
+    --grid: #23262f;
+    --axis: #3c404d;
   }
 }
 
@@ -276,4 +288,183 @@ table.events {
 tr.close-alignment .delta {
   color: var(--close);
   font-weight: 700;
+}
+
+/* views */
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  margin: 16px 0 12px;
+}
+
+.tabs [role='tab'] {
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  background: none;
+  color: var(--muted);
+  margin-bottom: -1px;
+}
+
+.tabs [role='tab'][aria-selected='true'] {
+  border-color: var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+select {
+  font: inherit;
+  padding: 3px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.chart {
+  margin: 0;
+}
+
+.chart > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart > svg.phase-chart {
+  max-width: 560px;
+}
+
+.chart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 24px;
+  margin-bottom: 8px;
+}
+
+.chart figcaption,
+.hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  max-width: 85ch;
+  margin: 8px 0 0;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.legend svg {
+  flex: none;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tick {
+  font-size: 12px;
+  fill: var(--muted);
+}
+
+.grid line {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.reference line {
+  stroke: var(--axis);
+  stroke-width: 1;
+}
+
+.mark {
+  stroke-width: 2;
+}
+
+.mark-super {
+  fill: var(--mark-super);
+  stroke: var(--mark-super);
+}
+
+.mark-micro {
+  fill: var(--mark-micro);
+  stroke: var(--mark-micro);
+}
+
+.mark-ordinary {
+  fill: var(--mark-ordinary);
+  stroke: var(--mark-ordinary);
+}
+
+/* Full Moon: a ring on the surface colour */
+.mark-full {
+  fill: var(--bg);
+}
+
+.mark-highlight {
+  fill: none;
+  stroke: var(--anchor);
+  stroke-width: 2;
+}
+
+.event-mark {
+  cursor: pointer;
+}
+
+.event-mark .hit {
+  fill: transparent;
+}
+
+.event-mark:hover .mark {
+  stroke: var(--fg);
+}
+
+.beat-line {
+  fill: none;
+  stroke: var(--axis);
+  stroke-width: 1.5;
+}
+
+.beat-line-full {
+  stroke-dasharray: 4 3;
+}
+
+.anchor-line {
+  stroke: var(--anchor);
+  stroke-width: 2;
+}
+
+.anchor-dot {
+  fill: var(--anchor);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.phase-path {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
+.phase-path.past {
+  stroke: var(--axis);
+}
+
+.actions a {
+  font-size: 0.85rem;
+  color: var(--muted);
 }

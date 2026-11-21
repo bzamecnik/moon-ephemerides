@@ -18,12 +18,24 @@ import {
   parseDateTime,
   type Zone,
 } from '../format'
+import { BeatChart } from '../charts/BeatChart'
+import { PhaseChart } from '../charts/PhaseChart'
+import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
+import { RankingView } from './RankingView'
 import { closestIndex, firstIndexAtOrAfter, stepAnchor, windowAround } from '../timeline'
 
 const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
 const PAGE = 10
+
+type View = 'table' | 'beat' | 'phase' | 'ranking'
+const VIEWS: { id: View; label: string }[] = [
+  { id: 'table', label: 'Table' },
+  { id: 'beat', label: 'Beat of the rhythms' },
+  { id: 'phase', label: 'Phase vs. distance' },
+  { id: 'ranking', label: 'Best alignments' },
+]
 
 const KIND_LABELS: Record<NotableKind, string> = {
   'new-super': 'New Supermoon',
@@ -35,17 +47,27 @@ const KIND_LABELS: Record<NotableKind, string> = {
 interface Props {
   catalog: Catalog
   initialAnchor: number
+  initialView?: string | null
   /** the current time, for the "Now" button */
   now: number
   /** called when the user picks a moment (to keep it in the URL) */
-  onAnchorChange?: (anchor: number) => void
+  onChange?: (anchor: number, view: string) => void
 }
 
-export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Props) {
+export function EventsView({ catalog, initialAnchor, initialView, now, onChange }: Props) {
   const [anchor, setAnchorState] = useState(initialAnchor)
   const [zone, setZone] = useState<Zone>('utc')
   const [kinds, setKinds] = useState<ReadonlySet<NotableKind>>(new Set(NOTABLE_KINDS))
   const [includeOrdinary, setIncludeOrdinary] = useState(false)
+  const [view, setViewState] = useState<View>(VIEWS.find((v) => v.id === initialView)?.id ?? 'table')
+  const setView = (v: View) => {
+    setViewState(v)
+    onChange?.(anchor, v)
+  }
+  // the charts show every New and Full Moon, whatever the filters
+  const allEvents = useMemo(() => moonEvents(catalog.syzygies, { includeOrdinary: true }), [catalog])
+  const synodic = useMemo(() => synodicMarks(catalog.syzygies), [catalog])
+  const anomalistic = useMemo(() => anomalisticMarks(catalog.apsides), [catalog])
 
   const events = useMemo(
     () => moonEvents(catalog.syzygies, { kinds, includeOrdinary }),
@@ -60,7 +82,7 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
 
   const setAnchor = (a: number) => {
     setAnchorState(a)
-    onAnchorChange?.(a)
+    onChange?.(a, view)
   }
   const step = (n: number) => setAnchor(stepAnchor(times, anchor, n))
   const toggleKind = (k: NotableKind) => {
@@ -128,15 +150,65 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
         )}
       </p>
 
-      <EventTable
-        events={events}
-        start={start}
-        end={end}
-        closest={closest}
-        nextIndex={nextIndex}
-        anchor={anchor}
-        zone={zone}
-      />
+      <div class="tabs" role="tablist" aria-label="Views">
+        {VIEWS.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            role="tab"
+            id={`tab-${v.id}`}
+            aria-selected={view === v.id}
+            aria-controls="view-panel"
+            onClick={() => setView(v.id)}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+      <div class="view-panel" id="view-panel" role="tabpanel" aria-labelledby={`tab-${view}`}>
+        {view === 'table' && (
+          <EventTable
+            events={events}
+            start={start}
+            end={end}
+            closest={closest}
+            nextIndex={nextIndex}
+            anchor={anchor}
+            zone={zone}
+          />
+        )}
+        {view === 'beat' && (
+          <BeatChart
+            events={allEvents}
+            anchor={anchor}
+            closestTime={closestEvent?.syzygy.time}
+            zone={zone}
+            onSelect={setAnchor}
+          />
+        )}
+        {view === 'phase' && (
+          <PhaseChart
+            events={allEvents}
+            synodic={synodic}
+            anomalistic={anomalistic}
+            anchor={anchor}
+            closestTime={closestEvent?.syzygy.time}
+            zone={zone}
+            onSelect={setAnchor}
+          />
+        )}
+        {view === 'ranking' && (
+          <RankingView
+            events={events}
+            zone={zone}
+            onSelect={(t) => {
+              setAnchorState(t)
+              setViewState('table')
+              onChange?.(t, 'table')
+            }}
+          />
+        )}
+      </div>
     </div>
   )
 }

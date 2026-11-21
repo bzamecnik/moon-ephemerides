@@ -25,6 +25,12 @@ Full Moon Jan 6, apogee +1.42 d → New Moon Jan 21, perigee +0.003 d → Full M
 Feb 5, apogee −1.40 d. So "small Δ" and "symmetric neighbours" are one and
 the same condition.
 
+The drift is not uniform. The anomalistic month itself varies (24.6–28.6
+days): it is longest when the line of apsides points at the Sun, which is
+exactly when syzygies fall near an apsis. So in the beat chart the New/Full
+Moon lines cross the perigee line slowly (≈ 1 day per month, several
+supermoons in a row) and run steeply in between.
+
 ## Why the closest perigees come with good alignments
 
 The Sun stretches the Moon's orbit most when the line of apsides (perigee–apogee

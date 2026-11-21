@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'preact/hooks'
 import { loadCatalog, type Catalog } from '../data/catalog'
-import { formatHash, parseHash } from '../format'
+import { formatHash, parseHash, parseHashView } from '../format'
 import { EventsView } from './EventsView'
 
 const DATA_URL = `${import.meta.env.BASE_URL}data/lunar-events.json`
@@ -10,8 +10,8 @@ function initialAnchor(now: number): number {
   return parseHash(window.location.hash) ?? now
 }
 
-function keepInUrl(anchor: number) {
-  window.history.replaceState(null, '', formatHash(anchor))
+function keepInUrl(anchor: number, view: string) {
+  window.history.replaceState(null, '', formatHash(anchor, view))
 }
 
 export function App() {
@@ -38,7 +38,13 @@ export function App() {
         {error && <p role="alert">Could not load the data: {error}</p>}
         {!catalog && !error && <p>Loading…</p>}
         {catalog && (
-          <EventsView catalog={catalog} initialAnchor={initialAnchor(now)} now={now} onAnchorChange={keepInUrl} />
+          <EventsView
+            catalog={catalog}
+            initialAnchor={initialAnchor(now)}
+            initialView={parseHashView(window.location.hash)}
+            now={now}
+            onChange={keepInUrl}
+          />
         )}
       </main>
       <footer>

@@ -14,9 +14,10 @@ careful statistical test of the earthquake hypothesis (see
 
 M1 done: the Python catalog reproduces the astropixels supermoon/micromoon
 tables for 1901–2100 (same events, times to the minute, Δ to 0.008 d), see
-`validation.md`. M3 done and the first view of M4: a table of all four kinds
-of super/micromoons around a selected date. Next: visualisations (M4), with
-eclipses and astronomy-engine postponed.
+`validation.md`. M3 done. M4: the table, the beat chart, the phase-vs-distance
+chart (linear interpolation between events) and the ranking of the best
+alignments are in, as tabs sharing the selected moment. Next: the distance
+curve around a date (needs astronomy-engine or sampled data), eclipses.
 
 ## M1 – Compute and validate (Python, `compute/`) ✅
 
@@ -57,9 +58,14 @@ eclipses and astronomy-engine postponed.
 
 - [ ] around a date (today by default): Moon distance curve, syzygy and apsis
       markers, Δ labels (like Espenak's SuperMicroMoon chart, but interactive)
-- [ ] beat view: Δ of every syzygy over years, best alignments highlighted
-- [ ] phase-phase plot (synodic phase × anomalistic phase), see `astronomy.md`
-- [ ] ranked list of best alignments (per century / era), with links to astropixels
+- [x] beat view: Δ to the nearest perigee of every New/Full Moon over 2/6/20
+      years, lines through consecutive New and Full Moons, click to select
+- [x] phase-phase plot (synodic phase × anomalistic phase), see `astronomy.md`;
+      phases interpolated linearly in time between events (crude but exact at events)
+- [x] ranked list of best alignments (per century / era), with links to astropixels
+- [x] views as tabs, the view kept in the URL (`#date=…&view=beat`)
+- [ ] keyboard access to chart marks (now: the table is the accessible alternative)
+- [ ] smooth phases from astronomy-engine instead of linear interpolation
 - [ ] nodes and eclipses in all views
 - [ ] plain-language explanations in the page
 

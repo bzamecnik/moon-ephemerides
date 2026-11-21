@@ -111,9 +111,17 @@ export function formatRelative(ms: number, anchor: number): string {
  * The selected moment in the URL, so that a view can be shared:
  * '#date=2023-01-21' or '#date=2023-01-21T13:45' (UTC).
  */
-export function formatHash(ms: number): string {
+export function formatHash(ms: number, view?: string): string {
   const time = formatDateTime(ms, 'utc')
-  return `#date=${time.endsWith(' 00:00') ? time.slice(0, 10) : time.replace(' ', 'T')}`
+  const date = `#date=${time.endsWith(' 00:00') ? time.slice(0, 10) : time.replace(' ', 'T')}`
+  return view && view !== DEFAULT_VIEW ? `${date}&view=${view}` : date
+}
+
+const DEFAULT_VIEW = 'table'
+
+/** The view named in the URL ('&view=beat'), or null. */
+export function parseHashView(hash: string): string | null {
+  return new URLSearchParams(hash.replace(/^#/, '')).get('view')
 }
 
 export function parseHash(hash: string): number | null {
