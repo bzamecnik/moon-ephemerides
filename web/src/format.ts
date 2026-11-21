@@ -59,7 +59,14 @@ export function parseDateTime(text: string, zone: Zone): number | null {
 
 /** Offset of local time from UTC at that moment, e.g. 'UTC+1', 'UTC+5:30', 'UTC−3' */
 export function formatOffset(ms: number): string {
-  const minutes = -new Date(ms).getTimezoneOffset()
+  // Computed from the local clock reading: before standard time zones (local
+  // mean time) the offset has seconds, which getTimezoneOffset() truncates or not
+  // depending on the browser.
+  const d = new Date(ms)
+  const local = new Date(0)
+  local.setUTCFullYear(d.getFullYear(), d.getMonth(), d.getDate())
+  local.setUTCHours(d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds())
+  const minutes = Math.round((local.getTime() - ms) / 60_000)
   const a = Math.abs(minutes)
   const hm = a % 60 === 0 ? `${a / 60}` : `${Math.floor(a / 60)}:${pad(a % 60)}`
   return `UTC${minutes < 0 ? MINUS : '+'}${hm}`

@@ -80,6 +80,11 @@ describe('time zones', () => {
     expect(formatOffset(utc('2023-07-21T12:00'))).toBe('UTC+2')
   })
 
+  it('rounds historical local mean time offsets to whole minutes', () => {
+    // Prague used its local mean time, UTC+0:57:44, until 1891
+    expect(formatOffset(utc('1850-06-01T12:00'))).toBe('UTC+0:58')
+  })
+
   it('formats a time with its zone', () => {
     expect(formatZoned(t, 'utc')).toBe('2023-01-21 20:53 UTC')
     expect(formatZoned(t, 'local')).toBe('2023-01-21 21:53 (UTC+1)')
