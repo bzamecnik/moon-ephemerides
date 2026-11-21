@@ -260,7 +260,9 @@ table.events {
   background: var(--ordinary-bg);
 }
 
-/* New Moon: dark disc, Full Moon: light disc */
+/* New Moon: the darker disc, Full Moon: the brighter one. On a light page the
+   coloured fill is darker than the surface, on a dark page brighter, so the
+   filled and hollow symbols swap with the colour scheme. */
 .badge.kind-new-super::before,
 .badge.kind-new-micro::before,
 .badge.kind-full-super::before,
@@ -278,6 +280,18 @@ table.events {
 .badge.kind-new-super::before,
 .badge.kind-new-micro::before {
   background: currentColor;
+}
+
+@media (prefers-color-scheme: dark) {
+  .badge.kind-new-super::before,
+  .badge.kind-new-micro::before {
+    background: none;
+  }
+
+  .badge.kind-full-super::before,
+  .badge.kind-full-micro::before {
+    background: currentColor;
+  }
 }
 
 .delta-human {
@@ -396,23 +410,38 @@ select {
 }
 
 .mark-super {
-  fill: var(--mark-super);
-  stroke: var(--mark-super);
+  --mark: var(--mark-super);
 }
 
 .mark-micro {
-  fill: var(--mark-micro);
-  stroke: var(--mark-micro);
+  --mark: var(--mark-micro);
 }
 
 .mark-ordinary {
-  fill: var(--mark-ordinary);
-  stroke: var(--mark-ordinary);
+  --mark: var(--mark-ordinary);
 }
 
-/* Full Moon: a ring on the surface colour */
+/* the darker symbol is the New Moon (see the badges above) */
+.mark {
+  stroke: var(--mark);
+}
+
+.mark-new {
+  fill: var(--mark);
+}
+
 .mark-full {
   fill: var(--bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  .mark-new {
+    fill: var(--bg);
+  }
+
+  .mark-full {
+    fill: var(--mark);
+  }
 }
 
 .mark-highlight {
@@ -462,9 +491,4 @@ select {
 
 .phase-path.past {
   stroke: var(--axis);
-}
-
-.actions a {
-  font-size: 0.85rem;
-  color: var(--muted);
 }
