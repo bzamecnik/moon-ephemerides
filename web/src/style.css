@@ -236,67 +236,48 @@ table.events {
   border-bottom: 2px solid var(--anchor);
 }
 
-.badge {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 0.85rem;
-}
-
-.badge.kind-new-super,
-.badge.kind-full-super {
-  color: var(--super);
-  background: var(--super-bg);
-}
-
-.badge.kind-new-micro,
-.badge.kind-full-micro {
-  color: var(--micro);
-  background: var(--micro-bg);
-}
-
-.badge.kind-ordinary {
-  color: var(--ordinary);
-  background: var(--ordinary-bg);
-}
-
-/* New Moon: the darker disc, Full Moon: the brighter one. On a light page the
-   coloured fill is darker than the surface, on a dark page brighter, so the
-   filled and hollow symbols swap with the colour scheme. */
-.badge.kind-new-super::before,
-.badge.kind-new-micro::before,
-.badge.kind-full-super::before,
-.badge.kind-full-micro::before {
-  content: '';
-  display: inline-block;
-  width: 0.7em;
-  height: 0.7em;
-  margin-right: 0.4em;
-  border-radius: 50%;
-  border: 1.5px solid currentColor;
-  vertical-align: -0.05em;
-}
-
-.badge.kind-new-super::before,
-.badge.kind-new-micro::before {
-  background: currentColor;
-}
-
-@media (prefers-color-scheme: dark) {
-  .badge.kind-new-super::before,
-  .badge.kind-new-micro::before {
-    background: none;
-  }
-
-  .badge.kind-full-super::before,
-  .badge.kind-full-micro::before {
-    background: currentColor;
-  }
-}
-
-.delta-human {
+.events td.delta-human {
   color: var(--muted);
   font-size: 0.8rem;
+  padding-left: 0;
+}
+
+.icon {
+  vertical-align: -0.15em;
+  margin-right: 0.2em;
+}
+
+.apsis-perigee {
+  fill: var(--mark-super);
+}
+
+.apsis-apogee {
+  fill: var(--mark-micro);
+}
+
+/* dates that select their moment: buttons that look like text until hovered */
+.time-button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin: -1px -4px;
+  cursor: pointer;
+}
+
+.time-button:hover {
+  background: var(--row-hover);
+  outline: 1px solid var(--line);
+}
+
+.time-button:active {
+  background: var(--line);
+}
+
+.events tr:hover .time-button:hover {
+  background: var(--bg);
 }
 
 tr.close-alignment .delta {
@@ -421,7 +402,7 @@ select {
   --mark: var(--mark-ordinary);
 }
 
-/* the darker symbol is the New Moon (see the badges above) */
+/* New Moon the darker disc, Full Moon the brighter: on a dark page the coloured fill is the brighter one, so filled and hollow swap */
 .mark {
   stroke: var(--mark);
 }

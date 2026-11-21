@@ -62,6 +62,9 @@ yet) and arrow-key navigation. Next: eclipses and nodes, explanations.
       interactive); the curve is half a cosine wave between apsides (median
       error ~400 km, max ~4400 km against the true syzygy distances)
 - [x] ← / → step through the events in every view (Shift: by ten)
+- [x] table: separate columns for phase (icon), kind, nearest apsis (icon) and
+      its time, Δ in days (decimal points aligned) and in plain units; dates
+      are buttons that select their moment; all New and Full Moons by default
 - [x] beat view: Δ to the nearest perigee of every New/Full Moon over 2/6/20
       years, lines through consecutive New and Full Moons, click to select
 - [x] phase-phase plot (synodic phase × anomalistic phase), see `astronomy.md`;

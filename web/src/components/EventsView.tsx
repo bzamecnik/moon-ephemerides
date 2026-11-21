@@ -60,7 +60,7 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
   const [anchor, setAnchorState] = useState(initialAnchor)
   const [zone, setZone] = useState<Zone>('utc')
   const [kinds, setKinds] = useState<ReadonlySet<NotableKind>>(new Set(NOTABLE_KINDS))
-  const [includeOrdinary, setIncludeOrdinary] = useState(false)
+  const [includeOrdinary, setIncludeOrdinary] = useState(true)
   const [view, setViewState] = useState<View>(VIEWS.find((v) => v.id === initialView)?.id ?? 'table')
   const setView = (v: View) => {
     setViewState(v)
@@ -194,6 +194,7 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
             nextIndex={nextIndex}
             anchor={anchor}
             zone={zone}
+            onSelect={setAnchor}
           />
         )}
         {view === 'distance' && (

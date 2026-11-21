@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { decodeCatalog } from '../data/catalog'
 import { rawFixture, utc } from '../test/fixture'
+import { cellLabel } from './cells'
 import { EventsView } from './EventsView'
 
 const catalog = decodeCatalog(rawFixture)
@@ -63,17 +64,17 @@ describe('views', () => {
     expect(chart.querySelector('.anchor-dot')).not.toBeNull()
   })
 
-  it('best alignments: ranked by |Δ|, "Show" selects the event in the table', async () => {
+  it('best alignments: ranked by |Δ|, clicking a date selects the event in the table', async () => {
     const { user } = setup('ranking')
     const rows = screen.getAllByRole('row').filter((r) => r.dataset.time)
-    expect(rows.map((r) => within(r).getByTestId('event').textContent)).toEqual([
+    expect(rows.map(cellLabel)).toEqual([
       'New Supermoon',
       'New Supermoon',
       'New Supermoon',
       'Full Micromoon',
       'Full Micromoon',
     ])
-    await user.click(within(rows[0]).getByRole('button', { name: 'Show' }))
+    await user.click(within(rows[0]).getByRole('button', { name: '2023-01-21 20:53' }))
     expect(screen.getByRole('tab', { name: 'Table' })).toHaveAttribute('aria-selected', 'true')
     expect(summary()).toHaveTextContent('2023-01-21 20:53')
   })

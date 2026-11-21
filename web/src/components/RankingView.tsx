@@ -1,6 +1,7 @@
 import { useState } from 'preact/hooks'
-import { eventLabel, notableKind, type MoonEvent } from '../events'
-import { formatDateTime, formatDelta, formatDuration, type Zone } from '../format'
+import { eventLabel, type MoonEvent } from '../events'
+import type { Zone } from '../format'
+import { DeltaCells, KindCell, PhaseCell, TimeButton } from './cells'
 import { bestAlignments, ERAS } from '../ranking'
 
 const LIMIT = 25
@@ -40,15 +41,16 @@ export function RankingView({ events, zone, onSelect }: Props) {
                 #
               </th>
               <th scope="col">Date and time ({zone === 'utc' ? 'UTC' : 'local'})</th>
-              <th scope="col">Event</th>
+              <th scope="col">Phase</th>
+              <th scope="col">Kind</th>
               <th scope="col" class="num">
                 Δ (days)
               </th>
+              <th scope="col">
+                <span class="visually-hidden">Δ in hours or minutes</span>
+              </th>
               <th scope="col" class="num">
                 Distance (km)
-              </th>
-              <th scope="col">
-                <span class="visually-hidden">Actions</span>
               </th>
             </tr>
           </thead>
@@ -56,22 +58,13 @@ export function RankingView({ events, zone, onSelect }: Props) {
             {ranked.map((e, i) => (
               <tr key={e.syzygy.time} data-time={e.syzygy.time}>
                 <td class="num">{i + 1}</td>
-                <td class="time">{formatDateTime(e.syzygy.time, zone)}</td>
-                <td>
-                  <span class={`badge kind-${notableKind(e)}`} data-testid="event">
-                    {eventLabel(e)}
-                  </span>
+                <td class="time">
+                  <TimeButton time={e.syzygy.time} zone={zone} onSelect={onSelect} label={`${eventLabel(e)} in the table`} />
                 </td>
-                <td class="num delta">
-                  {formatDelta(e.deltaDays)}
-                  <span class="delta-human"> ({formatDuration(e.deltaDays)})</span>
-                </td>
+                <PhaseCell event={e} />
+                <KindCell event={e} />
+                <DeltaCells event={e} />
                 <td class="num">{e.syzygy.distanceKm.toLocaleString('en-US')}</td>
-                <td class="actions">
-                  <button type="button" onClick={() => onSelect(e.syzygy.time)}>
-                    Show
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
