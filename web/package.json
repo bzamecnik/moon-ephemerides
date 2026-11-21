@@ -1,0 +1,28 @@
+{
+  "name": "moon-ephemerides-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "test": "vitest",
+    "preview": "vite preview",
+    "data": "uv run --project ../compute moon-ephemerides export --out public/data/lunar-events.json"
+  },
+  "dependencies": {
+    "preact": "^11.1.1"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.6",
+    "@testing-library/jest-dom": "^8.0.0",
+    "@testing-library/preact": "^3.2.6",
+    "@testing-library/user-event": "^14.6.13",
+    "@types/node": "^24.19.2",
+    "jsdom": "^31.0.1",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.1"
+  }
+}
