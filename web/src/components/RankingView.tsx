@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks'
 import { eventLabel, notableKind, type MoonEvent } from '../events'
 import { formatDateTime, formatDelta, formatDuration, type Zone } from '../format'
-import { astropixelsUrl, bestAlignments, ERAS } from '../ranking'
+import { bestAlignments, ERAS } from '../ranking'
 
 const LIMIT = 25
 
@@ -70,10 +70,7 @@ export function RankingView({ events, zone, onSelect }: Props) {
                 <td class="actions">
                   <button type="button" onClick={() => onSelect(e.syzygy.time)}>
                     Show
-                  </button>{' '}
-                  <a href={astropixelsUrl(e) ?? undefined} target="_blank" rel="noopener">
-                    astropixels
-                  </a>
+                  </button>
                 </td>
               </tr>
             ))}

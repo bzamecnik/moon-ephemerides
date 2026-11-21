@@ -24,10 +24,3 @@ export function bestAlignments(events: readonly MoonEvent[], era: Pick<Era, 'fro
     .sort((a, b) => Math.abs(a.deltaDays) - Math.abs(b.deltaDays))
     .slice(0, limit)
 }
-
-/** Fred Espenak's century table with this event, e.g. .../fullperigee2001.html */
-export function astropixelsUrl(e: MoonEvent): string | null {
-  if (e.kind === 'ordinary') return null
-  const centuryStart = Math.floor((year(e) - 1) / 100) * 100 + 1
-  return `https://astropixels.com/ephemeris/moon/${e.syzygy.phase}${e.apsis}${centuryStart}.html`
-}

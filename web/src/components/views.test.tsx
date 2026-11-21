@@ -73,10 +73,6 @@ describe('views', () => {
       'Full Micromoon',
       'Full Micromoon',
     ])
-    expect(within(rows[0]).getByRole('link', { name: 'astropixels' })).toHaveAttribute(
-      'href',
-      'https://astropixels.com/ephemeris/moon/newperigee2001.html',
-    )
     await user.click(within(rows[0]).getByRole('button', { name: 'Show' }))
     expect(screen.getByRole('tab', { name: 'Table' })).toHaveAttribute('aria-selected', 'true')
     expect(summary()).toHaveTextContent('2023-01-21 20:53')
