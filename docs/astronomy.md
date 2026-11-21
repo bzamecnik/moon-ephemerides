@@ -42,6 +42,39 @@ Near perihelion (early January) the Sun's pull is stronger still, which is
 why many of the extreme perigees fall in winter (e.g. 1912 Jan 4, 356 375 km;
 2023 Jan 21, 356 568 km).
 
+## The long view: one event per half beat
+
+Twice per beat (every ≈ 206 days) the line of apsides points at the Sun,
+alternately with the perigee on the Sun's side (New Moon at perigee, Full Moon
+at apogee) and on the far side (Full Moon at perigee, New Moon at apogee).
+The *Long term* view keeps one event of each such stretch:
+
+- **the best-aligned New or Full Moon**: the one nearest in time to its
+  perigee or apogee. |Δ| to the nearer apsis falls by about a day per New/Full
+  Moon towards an alignment and rises after it, so this is a local minimum
+  over ± 3 neighbours. It is always a super- or micromoon, within ± 0.34 days
+  of the apsis (1850–2149); supermoons win more often, as the distance cycle
+  drifts slowest near perigee.
+- **the closest supermoon and the farthest micromoon**: closer (farther) than
+  the same phase a month before and after.
+
+Over decades Δ of the best-aligned events forms a sawtooth, one for New Moons
+and one for Full Moons: it drifts by about −0.05 days (an hour) per beat,
+from about +0.4 to −0.4 days, then the next stretch takes over and it jumps
+back. So each phase gets a near-perfect alignment every 18–20 years (Full Moon
+2012-05-06, New Moon 2023-01-21), and New and Full take turns. The pattern
+repeats after 251 synodic ≈ 269 anomalistic months (20.29 years, they differ
+by only 0.01 day); the saros (223 ≈ 239 months, 18.03 years) is a worse fit
+(0.2 day). In the catalog Δ of the best alignments 20.29 years apart differs
+by 0.13 days on average, 18.03 years apart by 0.18 days.
+
+The distances show the season: the closest supermoons average 356 760 km in
+January (Earth near perihelion, see above) but 357 300 km in July; the
+farthest micromoons barely change (406 200–406 330 km). The date of an
+alignment moves through the year by ≈ 46.5 days per beat (411.8 − 365.25),
+a full year in 8.85 years, so the closest supermoons swing in and out with
+that period.
+
 ## Relative distance (Espenak's supermoon definition)
 
     relative distance = (D − D_perigee) / (D_apogee − D_perigee)

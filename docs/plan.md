@@ -18,7 +18,8 @@ tables for 1901–2100 (same events, times to the minute, Δ to 0.008 d), see
 chart (linear interpolation between events) and the ranking of the best
 alignments are in, as tabs sharing the selected moment, plus a distance-vs-time
 chart (half-cosine interpolation between apsides, no astronomy-engine needed
-yet) and arrow-key navigation. Next: eclipses and nodes, explanations.
+yet), a long-term view (one event per half beat over decades) and keyboard
+navigation by event and by beat. Next: eclipses and nodes, explanations.
 
 ## M1 – Compute and validate (Python, `compute/`) ✅
 
@@ -71,6 +72,10 @@ yet) and arrow-key navigation. Next: eclipses and nodes, explanations.
       phases interpolated linearly in time between events (crude but exact at events)
 - [x] ranked list of best alignments (per century / era)
 - [x] views as tabs, the view kept in the URL (`#date=…&view=beat`)
+- [x] long-term view: the best-aligned New/Full Moon of each half beat (Δ),
+      the closest supermoons and farthest micromoons (distance), 20 / 60 / 300
+      years; see "The long view" in `astronomy.md`
+- [x] ⏪ / ⏩ and Shift+← / → step by one beat (same phase, 14 months later)
 - [ ] keyboard access to chart marks (now: the table is the accessible alternative)
 - [ ] smooth phases from astronomy-engine instead of linear interpolation
 - [ ] nodes and eclipses in all views

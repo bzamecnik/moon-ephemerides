@@ -89,4 +89,14 @@ describe('views', () => {
     fireEvent.click(jan21)
     expect(summary()).toHaveTextContent('Closest: New Supermoon on 2023-01-21 20:53')
   })
+
+  it('long-term chart: the best-aligned event and the extremes, clickable', () => {
+    setup('longterm')
+    const chart = screen.getByRole('img', { name: /best alignments and the extreme distances/i })
+    // the fixture is too short for whole half-beat neighbourhoods except the closest supermoon
+    const marks = [...chart.querySelectorAll('.event-mark')]
+    expect(marks.map((m) => m.textContent)).toEqual([expect.stringContaining('New Supermoon, 2023-01-21 20:53')])
+    fireEvent.click(marks[0])
+    expect(summary()).toHaveTextContent('Closest: New Supermoon on 2023-01-21 20:53')
+  })
 })

@@ -503,3 +503,7 @@ kbd {
   stroke: var(--muted);
   stroke-width: 2;
 }
+
+.panel-title {
+  font-weight: 600;
+}

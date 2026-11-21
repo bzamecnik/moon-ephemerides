@@ -30,8 +30,8 @@ against which the calculations are checked (see [docs/validation.md](docs/valida
   - `src/data/catalog.ts` – decoding the JSON
   - `src/events.ts` – supermoon/micromoon classification
   - `src/timeline.ts`, `src/format.ts` – navigation around a date, formatting
-  - `src/distance.ts`, `src/beat.ts`, `src/phase.ts`, `src/ranking.ts` – data for the charts and the ranking
-  - `src/charts/` – SVG charts (distance, beat, phase vs. distance), scales
+  - `src/distance.ts`, `src/beat.ts`, `src/phase.ts`, `src/longterm.ts`, `src/ranking.ts` – data for the charts and the ranking
+  - `src/charts/` – SVG charts (distance, beat, phase vs. distance, long term), scales
   - `src/components/` – the page: controls, tabs, table, ranking
 
 ## Usage
@@ -48,8 +48,8 @@ npm run data         # regenerate public/data/lunar-events.json (needs uv and co
 ```
 
 A date and view can be linked directly: `…/#date=2023-01-21&view=beat`
-(views: `table`, `distance`, `beat`, `phase`, `ranking`). The arrow keys step
-through the events. Pushes to `main` are
+(views: `table`, `distance`, `beat`, `phase`, `longterm`, `ranking`). The arrow
+keys step through the events, with Shift by one beat (~14 months). Pushes to `main` are
 deployed to GitHub Pages (`.github/workflows/pages.yml`).
 
 The computation:

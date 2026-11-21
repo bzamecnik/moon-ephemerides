@@ -44,10 +44,10 @@ const LEGEND: { cls: string; label: string }[] = [
   { cls: 'mark mark-ordinary mark-full', label: 'other Full Moon' },
 ]
 
-export function Legend() {
+export function Legend({ ordinary = true }: { ordinary?: boolean }) {
   return (
     <ul class="legend" aria-label="Legend">
-      {LEGEND.map(({ cls, label }) => (
+      {LEGEND.filter((l) => ordinary || !l.cls.includes('ordinary')).map(({ cls, label }) => (
         <li key={label}>
           <svg width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">
             <circle class={cls} r={4.5} />

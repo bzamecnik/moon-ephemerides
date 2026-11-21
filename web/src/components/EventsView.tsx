@@ -20,6 +20,7 @@ import {
 } from '../format'
 import { BeatChart } from '../charts/BeatChart'
 import { DistanceChart } from '../charts/DistanceChart'
+import { LongTermChart } from '../charts/LongTermChart'
 import { PhaseChart } from '../charts/PhaseChart'
 import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
@@ -30,12 +31,13 @@ const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
 const BEAT_MS = BEAT_DAYS * 86_400_000
 
-type View = 'table' | 'distance' | 'beat' | 'phase' | 'ranking'
+type View = 'table' | 'distance' | 'beat' | 'phase' | 'longterm' | 'ranking'
 const VIEWS: { id: View; label: string }[] = [
   { id: 'table', label: 'Table' },
   { id: 'distance', label: 'Distance' },
   { id: 'beat', label: 'Beat of the rhythms' },
   { id: 'phase', label: 'Phase vs. distance' },
+  { id: 'longterm', label: 'Long term' },
   { id: 'ranking', label: 'Best alignments' },
 ]
 
@@ -235,6 +237,15 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
             events={allEvents}
             synodic={synodic}
             anomalistic={anomalistic}
+            anchor={anchor}
+            closestTime={closestEvent?.syzygy.time}
+            zone={zone}
+            onSelect={setAnchor}
+          />
+        )}
+        {view === 'longterm' && (
+          <LongTermChart
+            events={allEvents}
             anchor={anchor}
             closestTime={closestEvent?.syzygy.time}
             zone={zone}
