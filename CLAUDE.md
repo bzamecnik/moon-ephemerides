@@ -1,0 +1,53 @@
+# CLAUDE.md
+
+Guidance for Claude Code working in this repository.
+
+## Project
+
+Moon Ephemerides: a visual tool showing how the two lunar rhythms, the phases
+(New/Full Moon, synodic month) and the distance (perigee/apogee, anomalistic
+month), beat against each other, and where they line up best (supermoons,
+micromoons, eclipses). See `README.md`, the roadmap in `docs/plan.md` and the
+astronomy behind it in `docs/astronomy.md`.
+
+- `compute/` – Python (uv): computes the event catalog with skyfield and JPL
+  DE440s, exports JSON, validates against Fred Espenak's astropixels.com tables.
+- `web/` (planned) – TypeScript single-page app on GitHub Pages, reading the JSON.
+
+The older exploration (notebooks, earthquake data, saved astropixels pages)
+lives in the sibling repo `../moon-earthquake-experiments/`.
+
+## Workflow
+
+- Test-driven development for pure logic; every new behaviour comes with tests,
+  preferably against something independent (published facts, mean month
+  lengths, the astropixels tables).
+- Focused commits, tests in the same commit as the code they cover.
+- Before committing, in `compute/`: `uv run ruff format`, `uv run ruff check`,
+  `uv run pytest`; all must pass.
+- Keep `docs/plan.md` up to date: tick off finished items, update the status.
+- After changing the calculations, rerun `uv run moon-ephemerides validate --out ../docs/validation-report.txt`
+  and update `docs/validation.md` if the picture changes.
+
+## Conventions
+
+- Times: skyfield `Time` inside Python, Unix seconds UTC in the JSON. Δ of a
+  syzygy = apsis time − syzygy time, in days (as on astropixels).
+- Distances: geocentric, centre to centre, km.
+- Relative distance: (D − D_perigee) / (D_apogee − D_perigee) with the nearest
+  perigee and apogee: 0 at perigee, 1 at apogee. Supermoon ≤ 0.1, micromoon ≥ 0.9.
+- `compute/src/moon_ephemerides/pairing.py` is pure numpy (no ephemeris), keep it so.
+- The astropixels pages are copyrighted (all rights reserved): never commit
+  them or rows copied from them. Tests that need them are skipped when the
+  pages are absent (`ASTROPIXELS_DIR`).
+- The web UI is for curious non-astronomers: plain words, explanations at hand.
+
+## Commands
+
+```sh
+cd compute
+uv sync                                   # install
+uv run pytest                             # tests (downloads de440s.bsp to compute/data/ on first run)
+uv run moon-ephemerides export --out lunar-events.json   # 1850-2149 catalog
+uv run moon-ephemerides validate          # compare with astropixels (1901-2100)
+```
