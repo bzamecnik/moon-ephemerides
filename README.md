@@ -7,9 +7,11 @@ New Moon takes 29.53 days, closest approach (perigee) to closest approach takes
 27.55 days. Every ~412 days a New or Full Moon falls almost exactly on a perigee
 or an apogee – a supermoon or a micromoon – and in between the two rhythms
 drift apart again. This project computes these events from open data (NASA JPL
-ephemerides, via [skyfield](https://rhodesmill.org/skyfield/)) and will show
-them in an interactive web page: the events around any date, the beat of the
-two rhythms, and the moments where they line up best.
+ephemerides, via [skyfield](https://rhodesmill.org/skyfield/)) and shows
+them in a web page: all supermoons and micromoons (New and Full) in one table
+around any date, with the time Δ between each New/Full Moon and its perigee or
+apogee. Planned: visualisations of the beat of the two rhythms and of the
+moments where they line up best.
 
 Inspired by Fred Espenak's tables at [astropixels.com](https://astropixels.com/ephemeris/moon/fullperigee2001.html),
 against which the calculations are checked (see [docs/validation.md](docs/validation.md)).
@@ -23,9 +25,30 @@ against which the calculations are checked (see [docs/validation.md](docs/valida
   - `export.py` – columnar JSON for the web app
   - `astropixels.py`, `validate.py` – parser of the astropixels tables and the comparison
 - `docs/` – [plan](docs/plan.md), [astronomy notes](docs/astronomy.md), [validation](docs/validation.md)
-- `web/` – the web app (planned)
+- `web/` – the web app (Preact, TypeScript, Vite):
+  - `public/data/lunar-events.json` – the exported catalog (generated, `npm run data`)
+  - `src/data/catalog.ts` – decoding the JSON
+  - `src/events.ts` – supermoon/micromoon classification
+  - `src/timeline.ts`, `src/format.ts` – navigation around a date, formatting
+  - `src/components/` – the page
 
 ## Usage
+
+The web app:
+
+```sh
+cd web
+npm install
+npm run dev          # dev server
+npm test -- --run    # tests
+npm run build        # type-check + production build into dist/
+npm run data         # regenerate public/data/lunar-events.json (needs uv and compute/)
+```
+
+A date can be linked directly: `…/#date=2023-01-21`. Pushes to `main` are
+deployed to GitHub Pages (`.github/workflows/pages.yml`).
+
+The computation:
 
 ```sh
 cd compute
