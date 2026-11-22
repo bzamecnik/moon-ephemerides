@@ -49,7 +49,8 @@ npm run data         # regenerate public/data/lunar-events.json (needs uv and co
 
 A date and view can be linked directly: `…/#date=2023-01-21&view=beat`
 (views: `table`, `distance`, `beat`, `phase`, `longterm`, `ranking`). The arrow
-keys step through the events, with Shift by one beat (~14 months). Pushes to `main` are
+keys step through the events, with Shift by one beat (~14 months); ▶ Play
+steps by beats as an animation. Pushes to `main` are
 deployed to GitHub Pages (`.github/workflows/pages.yml`).
 
 The computation:

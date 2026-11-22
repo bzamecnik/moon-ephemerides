@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, within } from '@testing-library/preact'
+import { act, fireEvent, render, screen, within } from '@testing-library/preact'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { decodeCatalog } from '../data/catalog'
 import { rawFixture, utc } from '../test/fixture'
 import { cellLabel } from './cells'
@@ -166,5 +166,21 @@ describe('EventsView', () => {
     expect(dateBox()).toHaveValue('2023-02-04 08:55')
     await user.click(within(eventRows()[1]).getByRole('button', { name: '2022-12-23 10:17' }))
     expect(screen.getByTestId('summary')).toHaveTextContent('Closest: New Supermoon on 2022-12-23 10:17')
+  })
+
+  it('plays forward by beats until the end of the data or until paused', () => {
+    vi.useFakeTimers()
+    try {
+      render(<EventsView catalog={catalog} initialAnchor={utc('2022-12-08T00:00')} now={utc('2023-02-01T12:00')} />)
+      fireEvent.click(screen.getByRole('button', { name: /play/i }))
+      expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument()
+      act(() => void vi.advanceTimersByTime(800))
+      // a beat later is past the end of the fixture: its last event
+      expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-20 07:06')
+      act(() => void vi.advanceTimersByTime(800))
+      expect(screen.getByRole('button', { name: /play/i })).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

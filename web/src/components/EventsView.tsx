@@ -30,6 +30,7 @@ import { BEAT_DAYS, closestIndex, firstIndexAtOrAfter, stepAnchor, stepByTime, w
 const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
 const BEAT_MS = BEAT_DAYS * 86_400_000
+const PLAY_INTERVAL_MS = 800
 
 type View = 'table' | 'distance' | 'beat' | 'phase' | 'longterm' | 'ranking'
 const VIEWS: { id: View; label: string }[] = [
@@ -91,6 +92,18 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
   const step = (n: number) => setAnchor(stepAnchor(times, anchor, n))
   const stepBeat = (n: number) => setAnchor(stepByTime(times, anchor, n * BEAT_MS))
 
+  // ▶ Play: a beat forward every PLAY_INTERVAL_MS, stopping at the end of the data
+  const [playing, setPlaying] = useState(false)
+  useEffect(() => {
+    if (!playing) return
+    const timer = setTimeout(() => {
+      const next = stepByTime(times, anchor, BEAT_MS)
+      if (next === times[closestIndex(times, anchor)]) setPlaying(false)
+      else setAnchor(next)
+    }, PLAY_INTERVAL_MS)
+    return () => clearTimeout(timer)
+  }, [playing, anchor, times])
+
   // ← / → step by one event, with Shift by one beat; not while typing in a field
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -145,6 +158,15 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
               ⏩
             </button>
           </span>
+          <button
+            type="button"
+            class="play"
+            aria-pressed={playing}
+            onClick={() => setPlaying(!playing)}
+            title="Step forward by one beat at a time"
+          >
+            {playing ? '⏸ Pause' : '▶ Play by beats'}
+          </button>
           <fieldset class="zone">
             <legend class="visually-hidden">Time zone</legend>
             <label>

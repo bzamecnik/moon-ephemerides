@@ -75,7 +75,12 @@ navigation by event and by beat. Next: eclipses and nodes, explanations.
 - [x] long-term view: the best-aligned New/Full Moon of each half beat (Δ),
       the closest supermoons and farthest micromoons (distance), 20 / 60 / 300
       years; see "The long view" in `astronomy.md`
-- [x] ⏪ / ⏩ and Shift+← / → step by one beat (same phase, 14 months later)
+- [x] ⏪ / ⏩ and Shift+← / → step by one beat (same phase, 14 months later);
+      ▶ Play steps by beats as an animation
+- [x] distance chart: smooth waves through the New Moons and the Full Moons
+      (cubic Hermite), smooth perigee/apogee envelopes
+- [x] long-term view: light lines through the same kind in consecutive beats
+- [ ] fit the phase waves and the envelopes to periodic terms (see M5)
 - [ ] keyboard access to chart marks (now: the table is the accessible alternative)
 - [ ] smooth phases from astronomy-engine instead of linear interpolation
 - [ ] nodes and eclipses in all views
