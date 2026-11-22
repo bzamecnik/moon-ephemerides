@@ -57,7 +57,7 @@ describe('EventsView', () => {
     render(<EventsView catalog={decodeCatalog(raw)} initialAnchor={utc('2023-01-21T00:00')} clock={() => utc('2023-02-01T12:00')} />)
     const cells = eventRows().map((r) => within(r).getByTestId('eclipse').textContent?.trim())
     expect(cells).toEqual(['', '', '', 'Annular solar', '', ''])
-    expect(screen.getByTestId('summary')).toHaveTextContent(/perigee, with an annular solar eclipse\.$/)
+    expect(screen.getByTestId('summary')).toHaveTextContent(/perigee\s*with an annular solar eclipse$/)
   })
 
   it('shows the time difference to the perigee or apogee', () => {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'preact/hooks'
 import { loadCatalog, type Catalog } from '../data/catalog'
 import { formatHash, parseHash, parseHashPage, parseHashView, type Page } from '../format'
 import { EventsView } from './EventsView'
+import { Icon } from './Icon'
 import { LearnPage } from './LearnPage'
 
 const DATA_URL = `${import.meta.env.BASE_URL}data/lunar-events.json`
@@ -51,13 +52,18 @@ export function App() {
           </a>
         </nav>
         {page.page === 'explore' && (
-          <p class="intro">
+          <details class="about">
+            <summary title="What is this page about?">
+              <Icon name="info" /> About
+            </summary>
+            <p class="intro">
             The Moon's phases repeat every 29.5 days, its closest approach to Earth (perigee) every 27.6 days. When a New
             or Full Moon falls near perigee it is a <em>supermoon</em>; near the farthest point (apogee), a{' '}
             <em>micromoon</em>. The two rhythms drift in and out of step every ~412 days. <strong>Δ</strong> is the time
             from the New or Full Moon to the perigee or apogee: the closer to zero, the better the two rhythms line up.{' '}
             <a href="#learn">More about the astronomy behind it.</a>
-          </p>
+            </p>
+          </details>
         )}
       </header>
       <main>

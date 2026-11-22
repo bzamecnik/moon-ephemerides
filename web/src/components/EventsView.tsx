@@ -20,6 +20,7 @@ import { OrbitChart } from '../charts/OrbitChart'
 import { PhaseChart } from '../charts/PhaseChart'
 import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
+import { ApsisIcon, EclipseIcon, PhaseIcon } from './cells'
 import { FilterMenu } from './FilterMenu'
 import { Icon } from './Icon'
 import { RankingView } from './RankingView'
@@ -147,7 +148,8 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
   })
 
   return (
-    <div class="events-view">
+    <div class="explorer">
+      <aside class="sidebar">
       <section class="controls" aria-label="Navigation and filters">
         <div class="control-row">
           <DateField anchor={anchor} zone={zone} onChange={goTo} inputRef={dateInput} />
@@ -264,17 +266,9 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
         )}
       </section>
 
-      <p class="summary" data-testid="summary" aria-live="polite">
-        {closestEvent ? (
-          <>
-            Closest: <strong>{eventLabel(closestEvent)}</strong> on {formatZoned(closestEvent.syzygy.time, zone)} (
-            {formatRelative(closestEvent.syzygy.time, anchor)}), {describeDelta(closestEvent)}
-            {closestEvent.syzygy.eclipse && <>, with {withArticle(eclipseLabel(closestEvent.syzygy.eclipse))}</>}.
-          </>
-        ) : (
-          'No events of the chosen kinds.'
-        )}
-      </p>
+      <StatusCard event={closestEvent} anchor={anchor} zone={zone} />
+      </aside>
+      <div class="workspace">
 
       <div class="tabs" role="tablist" aria-label="Views">
         {VIEWS.map((v) => (
@@ -365,6 +359,38 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
           />
         )}
       </div>
+      </div>
+    </div>
+  )
+}
+
+/** The New or Full Moon closest to the selected moment. */
+function StatusCard({ event, anchor, zone }: { event: MoonEvent | undefined; anchor: number; zone: Zone }) {
+  return (
+    <div class="summary" data-testid="summary" aria-live="polite">
+      {event ? (
+        <>
+          <div class="summary-title">
+            Closest:{' '}
+            <strong>
+              <PhaseIcon event={event} /> {eventLabel(event)}
+            </strong>
+          </div>{' '}
+          <div>
+            on {formatZoned(event.syzygy.time, zone)} ({formatRelative(event.syzygy.time, anchor)})
+          </div>{' '}
+          <div>
+            <ApsisIcon kind={event.apsis} /> {describeDelta(event)}
+          </div>{' '}
+          {event.syzygy.eclipse && (
+            <div>
+              <EclipseIcon eclipse={event.syzygy.eclipse} /> with {withArticle(eclipseLabel(event.syzygy.eclipse))}
+            </div>
+          )}
+        </>
+      ) : (
+        'No events of the chosen kinds.'
+      )}
     </div>
   )
 }

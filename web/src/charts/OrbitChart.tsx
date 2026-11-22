@@ -236,7 +236,7 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
         perigee–apogee line turns backwards once per beat: when it points at the Sun, New and Full Moons fall near
         perigee and apogee (supermoons, micromoons), and the Sun stretches the orbit most (evection). The dashed violet
         node line, where the orbit crosses the plane, turns once per eclipse year: when it points at the Sun, New
-        and Full Moons happen near the plane and can be eclipses. Use Play by days to watch a month, by beats to
+        and Full Moons happen near the plane and can be eclipses. Play by 6 hours or a day to watch a month, by a month or a beat to
         watch the lines turn.{' '}
         <LearnMore id={LEARN.frame}>More about this frame.</LearnMore>
       </figcaption>
