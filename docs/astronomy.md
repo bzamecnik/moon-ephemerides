@@ -25,11 +25,47 @@ Full Moon Jan 6, apogee +1.42 d → New Moon Jan 21, perigee +0.003 d → Full M
 Feb 5, apogee −1.40 d. So "small Δ" and "symmetric neighbours" are one and
 the same condition.
 
-The drift is not uniform. The anomalistic month itself varies (24.6–28.6
-days): it is longest when the line of apsides points at the Sun, which is
-exactly when syzygies fall near an apsis. So in the beat chart the New/Full
-Moon lines cross the perigee line slowly (≈ 1 day per month, several
-supermoons in a row) and run steeply in between.
+The drift is not uniform; see the next section.
+
+## Why the alignments wobble (the "inchworm")
+
+Stepping or playing by beats, the events don't drift smoothly: they creep,
+then rush, then creep again. The cause is the Sun's tidal pull on the Moon's
+orbit, mainly the perturbation called **evection** (the largest solar
+perturbation, known since Ptolemy). It periodically changes the orbit's
+eccentricity and swings the line of apsides back and forth around its mean
+forward motion (the apsidal precession, one turn in 8.85 years).
+
+- When the line of apsides points at the Sun (a New or Full Moon near
+  perigee or apogee), the perigee runs forward fast, so perigee-to-perigee
+  takes long, close to the 29.5-day synodic month: the phases slip past the
+  perigee slowly, about a day per month.
+- When the line is at right angles to the Sun (perigee near a quarter Moon),
+  the perigee even moves backward, perigee-to-perigee is short and the phases
+  rush past it by about 3.7 days per month.
+
+From the catalog (1850–2149), perigee-to-perigee by the angle between the
+Sun and the line of apsides (0° = perigee at New or Full Moon, 90° = at a
+quarter):
+
+| angle | 0° | 15° | 30° | 45° | 60° | 75° | 90° |
+|---|---|---|---|---|---|---|---|
+| mean (days) | 28.45 | 28.32 | 27.84 | 26.93 | 26.14 | 25.90 | 25.82 |
+
+(All of them range from 24.64 to 28.56 days, with a mean of 27.5545 days.)
+Real perigees are up to ± 1.9 days off a perfectly regular clock. New Moons
+are only up to ± 14 hours off theirs (from the elliptical orbits of the Moon
+and the Earth), so most of the wobble comes from the perigee.
+
+The line of apsides points at the Sun twice per beat, so the creep–rush cycle
+is half a beat long (~206 days). That is why the beat chart is a sawtooth with
+flat stretches at the alignments, and why supermoons and micromoons come in
+runs. Stepping by one beat lands on the same phase 14 synodic months
+(413.4 days) later, 1.65 days more than a beat, so successive steps slowly
+move through the creep–rush cycle and the animation alternates between slow
+and fast. The Sun's pull is stronger in January (perihelion), which
+modulates all this over the year and over the 8.85-year turn of the line of
+apsides.
 
 ## Why the closest perigees come with good alignments
 
