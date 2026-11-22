@@ -191,4 +191,18 @@ describe('EventsView', () => {
       vi.useRealTimers()
     }
   })
+
+  it('plays forward by 6 hours', () => {
+    vi.useFakeTimers()
+    try {
+      render(<EventsView catalog={catalog} initialAnchor={utc('2023-01-21T00:00')} now={utc('2023-02-01T12:00')} />)
+      fireEvent.change(screen.getByRole('combobox', { name: /play step/i }), { target: { value: 'hours' } })
+      fireEvent.click(screen.getByRole('button', { name: /play/i }))
+      act(() => void vi.advanceTimersByTime(100))
+      act(() => void vi.advanceTimersByTime(100))
+      expect(screen.getByRole('textbox', { name: /date and time/i })).toHaveValue('2023-01-21 12:00')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })

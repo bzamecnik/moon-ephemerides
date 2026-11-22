@@ -96,3 +96,19 @@ export function lineToSun(direction: number): number {
   const a = Math.abs(wrap180(direction))
   return Math.min(a, 180 - a)
 }
+
+const PHASE_NAMES = [
+  'New Moon',
+  'waxing crescent',
+  'first quarter',
+  'waxing gibbous',
+  'Full Moon',
+  'waning gibbous',
+  'last quarter',
+  'waning crescent',
+]
+
+/** The usual name of the phase at a given elongation (eight 45° sectors centred on 0°, 45°, …). */
+export function phaseName(elongation: number): string {
+  return PHASE_NAMES[Math.round(wrap360(elongation) / 45) % 8]
+}

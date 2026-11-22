@@ -562,3 +562,117 @@ kbd {
 .run-full {
   stroke-dasharray: 4 3;
 }
+
+/* orbit seen from above, in the frame of the Sun */
+.orbit-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  align-items: flex-start;
+}
+
+.orbit-chart {
+  flex: 1 1 300px;
+  min-width: 0;
+  max-width: 600px;
+  width: 100%;
+  height: auto;
+}
+
+.orbit-readout {
+  flex: 1 1 260px;
+  max-width: 380px;
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  font-size: 0.9rem;
+}
+
+.orbit-readout dt {
+  color: var(--muted);
+}
+
+.orbit-readout dd {
+  margin: 0;
+}
+
+.readout-note {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.mean-orbit {
+  fill: none;
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.phase-ray line {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.moon-trail {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.moon-trail.south {
+  stroke-dasharray: 4 3;
+  stroke-width: 1;
+}
+
+.apse-line line {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
+.node-line line {
+  stroke: var(--eclipse);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+
+.node-line .orbit-label {
+  fill: var(--eclipse);
+}
+
+.orbit-label {
+  font-weight: 600;
+}
+
+.earth .day {
+  fill: #4a7fc1;
+}
+
+.earth .night {
+  fill: #1d3557;
+}
+
+.moon .day {
+  fill: #f2efe4;
+}
+
+.moon .night {
+  fill: #3a3d48;
+}
+
+.earth .outline,
+.moon .outline {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1;
+}
+
+.sun-pointer line {
+  stroke: var(--anchor);
+  stroke-width: 2;
+}
+
+.sun-arrow-head {
+  fill: var(--anchor);
+}

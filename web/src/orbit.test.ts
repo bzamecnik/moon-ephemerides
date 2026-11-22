@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { RawCatalog } from './data/catalog'
-import { lineToSun, meanElements, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
+import { lineToSun, meanElements, phaseName, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
 import { utc } from './test/fixture'
 import { BEAT_DAYS } from './timeline'
 
@@ -23,6 +23,23 @@ describe('angles', () => {
     expect(lineToSun(170)).toBe(10)
     expect(lineToSun(-100)).toBe(80)
     expect(lineToSun(90)).toBe(90)
+  })
+})
+
+describe('phaseName', () => {
+  it('names the eight phases by the angle from the Sun', () => {
+    expect([0, 10, 45, 95, 130, 182, 225, 270, 300, 355].map(phaseName)).toEqual([
+      'New Moon',
+      'New Moon',
+      'waxing crescent',
+      'first quarter',
+      'waxing gibbous',
+      'Full Moon',
+      'waning gibbous',
+      'last quarter',
+      'waning crescent',
+      'New Moon',
+    ])
   })
 })
 
