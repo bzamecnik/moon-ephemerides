@@ -6,6 +6,7 @@ All times are skyfield `Time` objects; distances are geocentric, centre to centr
 from dataclasses import dataclass
 from pathlib import Path
 
+import astronomy
 import numpy as np
 from skyfield import almanac, eclipselib
 from skyfield.api import Loader
@@ -20,6 +21,9 @@ MOON_RADIUS_KM = 1737.4  # IAU mean radius
 
 PHASE_NAMES = ("new", "first_quarter", "full", "last_quarter")
 LUNAR_ECLIPSE_NAMES = ("penumbral", "partial", "total")
+SOLAR_ECLIPSE_NAMES = ("partial", "annular", "total")
+_SOLAR_KIND = {astronomy.EclipseKind.Partial: 0, astronomy.EclipseKind.Annular: 1, astronomy.EclipseKind.Total: 2}
+J2000_JD = 2451545.0
 
 
 def load_ephemeris(name: str = EPHEMERIS, data_dir: Path = DATA_DIR) -> tuple[Timescale, SpiceKernel]:
@@ -100,3 +104,22 @@ def find_lunar_eclipses(eph: SpiceKernel, t0: Time, t1: Time) -> Events:
     """Lunar eclipses (time of greatest eclipse); kind: 0 penumbral, 1 partial, 2 total."""
     t, kind, _details = eclipselib.lunar_eclipses(t0, t1, eph)
     return Events(t, kind, earth_moon_distance(eph)(t))
+
+
+def find_solar_eclipses(eph: SpiceKernel, t0: Time, t1: Time) -> Events:
+    """Solar eclipses (time of greatest eclipse); kind: 0 partial, 1 annular, 2 total.
+
+    skyfield has no solar eclipses, so they come from astronomy-engine (Don
+    Cross, MIT). It classifies an eclipse by its greatest point, so a hybrid
+    eclipse counts as total or annular.
+    """
+    ts = t0.ts
+    end = t1.ut1 - J2000_JD
+    jd, kind = [], []
+    e = astronomy.SearchGlobalSolarEclipse(astronomy.Time(t0.ut1 - J2000_JD))
+    while e.peak.ut <= end:
+        jd.append(e.peak.ut + J2000_JD)
+        kind.append(_SOLAR_KIND[e.kind])
+        e = astronomy.NextGlobalSolarEclipse(e.peak)
+    t = ts.ut1_jd(np.array(jd))
+    return Events(t, np.array(kind, dtype=int), earth_moon_distance(eph)(t) if jd else np.array([]))
