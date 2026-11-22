@@ -174,10 +174,10 @@ describe('EventsView', () => {
       render(<EventsView catalog={catalog} initialAnchor={utc('2022-12-08T00:00')} now={utc('2023-02-01T12:00')} />)
       fireEvent.click(screen.getByRole('button', { name: /play/i }))
       expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument()
-      act(() => void vi.advanceTimersByTime(800))
+      act(() => void vi.advanceTimersByTime(100))
       // a beat later is past the end of the fixture: its last event
       expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-20 07:06')
-      act(() => void vi.advanceTimersByTime(800))
+      act(() => void vi.advanceTimersByTime(100))
       expect(screen.getByRole('button', { name: /play/i })).toBeInTheDocument()
     } finally {
       vi.useRealTimers()

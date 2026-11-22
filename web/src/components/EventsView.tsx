@@ -30,7 +30,7 @@ import { BEAT_DAYS, closestIndex, firstIndexAtOrAfter, stepAnchor, stepByTime, w
 const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
 const BEAT_MS = BEAT_DAYS * 86_400_000
-const PLAY_INTERVAL_MS = 800
+const PLAY_INTERVAL_MS = 100
 
 type View = 'table' | 'distance' | 'beat' | 'phase' | 'longterm' | 'ranking'
 const VIEWS: { id: View; label: string }[] = [
@@ -92,7 +92,7 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
   const step = (n: number) => setAnchor(stepAnchor(times, anchor, n))
   const stepBeat = (n: number) => setAnchor(stepByTime(times, anchor, n * BEAT_MS))
 
-  // ▶ Play: a beat forward every PLAY_INTERVAL_MS, stopping at the end of the data
+  // ▶ Play: a beat forward every PLAY_INTERVAL_MS (as fast as a held key), stopping at the end of the data
   const [playing, setPlaying] = useState(false)
   useEffect(() => {
     if (!playing) return
