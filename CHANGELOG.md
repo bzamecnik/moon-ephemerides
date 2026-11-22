@@ -28,6 +28,11 @@ One version for the whole repository (the Python `compute/` package and the
   the Earth, the perigee–apogee line in the supermoon/micromoon colours, dots
   where the Moon crosses the Earth's orbit plane, the Moon at the selected
   moment ringed in yellow.
+- The same symbols for the same things: ▼ perigee and ▲ apogee, ☊ / ☋ where
+  the Moon crosses the plane of the Earth's orbit going north / south, on the
+  lines, along the Moon's path and in the legends; the height panel of
+  *Distance* marks the crossings and joins the New and the Full Moons by lines
+  as the distance panel does.
 - The closest event has a pale yellow halo in the charts (like its row in the
   table); other New and Full Moons are a darker grey than the lines.
 - Fixed: Next event skipped the closest event when it was still ahead.

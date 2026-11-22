@@ -876,8 +876,18 @@ kbd {
   fill: var(--mark-micro);
 }
 
-.orbit-label {
-  font-weight: 600;
+.node-symbol {
+  fill: var(--eclipse);
+  color: var(--eclipse);
+  font-size: 12px;
+}
+
+.apsis-symbol.perigee {
+  color: var(--mark-super);
+}
+
+.apsis-symbol.apogee {
+  color: var(--mark-micro);
 }
 
 .earth .day {

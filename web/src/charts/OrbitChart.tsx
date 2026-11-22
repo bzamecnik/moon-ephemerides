@@ -14,7 +14,7 @@ import {
   type MoonPlace,
 } from '../orbit'
 import { firstIndexAtOrAfter } from '../timeline'
-import { EventMark, Legend } from './marks'
+import { EventMark, Legend, NodeMark, nodeSymbol } from './marks'
 import { LearnMore } from '../components/LearnPage'
 import { LEARN } from '../learn'
 
@@ -117,7 +117,6 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
             ['moon-trail', 'the Moon: last weeks'],
             ['moon-coming', 'coming days'],
             ['sun-line', 'towards the Sun'],
-            ['node-line-legend', 'node line'],
           ].map(([cls, label]) => (
             <li key={label}>
               <svg width="26" height="14" viewBox="0 0 26 14" aria-hidden="true">
@@ -133,13 +132,15 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
                 <line class="end-b" x1="13" x2="25" y1="7" y2="7" />
               </g>
             </svg>
-            perigee–apogee line
+            <span class="apsis-symbol perigee">▼</span> perigee – <span class="apsis-symbol apogee">▲</span> apogee
+            line, and where the Moon passes them
           </li>
           <li>
-            <svg width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">
-              <circle class="plane-crossing" r="3" />
+            <svg width="26" height="14" viewBox="0 0 26 14" aria-hidden="true">
+              <line class="node-line-legend" x1="1" x2="25" y1="7" y2="7" />
             </svg>
-            crossing the Earth's orbit plane
+            <span class="node-symbol">☊</span> ascending – <span class="node-symbol">☋</span> descending node line, and
+            where the Moon crosses the Earth's orbit plane
           </li>
         </ul>
       </div>
@@ -178,7 +179,7 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
           })}
           <circle class="mean-orbit" cx={C} cy={C} r={R_MEAN} />
           <LineEnds deg={frame.node} labels={['☊ ascending', '☋ descending']} cls="node-line" />
-          <LineEnds deg={frame.perigee} labels={['perigee', 'apogee']} cls="apse-line" />
+          <LineEnds deg={frame.perigee} labels={['▼ perigee', '▲ apogee']} cls="apse-line" />
           {/* the past fades with age; the coming days dashed */}
           {past.slice(1).map((q, i) => (
             <line
@@ -194,13 +195,18 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
           {coming.length > 1 && <polyline class="moon-coming" points={coming.map((q) => pt(at(q))).join(' ')} />}
           {crossings.map((c) => {
             const [x, y] = at({ ...c, latitude: 0 })
+            // the symbol just outside the path
+            const [sx, sy] = polar(c.elongation, radius(c.distanceKm) + 13)
             return (
-              <circle key={c.time} class="plane-crossing" cx={x} cy={y} r={3}>
-                <title>
-                  Crosses the plane of the Earth's orbit going {c.ascending ? 'north' : 'south'},{' '}
-                  {formatZoned(c.time, zone)}
-                </title>
-              </circle>
+              <NodeMark
+                key={c.time}
+                x={x}
+                y={y}
+                dx={sx - x}
+                dy={sy - y}
+                ascending={c.ascending}
+                title={`${nodeSymbol(c.ascending)} crosses the plane of the Earth's orbit going ${c.ascending ? 'north' : 'south'}, ${formatZoned(c.time, zone)}`}
+              />
             )
           })}
           {shownApsides.map(({ apsis, place }) => {
@@ -278,8 +284,9 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
         Sun so that the Sun always stays to the right. In this frame the phases stay put: New Moon towards the Sun,
         Full Moon away from it; the Moon goes round once a month (anticlockwise), its lit half always facing the
         Sun. The Moon (ringed in yellow, at the selected moment) leaves a path fading with age; the dashed line is
-        where it goes in the coming days, up to the next New or Full Moon. The violet dots mark where it crosses the
-        plane of the Earth's orbit. The oval is drawn four times more stretched than it is. The
+        where it goes in the coming days, up to the next New or Full Moon. The triangles mark where it passes the perigee (▼)
+        and the apogee (▲), the violet dots where it crosses the plane of the Earth's orbit going north (☊) or
+        south (☋): the ends of the two lines through the Earth point at the averages of these places. The oval is drawn four times more stretched than it is. The
         perigee–apogee line turns backwards once per beat: when it points at the Sun, New and Full Moons fall near
         perigee and apogee (supermoons, micromoons), and the Sun stretches the orbit most (evection). The dashed violet
         node line, where the orbit crosses the plane, turns once per eclipse year: when it points at the Sun, New
