@@ -6,7 +6,10 @@ export function SiteHeader({ page, exploreHash }: { page: Page['page']; exploreH
   const current = (p: Page['page']) => (page === p ? 'page' : undefined)
   return (
     <header class="site-header">
-      <h1>Moon Ephemerides</h1>
+      <h1>
+        <img class="site-icon" src="./favicon.svg" alt="" width="28" height="28" />
+        Moon Ephemerides
+      </h1>
       <nav class="pages" aria-label="Pages">
         <a href={exploreHash || '#'} aria-current={current('explore')}>
           Explore

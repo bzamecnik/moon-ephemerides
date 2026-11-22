@@ -59,9 +59,16 @@ body {
   padding: 0 16px 32px;
 }
 
+.site-icon {
+  width: 22px;
+  height: 22px;
+  vertical-align: -3px;
+  margin-right: 7px;
+}
+
 h1 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   white-space: nowrap;
 }
 
@@ -390,6 +397,13 @@ table.events {
   color: var(--muted);
   font-size: 0.8rem;
   padding-left: 0;
+}
+
+.delta-human .unit {
+  display: inline-block;
+  width: 2.2em;
+  padding-left: 0.25em;
+  text-align: left;
 }
 
 .icon {

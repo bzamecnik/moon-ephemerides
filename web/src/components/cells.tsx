@@ -102,8 +102,20 @@ export function DeltaCells({ event }: { event: MoonEvent }) {
       <td class="num delta" data-testid="delta">
         {formatDelta(event.deltaDays)}
       </td>
-      <td class="delta-human">{formatDuration(event.deltaDays)}</td>
+      <DurationCell days={event.deltaDays} />
     </>
+  )
+}
+
+/** "+30.1 h": the number right-aligned and the unit in a slot of its own, so that the decimal points line up */
+function DurationCell({ days }: { days: number }) {
+  const text = formatDuration(days)
+  const cut = text.lastIndexOf(' ')
+  return (
+    <td class="num delta-human">
+      {text.slice(0, cut)}
+      <span class="unit">{text.slice(cut + 1)}</span>
+    </td>
   )
 }
 
