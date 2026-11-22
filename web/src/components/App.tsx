@@ -26,7 +26,7 @@ export function App() {
   return (
     <>
       <header>
-        <h1>Supermoons and micromoons</h1>
+        <h1>Moon Ephemerides</h1>
         <p class="intro">
           The Moon's phases repeat every 29.5 days, its closest approach to Earth (perigee) every 27.6 days. When a New
           or Full Moon falls near perigee it is a <em>supermoon</em>; near the farthest point (apogee), a{' '}
