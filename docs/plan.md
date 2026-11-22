@@ -88,6 +88,23 @@ navigation by event and by beat. Next: eclipses and nodes, explanations.
 
 ## M5 – Envelopes and scores
 
+**Envelopes.** The extremes are not constant: perigee distance ranges over
+~356 400–370 400 km, apogee over ~404 000–406 700 km, modulated mainly by the
+angle between the Sun and the line of apsides and by the Earth–Sun distance.
+An envelope (the curve through the extremes) gives limits, so that any event
+can be placed between "as close as it gets at this time" and "as far": a
+normalised score. Two ways:
+
+1. empirical: the upper/lower hull of the apsis distances over time
+   (local extrema of the extrema, smoothed or interpolated);
+2. physical: fit the apsis distances to a few periodic terms (twice the
+   Sun–apse angle, the Sun's anomaly), as in the perigee/apogee series of
+   Meeus (Astronomical Algorithms, ch. 50); this explains the envelope instead
+   of just tracing it.
+
+The same works for Δ: the best Δ of each 411.8-day season varies, and its
+envelope shows when the best alignments of a whole era happen.
+
 - [ ] envelope of perigee/apogee distances: empirical hull and a fit to
       periodic terms (Sun–apse angle, Sun's anomaly)
 - [ ] normalised "how extreme" score of an event within the envelope
