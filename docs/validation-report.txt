@@ -1,4 +1,4 @@
-Validation against astropixels.com tables (2026-11-21)
+Validation against astropixels.com tables (2026-11-22)
 
 Perigees and apogees: 3632 rows, kind mismatches: 0
   time [min]: n=3632, mean=-0.378, max|d|=31.000  (most common: +0: 1020, -1: 873, +1: 382, -2: 312, -3: 187)
