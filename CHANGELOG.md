@@ -4,55 +4,39 @@ One version for the whole repository (the Python `compute/` package and the
 `web/` app are released together). The JSON data format has its own number,
 `meta.format`, changed only when the format breaks.
 
-## Unreleased
+## 0.2.0 – 2026-11-22
 
-- **Solar eclipses** in the catalog (astronomy-engine; 224 in 2001–2100 as in
-  NASA's canon), and all eclipses shown in the table, the ranking and the
-  charts (a violet ring), with the kind (total, annular, partial, penumbral).
-- **Orbit from above:** a new view looking down on the Earth with the Sun
-  fixed to the right: the Moon's path over four weeks, the perigee–apogee line
-  turning once per beat and the node line once per eclipse year.
-- **Distance:** the true distance curve (astronomy-engine) instead of an
-  approximation, and a panel with the Moon's height above the plane of the
-  Earth's orbit, showing when eclipses are possible.
-- ▶ Play steps by beats or by 6 hours.
-- **Learn:** `docs/astronomy.md` as a page in the app (`#learn`), linked from
-  the charts.
+Eclipses, the orbit seen from above, a learning page and new controls.
+
+- **Eclipses:** solar eclipses in the catalog (astronomy-engine; 224 in
+  2001–2100 as in NASA's canon) next to the lunar ones, with their kind
+  (total, annular, partial, penumbral) in the table, the ranking and the
+  charts (a violet ring). The *Show* menu can list only eclipses of chosen
+  kinds. Eclipse seasons (the node line within 18.6° of the Sun) are shaded
+  in the *Distance* view.
+- **Orbit from above:** a new view looking down on the Earth, turning with
+  the Earth–Sun line: the Moon's path two weeks back and ahead, the
+  perigee–apogee line through the true perigees (▼) and apogees (▲), the node
+  line with the crossings of the Earth's orbit plane (☊ / ☋) and the zones
+  where eclipses are possible, the direction of the Sun through the Earth.
+- **Distance:** the true distance curve instead of an approximation, and a
+  panel with the Moon's height above the plane of the Earth's orbit, with the
+  crossings and the New and Full Moons joined by lines.
+- **Pages:** Explore, About (introduction, data sources and credits) and
+  Learn, in a sidebar. **Learn** shows `docs/astronomy.md`: the causes of the
+  three rhythms, the views explained, examples that open the app at their
+  date; the views link to its sections.
 - **Controls:** on wide screens the controls and the closest event sit in a
   sidebar and the views take the rest; compact icon buttons (Heroicons) with
-  tooltips; a UTC | Local toggle; a *Show* pop-up replacing the checkboxes,
-  which can also list only eclipses of chosen kinds; hover and focus states
-  on all controls.
-- **Orbit from above:** the Moon's path two weeks back (fading with age) and
-  two weeks ahead (dashed), sliding with every step, the direction of the Sun drawn through
-  the Earth, the perigee–apogee line in the supermoon/micromoon colours, dots
-  where the Moon crosses the Earth's orbit plane, the Moon at the selected
-  moment ringed in yellow.
-- The same symbols for the same things: ▼ perigee and ▲ apogee, ☊ / ☋ where
-  the Moon crosses the plane of the Earth's orbit going north / south, on the
-  lines, along the Moon's path and in the legends; the height panel of
-  *Distance* marks the crossings and joins the New and the Full Moons by lines
-  as the distance panel does.
-- **Orbit from above:** zones around the node line (±17°) where the Moon is
-  close enough to the plane for an eclipse; the perigee–apogee line goes through
-  the true perigees and apogees (it was the mean line, up to 25° off); the readout groups the distance with the
-  perigee–apogee line and the height with the node line.
-- The closest event has a pale yellow halo in the charts (like its row in the
-  table); other New and Full Moons are a darker grey than the lines.
-- Fixed: Next event skipped the closest event when it was still ahead.
-- **Eclipse seasons** (the node line within 18.6° of the Sun) shaded in the
-  *Distance* view.
-- **Learn:** starts with the causes of the three rhythms (phases, distance,
-  height); the orbit view is explained as turning with the Earth–Sun line;
-  the examples open the app at their date.
-- The table's short Δ lines up on the decimal point; the Moon icon by the
-  title.
-- **Pages:** Explore, About (the introduction, data sources and credits) and
-  Learn, in the sidebar; Learn lists its sections there.
+  tooltips; a UTC | Local toggle; hover and focus states on all controls.
 - ▶ Play by 6 hours, a day, a week, a month, a beat, or live (following the
   clock once a minute).
-- Keyboard shortcuts: Space / K play, N now, D date, 1–7 views, [ ] play step,
-  ? the list of keys.
+- Keyboard shortcuts: ← / → events (Shift: beats), Space / K play, N now,
+  D date, 1–7 views, [ ] play step, ? the list of keys (in a pop-up).
+- Clearer charts: the closest event with a pale yellow halo (like its row in
+  the table), ordinary New and Full Moons darker than the lines; in the table
+  a shorter Δ column with decimal points lined up.
+- Fixed: Next event skipped the closest event when it was still ahead.
 
 ## 0.1.0 – 2026-11-22
 

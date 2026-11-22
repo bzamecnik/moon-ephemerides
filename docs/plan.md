@@ -12,7 +12,7 @@ careful statistical test of the earthquake hypothesis (see
 
 ## Status
 
-Released 0.1.0 (see `CHANGELOG.md`). M1 done: the Python catalog reproduces the astropixels supermoon/micromoon
+Released 0.2.0 (see `CHANGELOG.md`). M1 done: the Python catalog reproduces the astropixels supermoon/micromoon
 tables for 1901–2100 (same events, times to the minute, Δ to 0.008 d), see
 `validation.md`. M3 done. M4: the table, the beat chart, the phase-vs-distance
 chart (linear interpolation between events) and the ranking of the best
