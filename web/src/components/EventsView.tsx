@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { Catalog } from '../data/catalog'
 import {
+  eclipseLabel,
   eventLabel,
   moonEvents,
   NOTABLE_KINDS,
@@ -33,6 +34,8 @@ const BEAT_MS = BEAT_DAYS * 86_400_000
 const PLAY_INTERVAL_MS = 100
 
 type View = 'table' | 'distance' | 'beat' | 'phase' | 'longterm' | 'ranking'
+const withArticle = (s: string) => `${/^[aeiou]/.test(s) ? 'an' : 'a'} ${s}`
+
 const VIEWS: { id: View; label: string }[] = [
   { id: 'table', label: 'Table' },
   { id: 'distance', label: 'Distance' },
@@ -200,7 +203,8 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
         {closestEvent ? (
           <>
             Closest: <strong>{eventLabel(closestEvent)}</strong> on {formatZoned(closestEvent.syzygy.time, zone)} (
-            {formatRelative(closestEvent.syzygy.time, anchor)}), {describeDelta(closestEvent)}.
+            {formatRelative(closestEvent.syzygy.time, anchor)}), {describeDelta(closestEvent)}
+            {closestEvent.syzygy.eclipse && <>, with {withArticle(eclipseLabel(closestEvent.syzygy.eclipse))}</>}.
           </>
         ) : (
           'No events of the chosen kinds.'

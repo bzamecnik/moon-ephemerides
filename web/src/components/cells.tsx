@@ -1,6 +1,6 @@
 /** Table cells shared by the event table and the ranking. */
-import type { ApsisKind } from '../data/catalog'
-import type { MoonEvent } from '../events'
+import type { ApsisKind, Eclipse } from '../data/catalog'
+import { eclipseLabel, type MoonEvent } from '../events'
 import { formatDateTime, formatDelta, formatDuration, formatZoned, type Zone } from '../format'
 import { markClass } from '../charts/marks'
 
@@ -22,6 +22,29 @@ export function ApsisIcon({ kind }: { kind: ApsisKind }) {
     <svg class={`icon apsis-icon apsis-${kind}`} width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">
       <path d={kind === 'perigee' ? 'M -5 -3.5 L 5 -3.5 L 0 4.5 Z' : 'M -5 3.5 L 5 3.5 L 0 -4.5 Z'} />
     </svg>
+  )
+}
+
+/** Solar eclipse: the dark Moon inside a bright ring; lunar eclipse: the Moon tinted by the Earth's shadow. */
+export function EclipseIcon({ eclipse }: { eclipse: Eclipse }) {
+  return (
+    <svg class={`icon eclipse-icon eclipse-${eclipse.body}`} width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">
+      <circle r={eclipse.body === 'solar' ? 3.5 : 4.5} />
+    </svg>
+  )
+}
+
+export function EclipseCell({ event }: { event: MoonEvent }) {
+  const e = event.syzygy.eclipse
+  const label = e && eclipseLabel(e)
+  return (
+    <td class="eclipse" data-testid="eclipse">
+      {e && label && (
+        <>
+          <EclipseIcon eclipse={e} /> {label[0].toUpperCase() + label.slice(1, -' eclipse'.length)}
+        </>
+      )}
+    </td>
   )
 }
 

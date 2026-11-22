@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { decodeCatalog } from './data/catalog'
 import { rawFixture, utc } from './test/fixture'
-import { classify, moonEvents, eventLabel, apparentDiameterArcmin } from './events'
+import { classify, moonEvents, eventLabel, apparentDiameterArcmin, eclipseLabel } from './events'
 
 const { syzygies } = decodeCatalog(rawFixture)
 
@@ -57,5 +57,12 @@ describe('moonEvents', () => {
 describe('apparentDiameterArcmin', () => {
   it('is about 31.08 arcmin at the mean distance', () => {
     expect(apparentDiameterArcmin(384_400)).toBeCloseTo(31.08, 2)
+  })
+})
+
+describe('eclipseLabel', () => {
+  it('names the kind and the body', () => {
+    expect(eclipseLabel({ body: 'solar', kind: 'annular' })).toBe('annular solar eclipse')
+    expect(eclipseLabel({ body: 'lunar', kind: 'penumbral' })).toBe('penumbral lunar eclipse')
   })
 })

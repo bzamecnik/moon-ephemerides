@@ -15,10 +15,26 @@ describe('decodeCatalog', () => {
       perigeeDeltaDays: 0.0027,
       apogeeDeltaDays: -13.4819,
       relativeDistance: 0,
+      eclipse: null,
     })
     expect(c.syzygies[2].phase).toBe('full')
     expect(c.apsides.map((a) => a.kind)).toEqual(['apogee', 'perigee', 'apogee', 'perigee', 'apogee', 'perigee'])
     expect(c.ephemeris).toBe('JPL DE440S')
+  })
+
+  it('names the eclipses', () => {
+    const raw = {
+      ...rawFixture,
+      syzygies: { ...rawFixture.syzygies, lunar_eclipse: [0, -1, 2, -1, 1, -1], solar_eclipse: [-1, 1, -1, 2, -1, 0] },
+    }
+    expect(decodeCatalog(raw).syzygies.map((s) => s.eclipse)).toEqual([
+      { body: 'lunar', kind: 'penumbral' },
+      { body: 'solar', kind: 'annular' },
+      { body: 'lunar', kind: 'total' },
+      { body: 'solar', kind: 'total' },
+      { body: 'lunar', kind: 'partial' },
+      { body: 'solar', kind: 'partial' },
+    ])
   })
 
   it('rejects an unknown format', () => {
@@ -44,5 +60,13 @@ describe.runIf(existsSync(realDataPath))('the exported data file', () => {
     const s = catalog.syzygies.find((s) => Math.abs(s.time - utc('2023-01-21T20:53')) < 60_000)
     expect(s?.phase).toBe('new')
     expect(s?.perigeeDeltaDays).toBeCloseTo(0.003, 3)
+  })
+
+  it('knows the eclipses of our time', () => {
+    const at = (iso: string) => catalog.syzygies.find((s) => Math.abs(s.time - utc(iso)) < 86_400_000)?.eclipse
+    expect(at('2017-08-21T18:30')).toEqual({ body: 'solar', kind: 'total' })
+    expect(at('2023-10-14T18:00')).toEqual({ body: 'solar', kind: 'annular' })
+    expect(at('2022-11-08T11:00')).toEqual({ body: 'lunar', kind: 'total' })
+    expect(at('2023-01-21T20:53')).toBeNull()
   })
 })

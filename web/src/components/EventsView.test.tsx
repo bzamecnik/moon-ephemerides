@@ -52,6 +52,14 @@ describe('EventsView', () => {
     expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-05 18:29 UTC (6 hours ago)')
   })
 
+  it('names the eclipses', () => {
+    const raw = { ...rawFixture, syzygies: { ...rawFixture.syzygies, solar_eclipse: [-1, -1, -1, 1, -1, -1] } }
+    render(<EventsView catalog={decodeCatalog(raw)} initialAnchor={utc('2023-01-21T00:00')} now={utc('2023-02-01T12:00')} />)
+    const cells = eventRows().map((r) => within(r).getByTestId('eclipse').textContent?.trim())
+    expect(cells).toEqual(['', '', '', 'Annular solar', '', ''])
+    expect(screen.getByTestId('summary')).toHaveTextContent(/perigee, with an annular solar eclipse\.$/)
+  })
+
   it('shows the time difference to the perigee or apogee', () => {
     setup()
     const row = eventRows()[3]

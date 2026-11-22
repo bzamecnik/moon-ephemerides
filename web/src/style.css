@@ -19,6 +19,7 @@
   --mark-ordinary: #a3a5af;
   --grid: #ebe9e3;
   --axis: #c9c6bd;
+  --eclipse: #7b4fa6;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   line-height: 1.45;
   color: var(--fg);
@@ -48,6 +49,7 @@
     --mark-ordinary: #5c606e;
     --grid: #23262f;
     --axis: #3c404d;
+    --eclipse: #b28ddc;
   }
 }
 
@@ -433,6 +435,24 @@ select {
 
 .event-mark {
   cursor: pointer;
+}
+
+/* eclipses: violet, a hue the kinds don't use */
+.eclipse-ring {
+  fill: none;
+  stroke: var(--eclipse);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 1.5;
+}
+
+.eclipse-icon.eclipse-solar circle {
+  fill: var(--fg);
+  stroke: var(--eclipse);
+  stroke-width: 2;
+}
+
+.eclipse-icon.eclipse-lunar circle {
+  fill: var(--eclipse);
 }
 
 .event-mark .hit {
