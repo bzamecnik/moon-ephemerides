@@ -68,3 +68,30 @@ export function extremes(events: readonly MoonEvent[], which: 'closest' | 'farth
   }
   return out.sort((a, b) => a.syzygy.time - b.syzygy.time)
 }
+
+/**
+ * Consecutive items of the same key (e.g. New Supermoons) at most `maxGapDays`
+ * apart, broken where the value jumps by more than `maxJump`: for drawing
+ * light lines through the long-term series. Runs of a single item are kept.
+ */
+export function runs<T extends { time: number; value: number }>(
+  items: readonly T[],
+  key: (item: T) => string,
+  { maxGapDays, maxJump = Infinity }: { maxGapDays: number; maxJump?: number },
+): T[][] {
+  const out: T[][] = []
+  const open = new Map<string, T[]>()
+  for (const item of items) {
+    const k = key(item)
+    const run = open.get(k)
+    const last = run?.at(-1)
+    if (run && last && item.time - last.time <= maxGapDays * 86_400_000 && Math.abs(item.value - last.value) <= maxJump) {
+      run.push(item)
+    } else {
+      const fresh = [item]
+      out.push(fresh)
+      open.set(k, fresh)
+    }
+  }
+  return out
+}

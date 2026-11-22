@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { decodeCatalog, type RawCatalog } from './data/catalog'
 import { moonEvents } from './events'
-import { bestAligned, extremes, nearestApsis } from './longterm'
+import { bestAligned, extremes, nearestApsis, runs } from './longterm'
 import { BEAT_DAYS } from './timeline'
 import { rawFixture, utc } from './test/fixture'
 
@@ -32,6 +32,28 @@ describe('extremes', () => {
   it('needs both neighbours', () => {
     // the Full Micromoon of 2023-02-05 is the farthest so far, but the data ends there
     expect(extremes(events, 'farthest')).toEqual([])
+  })
+})
+
+describe('runs', () => {
+  const DAY = 86_400_000
+  const beat = BEAT_DAYS * DAY
+  // picks of two kinds taking turns every half beat
+  const item = (k: number, key: string, value: number) => ({ time: (k * beat) / 2, key, value })
+  const opts = { maxGapDays: 1.5 * BEAT_DAYS, maxJump: 0.25 }
+  const keyOf = (i: { key: string }) => i.key
+
+  it('joins picks of the same kind one beat apart', () => {
+    const items = [item(0, 'a', 0.2), item(1, 'b', 0), item(2, 'a', 0.15), item(3, 'b', 0), item(4, 'a', 0.1)]
+    expect(runs(items, keyOf, opts).map((r) => r.map((i) => i.time / beat))).toEqual([
+      [0, 1, 2],
+      [0.5, 1.5],
+    ])
+  })
+
+  it('breaks where a beat is missing or the value jumps', () => {
+    const items = [item(0, 'a', 0), item(2, 'a', 0.1), item(6, 'a', 0.2), item(8, 'a', -0.25), item(10, 'a', -0.3)]
+    expect(runs(items, keyOf, opts).map((r) => r.map((i) => i.value))).toEqual([[0, 0.1], [0.2], [-0.25, -0.3]])
   })
 })
 

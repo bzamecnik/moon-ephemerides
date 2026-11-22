@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'preact/hooks'
 import type { MoonEvent } from '../events'
 import { formatDate, type Zone } from '../format'
-import { bestAligned, extremes } from '../longterm'
+import { bestAligned, extremes, runs } from '../longterm'
+import { BEAT_DAYS } from '../timeline'
 import { EventMark, Legend } from './marks'
 import { linearScale, yearTicks } from './scale'
 
@@ -42,6 +43,12 @@ const PANEL_TITLES = [
   'Farthest micromoons: distance',
 ]
 
+interface Point {
+  time: number
+  value: number
+  event: MoonEvent
+}
+
 interface Props {
   /** all New and Full Moons, classified, sorted by time */
   events: MoonEvent[]
@@ -69,11 +76,21 @@ export function LongTermChart({ events, anchor, closestTime, zone, onSelect }: P
     return { ...p, ...box, y: linearScale(p.domain, [box.bottom, box.top]) }
   })
   const H = layout.at(-1)!.bottom + AXIS
-  const series: { time: number; value: number; event: MoonEvent }[][] = [
+  const series: Point[][] = [
     aligned.map((a) => ({ time: a.event.syzygy.time, value: a.delta, event: a.event })),
     closest.map((e) => ({ time: e.syzygy.time, value: e.syzygy.distanceKm, event: e })),
     farthest.map((e) => ({ time: e.syzygy.time, value: e.syzygy.distanceKm, event: e })),
   ]
+  // light lines through the same phase and kind in consecutive beats; in the
+  // top panel broken where the sawtooth jumps back
+  const lines = useMemo(
+    () => [
+      runs(series[0], (p) => `${p.event.syzygy.phase}-${p.event.kind}`, { maxGapDays: 1.5 * BEAT_DAYS, maxJump: 0.25 }),
+      runs(series[1], (p) => p.event.syzygy.phase, { maxGapDays: 1.5 * BEAT_DAYS }),
+      runs(series[2], (p) => p.event.syzygy.phase, { maxGapDays: 1.5 * BEAT_DAYS }),
+    ],
+    [aligned, closest, farthest],
+  )
   const ticks = yearTicks(t0, t1, 10)
   const tickLabel = (t: number) =>
     formatDate(t, 'utc').endsWith('-01-01') ? formatDate(t, 'utc').slice(0, 4) : formatDate(t, 'utc').slice(0, 7)
@@ -110,6 +127,19 @@ export function LongTermChart({ events, anchor, closestTime, zone, onSelect }: P
                 </text>
               </g>
             ))}
+            {lines[i]
+              .filter((run) => run.length > 1 && run[0].time <= t1 && run.at(-1)!.time >= t0)
+              .map((run) => (
+                <polyline
+                  key={run[0].time}
+                  class={`run-line run-${run[0].event.kind} run-${run[0].event.syzygy.phase}`}
+                  clip-path={`url(#lt-clip-${i})`}
+                  points={run.map((q) => `${x(q.time)},${p.y(q.value)}`).join(' ')}
+                />
+              ))}
+            <clipPath id={`lt-clip-${i}`}>
+              <rect x={M.left} y={p.top - 6} width={W - M.left - M.right} height={p.bottom - p.top + 12} />
+            </clipPath>
             <line class="anchor-line" x1={x(anchor)} x2={x(anchor)} y1={p.top} y2={p.bottom} />
             {series[i]
               .filter((s) => inSpan(s.time))
@@ -138,7 +168,8 @@ export function LongTermChart({ events, anchor, closestTime, zone, onSelect }: P
         nearest in time to its perigee or apogee, and how far from it (+ = the perigee or apogee comes later). New
         Moons and Full Moons each drift by about an hour per beat and jump back, so each gets a near-perfect alignment
         every 18–20 years (2012 for the Full Moon, 2023 for the New Moon). <strong>Middle and bottom:</strong> the
-        closest supermoon and the farthest micromoon of each stretch. The closest ones come closer in northern winter,
+        closest supermoon and the farthest micromoon of each stretch. The light lines join the same kind of
+        event (e.g. New Supermoons) in consecutive beats. The closest ones come closer in northern winter,
         when the Earth is nearest the Sun and the Sun stretches the Moon's orbit most; the farthest ones change
         little. Click a mark to select it.
       </figcaption>

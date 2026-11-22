@@ -507,3 +507,21 @@ kbd {
 .panel-title {
   font-weight: 600;
 }
+
+.run-line {
+  fill: none;
+  stroke-width: 1.25;
+  opacity: 0.45;
+}
+
+.run-super {
+  stroke: var(--mark-super);
+}
+
+.run-micro {
+  stroke: var(--mark-micro);
+}
+
+.run-full {
+  stroke-dasharray: 4 3;
+}
