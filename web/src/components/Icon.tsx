@@ -1,26 +1,26 @@
-/** Heroicons (MIT, Tailwind Labs), the 20 px solid set, inlined so that they take the text colour. */
-import backward from 'heroicons/20/solid/backward.svg?raw'
-import calendar from 'heroicons/20/solid/calendar-days.svg?raw'
-import chevronDown from 'heroicons/20/solid/chevron-down.svg?raw'
-import chevronLeft from 'heroicons/20/solid/chevron-left.svg?raw'
-import chevronRight from 'heroicons/20/solid/chevron-right.svg?raw'
-import clock from 'heroicons/20/solid/clock.svg?raw'
-import forward from 'heroicons/20/solid/forward.svg?raw'
-import funnel from 'heroicons/20/solid/funnel.svg?raw'
-import info from 'heroicons/20/solid/information-circle.svg?raw'
-import pause from 'heroicons/20/solid/pause.svg?raw'
-import play from 'heroicons/20/solid/play.svg?raw'
-import question from 'heroicons/20/solid/question-mark-circle.svg?raw'
-import signal from 'heroicons/20/solid/signal.svg?raw'
+/** Heroicons (MIT, Tailwind Labs), the 24 px outline set, inlined so that they take the text colour. */
+import calendar from 'heroicons/24/outline/calendar-days.svg?raw'
+import chevronDoubleLeft from 'heroicons/24/outline/chevron-double-left.svg?raw'
+import chevronDoubleRight from 'heroicons/24/outline/chevron-double-right.svg?raw'
+import chevronDown from 'heroicons/24/outline/chevron-down.svg?raw'
+import chevronLeft from 'heroicons/24/outline/chevron-left.svg?raw'
+import chevronRight from 'heroicons/24/outline/chevron-right.svg?raw'
+import clock from 'heroicons/24/outline/clock.svg?raw'
+import funnel from 'heroicons/24/outline/funnel.svg?raw'
+import info from 'heroicons/24/outline/information-circle.svg?raw'
+import pause from 'heroicons/24/outline/pause.svg?raw'
+import play from 'heroicons/24/outline/play.svg?raw'
+import question from 'heroicons/24/outline/question-mark-circle.svg?raw'
+import signal from 'heroicons/24/outline/signal.svg?raw'
 
 const ICONS = {
-  backward,
+  chevronDoubleLeft,
+  chevronDoubleRight,
   calendar,
   chevronDown,
   chevronLeft,
   chevronRight,
   clock,
-  forward,
   funnel,
   info,
   pause,

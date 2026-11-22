@@ -1,3 +1,4 @@
+import type { ComponentChildren } from 'preact'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { Catalog } from '../data/catalog'
 import { eclipseLabel, eventLabel, moonEvents, type MoonEvent } from '../events'
@@ -22,6 +23,7 @@ import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
 import { ApsisIcon, EclipseIcon, PhaseIcon } from './cells'
 import { FilterMenu } from './FilterMenu'
+import { Layout } from './Layout'
 import { Icon } from './Icon'
 import { RankingView } from './RankingView'
 import { cycleStep, nextPlayAnchor, playInterval, PLAY_STEPS, type PlayStep } from '../playback'
@@ -51,11 +53,13 @@ interface Props {
   initialView?: string | null
   /** the current time, for "Now" and live play (replaceable in tests) */
   clock?: () => number
+  /** the site header, at the top of the sidebar */
+  header?: ComponentChildren
   /** called when the user picks a moment (to keep it in the URL) */
   onChange?: (anchor: number, view: string) => void
 }
 
-export function EventsView({ catalog, initialAnchor, initialView, clock = Date.now, onChange }: Props) {
+export function EventsView({ catalog, header, initialAnchor, initialView, clock = Date.now, onChange }: Props) {
   const [anchor, setAnchorState] = useState(initialAnchor)
   const [zone, setZone] = useState<Zone>('utc')
   const [filter, setFilter] = useState<Filter>(ALL)
@@ -115,12 +119,17 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
   const [showKeys, setShowKeys] = useState(false)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      // the list of keys closes on any key (but not on Shift alone, typed for "?")
+      if (showKeys) {
+        if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return
+        e.preventDefault()
+        return setShowKeys(false)
+      }
       const target = e.target as HTMLElement | null
       const action = shortcutAction(e, {
         inField: !!target?.closest('input, select, textarea, [contenteditable]'),
         onButton: !!target?.closest('button, a, summary'),
       })
-      if (e.key === 'Escape') setShowKeys(false)
       if (!action) return
       e.preventDefault()
       switch (action.type) {
@@ -148,8 +157,10 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
   })
 
   return (
-    <div class="explorer">
-      <aside class="sidebar">
+    <Layout
+      header={header}
+      side={
+        <>
       <section class="controls" aria-label="Navigation and filters">
         <div class="control-row">
           <DateField anchor={anchor} zone={zone} onChange={goTo} inputRef={dateInput} />
@@ -181,7 +192,7 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
               aria-label="One beat earlier"
               title="One beat earlier: the same phase about 14 months before (Shift+←)"
             >
-              <Icon name="backward" />
+              <Icon name="chevronDoubleLeft" />
             </button>
             <button
               type="button"
@@ -211,7 +222,7 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
               aria-label="One beat later"
               title="One beat later: the same phase about 14 months after (Shift+→)"
             >
-              <Icon name="forward" />
+              <Icon name="chevronDoubleRight" />
             </button>
           </span>
           <span class="button-group">
@@ -253,22 +264,28 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
           <FilterMenu filter={filter} onChange={setFilter} />
         </div>
         {showKeys && (
-          <dl class="keys-panel" aria-label="Keyboard shortcuts">
-            {SHORTCUTS.map(([keys, what]) => (
-              <div key={what}>
-                <dt>
-                  {keys.map((k) => (k === '…' ? ' … ' : <kbd key={k}>{k}</kbd>))}
-                </dt>
-                <dd>{what}</dd>
-              </div>
-            ))}
-          </dl>
+          // closed by any click (or any key, see above)
+          <div class="popup-backdrop" onClick={() => setShowKeys(false)}>
+            <div class="popup" role="dialog" aria-label="Keyboard shortcuts">
+              <h2>Keyboard shortcuts</h2>
+              <dl class="keys-list">
+                {SHORTCUTS.map(([keys, what]) => (
+                  <div key={what}>
+                    <dt>{keys.map((k) => (k === '…' ? ' … ' : <kbd key={k}>{k}</kbd>))}</dt>
+                    <dd>{what}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p class="hint">Press any key or click to close.</p>
+            </div>
+          </div>
         )}
       </section>
 
       <StatusCard event={closestEvent} anchor={anchor} zone={zone} />
-      </aside>
-      <div class="workspace">
+        </>
+      }
+    >
 
       <div class="tabs" role="tablist" aria-label="Views">
         {VIEWS.map((v) => (
@@ -359,8 +376,7 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
           />
         )}
       </div>
-      </div>
-    </div>
+    </Layout>
   )
 }
 
@@ -376,9 +392,8 @@ function StatusCard({ event, anchor, zone }: { event: MoonEvent | undefined; anc
               <PhaseIcon event={event} /> {eventLabel(event)}
             </strong>
           </div>{' '}
-          <div>
-            on {formatZoned(event.syzygy.time, zone)} ({formatRelative(event.syzygy.time, anchor)})
-          </div>{' '}
+          <div>on {formatZoned(event.syzygy.time, zone)}</div>{' '}
+          <div class="summary-when">{formatRelative(event.syzygy.time, anchor)}</div>{' '}
           <div>
             <ApsisIcon kind={event.apsis} /> {describeDelta(event)}
           </div>{' '}

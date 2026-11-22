@@ -21,8 +21,10 @@ One version for the whole repository (the Python `compute/` package and the
 - **Controls:** on wide screens the controls and the closest event sit in a
   sidebar and the views take the rest; compact icon buttons (Heroicons) with
   tooltips; a UTC | Local toggle; a *Show* pop-up replacing the checkboxes,
-  which can also list only eclipses of chosen kinds; the introduction behind
-  *About*; hover and focus states on all controls.
+  which can also list only eclipses of chosen kinds; hover and focus states
+  on all controls.
+- **Pages:** Explore, About (the introduction, data sources and credits) and
+  Learn, in the sidebar; Learn lists its sections there.
 - ▶ Play by 6 hours, a day, a week, a month, a beat, or live (following the
   clock once a minute).
 - Keyboard shortcuts: Space / K play, N now, D date, 1–7 views, [ ] play step,

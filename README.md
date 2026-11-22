@@ -56,7 +56,7 @@ npm run data         # regenerate public/data/lunar-events.json (needs uv and co
 
 A date and view can be linked directly: `…/#date=2023-01-21&view=beat`
 (views: `table`, `distance`, `orbit`, `beat`, `phase`, `longterm`, `ranking`),
-the learning page as `…/#learn`. ▶ Play steps by 6 hours, a day, a week, a
+the about page as `…/#about`, the learning page as `…/#learn`. ▶ Play steps by 6 hours, a day, a week, a
 month, a beat, or follows the clock (live). Keys: ← / → previous / next event
 (Shift: one beat), Space play, [ ] play step, N now, D date, 1–7 views, ? the
 list of keys. Pushes to `main` are

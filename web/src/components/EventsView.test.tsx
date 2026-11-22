@@ -49,7 +49,7 @@ describe('EventsView', () => {
 
   it('prefers a recent event to a later one', () => {
     setup(utc('2023-02-06T00:00'))
-    expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-05 18:29 UTC (6 hours ago)')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-05 18:29 UTC 6 hours ago')
   })
 
   it('names the eclipses', () => {
@@ -229,9 +229,12 @@ describe('EventsView', () => {
     await user.keyboard('3')
     expect(screen.getByRole('tab', { name: /orbit/i })).toHaveAttribute('aria-selected', 'true')
     await user.keyboard('?')
-    expect(screen.getByLabelText('Keyboard shortcuts', { selector: 'dl' })).toHaveTextContent('play / pause')
-    await user.keyboard('{Escape}')
-    expect(screen.queryByLabelText('Keyboard shortcuts', { selector: 'dl' })).toBeNull()
+    expect(screen.getByRole('dialog', { name: 'Keyboard shortcuts' })).toHaveTextContent('play / pause')
+    await user.keyboard('x')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    await user.keyboard('?')
+    await user.click(screen.getByRole('dialog'))
+    expect(screen.queryByRole('dialog')).toBeNull()
     await user.keyboard(' ')
     expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument()
     await user.keyboard('k')

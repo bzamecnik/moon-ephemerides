@@ -131,11 +131,12 @@ export function parseHashView(hash: string): string | null {
   return new URLSearchParams(hash.replace(/^#/, '')).get('view')
 }
 
-export type Page = { page: 'explore' } | { page: 'learn'; section?: string }
+export type Page = { page: 'explore' } | { page: 'about' } | { page: 'learn'; section?: string }
 
-/** '#learn' or '#learn-<section>' open the learning page; anything else the explorer. */
+/** '#about' the about page, '#learn' or '#learn-<section>' the learning page; anything else the explorer. */
 export function parseHashPage(hash: string): Page {
   const h = hash.replace(/^#/, '')
+  if (h === 'about') return { page: 'about' }
   if (h === 'learn') return { page: 'learn' }
   if (h.startsWith('learn-')) return { page: 'learn', section: h }
   return { page: 'explore' }

@@ -136,6 +136,7 @@ describe('URL hash', () => {
 
   it('tells the learning page from the explorer', () => {
     expect(parseHashPage('#learn')).toEqual({ page: 'learn' })
+    expect(parseHashPage('#about')).toEqual({ page: 'about' })
     expect(parseHashPage('#learn-nodes-and-eclipses')).toEqual({ page: 'learn', section: 'learn-nodes-and-eclipses' })
     expect(parseHashPage('#date=2023-01-21&view=beat')).toEqual({ page: 'explore' })
     expect(parseHashPage('')).toEqual({ page: 'explore' })
