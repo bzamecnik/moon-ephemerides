@@ -35,10 +35,11 @@ against which the calculations are checked (see [docs/validation.md](docs/valida
   - `src/events.ts` – supermoon/micromoon classification, eclipse names
   - `src/orbit.ts` – the Moon's place in the frame of the Sun (astronomy-engine), mean perigee and node
   - `src/timeline.ts`, `src/format.ts` – navigation around a date, formatting
+  - `src/playback.ts`, `src/shortcuts.ts`, `src/filters.ts` – ▶ Play steps, keyboard shortcuts, the Show filter
   - `src/beat.ts`, `src/phase.ts`, `src/longterm.ts`, `src/ranking.ts` – data for the charts and the ranking
   - `src/charts/` – SVG charts (distance and height, orbit from above, beat, phase vs. distance, long term), scales
   - `src/learn.ts` – the learning page from `docs/astronomy.md` (marked)
-  - `src/components/` – the page: controls, tabs, table, ranking, learning page
+  - `src/components/` – the page: controls, tabs, table, ranking, learning page, icons
 
 ## Usage
 
@@ -55,9 +56,10 @@ npm run data         # regenerate public/data/lunar-events.json (needs uv and co
 
 A date and view can be linked directly: `…/#date=2023-01-21&view=beat`
 (views: `table`, `distance`, `orbit`, `beat`, `phase`, `longterm`, `ranking`),
-the learning page as `…/#learn`. The arrow keys step through the events, with
-Shift by one beat (~14 months); ▶ Play steps by beats or by 6 hours as an
-animation. Pushes to `main` are
+the learning page as `…/#learn`. ▶ Play steps by 6 hours, a day, a week, a
+month, a beat, or follows the clock (live). Keys: ← / → previous / next event
+(Shift: one beat), Space play, [ ] play step, N now, D date, 1–7 views, ? the
+list of keys. Pushes to `main` are
 deployed to GitHub Pages (`.github/workflows/pages.yml`).
 
 The computation:
@@ -84,4 +86,5 @@ The JPL kernel `de440s.bsp` (32 MB, years 1850–2149) is downloaded to
 - Ephemeris data: NASA JPL (public domain)
 - [astronomy-engine](https://github.com/cosinekitty/astronomy) by Don Cross (MIT): solar eclipses, positions between events
 - [marked](https://marked.js.org/) (MIT): the learning page
+- [Heroicons](https://heroicons.com/) by Tailwind Labs (MIT): icons
 - The astropixels.com tables are © Fred Espenak and are not included.

@@ -18,6 +18,15 @@ One version for the whole repository (the Python `compute/` package and the
 - ▶ Play steps by beats or by 6 hours.
 - **Learn:** `docs/astronomy.md` as a page in the app (`#learn`), linked from
   the charts.
+- **Controls:** on wide screens the controls and the closest event sit in a
+  sidebar and the views take the rest; compact icon buttons (Heroicons) with
+  tooltips; a UTC | Local toggle; a *Show* pop-up replacing the checkboxes,
+  which can also list only eclipses of chosen kinds; the introduction behind
+  *About*; hover and focus states on all controls.
+- ▶ Play by 6 hours, a day, a week, a month, a beat, or live (following the
+  clock once a minute).
+- Keyboard shortcuts: Space / K play, N now, D date, 1–7 views, [ ] play step,
+  ? the list of keys.
 
 ## 0.1.0 – 2026-11-22
 

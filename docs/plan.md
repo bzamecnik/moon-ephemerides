@@ -83,6 +83,9 @@ Positions between events come from astronomy-engine. Next: M5 envelopes.
 - [x] long-term view: light lines through the same kind in consecutive beats
 - [ ] fit the phase waves and the envelopes to periodic terms (see M5)
 - [ ] keyboard access to chart marks (now: the table is the accessible alternative)
+- [x] sidebar layout on wide screens, icon controls (Heroicons), Show pop-up
+      with eclipse filters, play steps from 6 hours to a beat and live,
+      keyboard shortcuts (? lists them), hover and focus states
 - [ ] smooth phases from astronomy-engine in the phase-vs-distance chart
       instead of linear interpolation
 - [x] eclipses in the table, the ranking and the charts; the Moon's height
