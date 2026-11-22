@@ -1,13 +1,8 @@
+import type { ComponentChildren } from 'preact'
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { Catalog } from '../data/catalog'
-import {
-  eclipseLabel,
-  eventLabel,
-  moonEvents,
-  NOTABLE_KINDS,
-  type MoonEvent,
-  type NotableKind,
-} from '../events'
+import { eclipseLabel, eventLabel, moonEvents, type MoonEvent } from '../events'
+import { ALL, applyFilter, type Filter } from '../filters'
 import {
   formatDate,
   formatDateTime,
@@ -26,15 +21,18 @@ import { OrbitChart } from '../charts/OrbitChart'
 import { PhaseChart } from '../charts/PhaseChart'
 import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
+import { ApsisIcon, EclipseIcon, PhaseIcon } from './cells'
+import { FilterMenu } from './FilterMenu'
+import { Layout } from './Layout'
+import { Icon } from './Icon'
 import { RankingView } from './RankingView'
+import { cycleStep, nextPlayAnchor, playInterval, PLAY_STEPS, type PlayStep } from '../playback'
+import { shortcutAction, SHORTCUTS } from '../shortcuts'
 import { BEAT_DAYS, closestIndex, firstIndexAtOrAfter, stepAnchor, stepByTime, windowAround } from '../timeline'
 
 const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
 const BEAT_MS = BEAT_DAYS * 86_400_000
-const PLAY_INTERVAL_MS = 100
-/** ▶ Play by hours: a month in about 12 seconds */
-const PLAY_HOURS_MS = 6 * 3_600_000
 
 type View = 'table' | 'distance' | 'orbit' | 'beat' | 'phase' | 'longterm' | 'ranking'
 const withArticle = (s: string) => `${/^[aeiou]/.test(s) ? 'an' : 'a'} ${s}`
@@ -49,28 +47,22 @@ const VIEWS: { id: View; label: string }[] = [
   { id: 'ranking', label: 'Best alignments' },
 ]
 
-const KIND_LABELS: Record<NotableKind, string> = {
-  'new-super': 'New Supermoon',
-  'full-super': 'Full Supermoon',
-  'new-micro': 'New Micromoon',
-  'full-micro': 'Full Micromoon',
-}
-
 interface Props {
   catalog: Catalog
   initialAnchor: number
   initialView?: string | null
-  /** the current time, for the "Now" button */
-  now: number
+  /** the current time, for "Now" and live play (replaceable in tests) */
+  clock?: () => number
+  /** the site header, at the top of the sidebar */
+  header?: ComponentChildren
   /** called when the user picks a moment (to keep it in the URL) */
   onChange?: (anchor: number, view: string) => void
 }
 
-export function EventsView({ catalog, initialAnchor, initialView, now, onChange }: Props) {
+export function EventsView({ catalog, header, initialAnchor, initialView, clock = Date.now, onChange }: Props) {
   const [anchor, setAnchorState] = useState(initialAnchor)
   const [zone, setZone] = useState<Zone>('utc')
-  const [kinds, setKinds] = useState<ReadonlySet<NotableKind>>(new Set(NOTABLE_KINDS))
-  const [includeOrdinary, setIncludeOrdinary] = useState(true)
+  const [filter, setFilter] = useState<Filter>(ALL)
   const [view, setViewState] = useState<View>(VIEWS.find((v) => v.id === initialView)?.id ?? 'table')
   const setView = (v: View) => {
     setViewState(v)
@@ -81,10 +73,7 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
   const synodic = useMemo(() => synodicMarks(catalog.syzygies), [catalog])
   const anomalistic = useMemo(() => anomalisticMarks(catalog.apsides), [catalog])
 
-  const events = useMemo(
-    () => moonEvents(catalog.syzygies, { kinds, includeOrdinary }),
-    [catalog, kinds, includeOrdinary],
-  )
+  const events = useMemo(() => applyFilter(allEvents, filter), [allEvents, filter])
   const times = useMemo(() => events.map((e) => e.syzygy.time), [events])
   const closest = closestIndex(times, anchor)
   // the line marking the selected moment goes before this event
@@ -92,145 +81,211 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
   const { start, end } = windowAround(events.length, closest, ROWS_BEFORE, ROWS_AFTER)
   const closestEvent: MoonEvent | undefined = events[closest]
 
+  const allTimes = useMemo(() => allEvents.map((e) => e.syzygy.time), [allEvents])
   const setAnchor = (a: number) => {
     setAnchorState(a)
     onChange?.(a, view)
   }
-  const step = (n: number) => setAnchor(stepAnchor(times, anchor, n))
-  const stepBeat = (n: number) => setAnchor(stepByTime(times, anchor, n * BEAT_MS))
 
-  // ▶ Play: a beat forward every PLAY_INTERVAL_MS (as fast as a held key), stopping at the end of the data
+  // ▶ Play: the moment moves forward by the chosen step, until the end of the data or a pause
   const [playing, setPlaying] = useState(false)
-  const [playStep, setPlayStep] = useState<'beat' | 'hours'>('beat')
+  const [playStep, setPlayStep] = useState<PlayStep>('beat')
   useEffect(() => {
     if (!playing) return
-    const timer = setTimeout(() => {
-      if (playStep === 'hours') {
-        const next = anchor + PLAY_HOURS_MS
-        if (next > times.at(-1)!) setPlaying(false)
-        else setAnchor(next)
-        return
-      }
-      const next = stepByTime(times, anchor, BEAT_MS)
-      if (next === times[closestIndex(times, anchor)]) setPlaying(false)
+    const tick = () => {
+      const next = nextPlayAnchor(playStep, anchor, allTimes, clock())
+      if (next === null) setPlaying(false)
       else setAnchor(next)
-    }, PLAY_INTERVAL_MS)
+    }
+    // live starts at once, then follows the clock every minute
+    if (playStep === 'live' && Math.abs(anchor - clock()) > 60_000) {
+      tick()
+      return
+    }
+    const timer = setTimeout(tick, playInterval(playStep))
     return () => clearTimeout(timer)
-  }, [playing, playStep, anchor, times])
+  }, [playing, playStep, anchor, allTimes])
 
-  // ← / → step by one event, with Shift by one beat; not while typing in a field
+  // a step by hand stops the animation
+  const goTo = (a: number) => {
+    setPlaying(false)
+    setAnchor(a)
+  }
+  const step = (n: number) => goTo(stepAnchor(times, anchor, n))
+  // by a beat: the same phase, whatever the filters
+  const stepBeat = (n: number) => goTo(stepByTime(allTimes, anchor, n * BEAT_MS))
+
+  const dateInput = useRef<HTMLInputElement>(null)
+  const [showKeys, setShowKeys] = useState(false)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-      if (e.altKey || e.ctrlKey || e.metaKey) return
+      // the list of keys closes on any key (but not on Shift alone, typed for "?")
+      if (showKeys) {
+        if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return
+        e.preventDefault()
+        return setShowKeys(false)
+      }
       const target = e.target as HTMLElement | null
-      if (target?.closest('input, select, textarea, [contenteditable]')) return
+      const action = shortcutAction(e, {
+        inField: !!target?.closest('input, select, textarea, [contenteditable]'),
+        onButton: !!target?.closest('button, a, summary'),
+      })
+      if (!action) return
       e.preventDefault()
-      const dir = e.key === 'ArrowRight' ? 1 : -1
-      if (e.shiftKey) stepBeat(dir)
-      else step(dir)
+      switch (action.type) {
+        case 'step':
+          return step(action.n)
+        case 'beat':
+          return stepBeat(action.n)
+        case 'play':
+          return setPlaying(!playing)
+        case 'now':
+          return goTo(clock())
+        case 'date':
+          dateInput.current?.focus()
+          return dateInput.current?.select()
+        case 'view':
+          return setView(VIEWS[action.index].id)
+        case 'speed':
+          return setPlayStep(cycleStep(playStep, action.dir))
+        case 'help':
+          return setShowKeys(!showKeys)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
-  const toggleKind = (k: NotableKind) => {
-    const s = new Set(kinds)
-    if (s.has(k)) s.delete(k)
-    else s.add(k)
-    setKinds(s)
-  }
 
   return (
-    <div class="events-view">
+    <Layout
+      header={header}
+      side={
+        <>
       <section class="controls" aria-label="Navigation and filters">
         <div class="control-row">
-          <DateField anchor={anchor} zone={zone} onChange={setAnchor} />
-          <button type="button" onClick={() => setAnchor(now)}>
-            Now
-          </button>
+          <DateField anchor={anchor} zone={zone} onChange={goTo} inputRef={dateInput} />
+          <span class="segmented" role="group" aria-label="Time zone">
+            <button
+              type="button"
+              aria-pressed={zone === 'utc'}
+              onClick={() => setZone('utc')}
+              title="Show times in UTC (Coordinated Universal Time)"
+            >
+              UTC
+            </button>
+            <button
+              type="button"
+              aria-pressed={zone === 'local'}
+              onClick={() => setZone('local')}
+              title={`Show times in your local time: ${localZoneName()}, ${formatOffset(anchor)}`}
+            >
+              Local
+            </button>
+          </span>
+        </div>
+        <div class="control-row">
           <span class="button-group">
             <button
               type="button"
+              class="icon-button"
               onClick={() => stepBeat(-1)}
               aria-label="One beat earlier"
-              title="One beat (about 14 months) earlier (Shift+←)"
+              title="One beat earlier: the same phase about 14 months before (Shift+←)"
             >
-              ⏪
-            </button>
-            <button type="button" onClick={() => step(-1)} title="Previous event (← key)">
-              ◀ Previous event
-            </button>
-            <button type="button" onClick={() => step(1)} title="Next event (→ key)">
-              Next event ▶
+              <Icon name="chevronDoubleLeft" />
             </button>
             <button
               type="button"
+              class="icon-button"
+              onClick={() => step(-1)}
+              aria-label="Previous event"
+              title="Previous New or Full Moon (←)"
+            >
+              <Icon name="chevronLeft" />
+            </button>
+            <button type="button" class="icon-button" onClick={() => goTo(clock())} aria-label="Now" title="Now (N)">
+              <Icon name="clock" />
+            </button>
+            <button
+              type="button"
+              class="icon-button"
+              onClick={() => step(1)}
+              aria-label="Next event"
+              title="Next New or Full Moon (→)"
+            >
+              <Icon name="chevronRight" />
+            </button>
+            <button
+              type="button"
+              class="icon-button"
               onClick={() => stepBeat(1)}
               aria-label="One beat later"
-              title="One beat (about 14 months) later (Shift+→)"
+              title="One beat later: the same phase about 14 months after (Shift+→)"
             >
-              ⏩
+              <Icon name="chevronDoubleRight" />
             </button>
           </span>
           <span class="button-group">
             <button
               type="button"
-              class="play"
+              class="icon-button play"
               aria-pressed={playing}
+              aria-label={playing ? 'Pause' : 'Play'}
               onClick={() => setPlaying(!playing)}
-              title={playStep === 'beat' ? 'Step forward by one beat at a time' : 'Step forward by 6 hours at a time'}
+              title={playing ? 'Pause (Space)' : 'Play: step forward again and again (Space)'}
             >
-              {playing ? '⏸ Pause' : '▶ Play'}
+              <Icon name={playing ? 'pause' : 'play'} />
             </button>
             <select
               aria-label="Play step"
+              title="Play step ([ and ] keys)"
               value={playStep}
-              onChange={(e) => setPlayStep(e.currentTarget.value as 'beat' | 'hours')}
+              onChange={(e) => setPlayStep(e.currentTarget.value as PlayStep)}
             >
-              <option value="beat">by beats</option>
-              <option value="hours">by 6 hours</option>
+              {PLAY_STEPS.map((p) => (
+                <option key={p.id} value={p.id} title={p.title}>
+                  {p.id === 'live' ? 'live' : `by ${p.label}`}
+                </option>
+              ))}
             </select>
           </span>
-          <fieldset class="zone">
-            <legend class="visually-hidden">Time zone</legend>
-            <label>
-              <input type="radio" name="zone" checked={zone === 'utc'} onChange={() => setZone('utc')} /> UTC
-            </label>
-            <label>
-              <input type="radio" name="zone" checked={zone === 'local'} onChange={() => setZone('local')} /> Local
-              time ({localZoneName()}, {formatOffset(anchor)})
-            </label>
-          </fieldset>
+          <button
+            type="button"
+            class="icon-button"
+            aria-label="Keyboard shortcuts"
+            aria-expanded={showKeys}
+            title="Keyboard shortcuts (?)"
+            onClick={() => setShowKeys(!showKeys)}
+          >
+            <Icon name="question" />
+          </button>
         </div>
-        <fieldset class="control-row kinds">
-          <legend class="visually-hidden">Kinds of events</legend>
-          {NOTABLE_KINDS.map((k) => (
-            <label key={k} class={`kind kind-${k}`}>
-              <input type="checkbox" checked={kinds.has(k)} onChange={() => toggleKind(k)} /> {KIND_LABELS[k]}
-            </label>
-          ))}
-          <label class="kind kind-ordinary">
-            <input type="checkbox" checked={includeOrdinary} onChange={() => setIncludeOrdinary(!includeOrdinary)} />{' '}
-            Other New and Full Moons
-          </label>
-        </fieldset>
-        <p class="hint keys">
-          Tip: <kbd>←</kbd> and <kbd>→</kbd> step through the events, with <kbd>Shift</kbd> by one beat (about 14
-          months, the same phase at the same point of the distance cycle).
-        </p>
+        <div class="control-row">
+          <FilterMenu filter={filter} onChange={setFilter} />
+        </div>
+        {showKeys && (
+          // closed by any click (or any key, see above)
+          <div class="popup-backdrop" onClick={() => setShowKeys(false)}>
+            <div class="popup" role="dialog" aria-label="Keyboard shortcuts">
+              <h2>Keyboard shortcuts</h2>
+              <dl class="keys-list">
+                {SHORTCUTS.map(([keys, what]) => (
+                  <div key={what}>
+                    <dt>{keys.map((k) => (k === '…' ? ' … ' : <kbd key={k}>{k}</kbd>))}</dt>
+                    <dd>{what}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p class="hint">Press any key or click to close.</p>
+            </div>
+          </div>
+        )}
       </section>
 
-      <p class="summary" data-testid="summary" aria-live="polite">
-        {closestEvent ? (
-          <>
-            Closest: <strong>{eventLabel(closestEvent)}</strong> on {formatZoned(closestEvent.syzygy.time, zone)} (
-            {formatRelative(closestEvent.syzygy.time, anchor)}), {describeDelta(closestEvent)}
-            {closestEvent.syzygy.eclipse && <>, with {withArticle(eclipseLabel(closestEvent.syzygy.eclipse))}</>}.
-          </>
-        ) : (
-          'No events of the chosen kinds.'
-        )}
-      </p>
+      <StatusCard event={closestEvent} anchor={anchor} zone={zone} />
+        </>
+      }
+    >
 
       <div class="tabs" role="tablist" aria-label="Views">
         {VIEWS.map((v) => (
@@ -321,6 +376,36 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
           />
         )}
       </div>
+    </Layout>
+  )
+}
+
+/** The New or Full Moon closest to the selected moment. */
+function StatusCard({ event, anchor, zone }: { event: MoonEvent | undefined; anchor: number; zone: Zone }) {
+  return (
+    <div class="summary" data-testid="summary" aria-live="polite">
+      {event ? (
+        <>
+          <div class="summary-title">
+            Closest:{' '}
+            <strong>
+              <PhaseIcon event={event} /> {eventLabel(event)}
+            </strong>
+          </div>{' '}
+          <div>on {formatZoned(event.syzygy.time, zone)}</div>{' '}
+          <div class="summary-when">{formatRelative(event.syzygy.time, anchor)}</div>{' '}
+          <div>
+            <ApsisIcon kind={event.apsis} /> {describeDelta(event)}
+          </div>{' '}
+          {event.syzygy.eclipse && (
+            <div>
+              <EclipseIcon eclipse={event.syzygy.eclipse} /> with {withArticle(eclipseLabel(event.syzygy.eclipse))}
+            </div>
+          )}
+        </>
+      ) : (
+        'No events of the chosen kinds.'
+      )}
     </div>
   )
 }
@@ -332,7 +417,17 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
  * prefix ('1989', '1989-05', '1989-05-07', '1989-05-07 13:45') already moves
  * the selection.
  */
-function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onChange: (a: number) => void }) {
+function DateField({
+  anchor,
+  zone,
+  onChange,
+  inputRef,
+}: {
+  anchor: number
+  zone: Zone
+  onChange: (a: number) => void
+  inputRef?: preact.Ref<HTMLInputElement>
+}) {
   // the text being typed; null when not editing
   const [draft, setDraft] = useState<string | null>(null)
   const picker = useRef<HTMLInputElement>(null)
@@ -342,8 +437,9 @@ function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onC
   return (
     <span class="date-field">
       <label>
-        Date and time{' '}
+        <span class="visually-hidden">Date and time</span>
         <input
+          ref={inputRef}
           type="text"
           inputMode="numeric"
           placeholder="YYYY-MM-DD HH:MM"
@@ -372,11 +468,12 @@ function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onC
       </label>
       <button
         type="button"
+        class="icon-button"
         aria-label="Choose a date from a calendar"
         title="Choose a date from a calendar"
         onClick={() => picker.current?.showPicker?.()}
       >
-        📅
+        <Icon name="calendar" />
       </button>
       <input
         ref={picker}

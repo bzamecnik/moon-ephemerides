@@ -10,7 +10,7 @@ const catalog = decodeCatalog(rawFixture)
 
 function setup(anchor = utc('2023-01-10T00:00')) {
   const user = userEvent.setup()
-  render(<EventsView catalog={catalog} initialAnchor={anchor} now={utc('2023-02-01T12:00')} />)
+  render(<EventsView catalog={catalog} initialAnchor={anchor} clock={() => utc('2023-02-01T12:00')} />)
   return user
 }
 
@@ -49,15 +49,15 @@ describe('EventsView', () => {
 
   it('prefers a recent event to a later one', () => {
     setup(utc('2023-02-06T00:00'))
-    expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-05 18:29 UTC (6 hours ago)')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-05 18:29 UTC 6 hours ago')
   })
 
   it('names the eclipses', () => {
     const raw = { ...rawFixture, syzygies: { ...rawFixture.syzygies, solar_eclipse: [-1, -1, -1, 1, -1, -1] } }
-    render(<EventsView catalog={decodeCatalog(raw)} initialAnchor={utc('2023-01-21T00:00')} now={utc('2023-02-01T12:00')} />)
+    render(<EventsView catalog={decodeCatalog(raw)} initialAnchor={utc('2023-01-21T00:00')} clock={() => utc('2023-02-01T12:00')} />)
     const cells = eventRows().map((r) => within(r).getByTestId('eclipse').textContent?.trim())
     expect(cells).toEqual(['', '', '', 'Annular solar', '', ''])
-    expect(screen.getByTestId('summary')).toHaveTextContent(/perigee, with an annular solar eclipse\.$/)
+    expect(screen.getByTestId('summary')).toHaveTextContent(/perigee\s*with an annular solar eclipse$/)
   })
 
   it('shows the time difference to the perigee or apogee', () => {
@@ -133,17 +133,33 @@ describe('EventsView', () => {
 
   it('filters the kinds of events', async () => {
     const user = setup()
+    await user.click(screen.getByText(/show: all/i))
     await user.click(screen.getByRole('checkbox', { name: /full micromoon/i }))
     expect(labels()).toEqual(['Full Moon', 'New Supermoon', 'New Supermoon', 'New Supermoon'])
-    await user.click(screen.getByRole('checkbox', { name: /other new and full moons/i }))
+    await user.click(screen.getByRole('checkbox', { name: /other full moon/i }))
     expect(labels()).toEqual(['New Supermoon', 'New Supermoon', 'New Supermoon'])
+    expect(screen.getByText(/show: 4 of 6 kinds/i)).toBeInTheDocument()
+  })
+
+  it('can list only eclipses', async () => {
+    const raw = { ...rawFixture, syzygies: { ...rawFixture.syzygies, lunar_eclipse: [2, -1, -1, -1, -1, -1] } }
+    const user = userEvent.setup()
+    render(<EventsView catalog={decodeCatalog(raw)} initialAnchor={utc('2023-01-10T00:00')} />)
+    await user.click(screen.getByText(/show: all/i))
+    expect(screen.getByRole('checkbox', { name: /total lunar/i })).toBeDisabled()
+    await user.click(screen.getByRole('checkbox', { name: /only eclipses/i }))
+    expect(labels()).toEqual(['Full Moon'])
+    await user.click(screen.getByRole('checkbox', { name: /total lunar/i }))
+    expect(labels()).toEqual([])
+    await user.click(screen.getByRole('button', { name: /show all/i }))
+    expect(labels()).toHaveLength(6)
   })
 
   it('switches between UTC and local time', async () => {
     const user = setup()
-    await user.click(screen.getByRole('radio', { name: /local/i }))
+    await user.click(screen.getByRole('button', { name: /^local$/i }))
     // TZ=Europe/Prague in the tests
-    expect(screen.getByRole('radio', { name: /local/i }).parentElement).toHaveTextContent('Europe/Prague')
+    expect(screen.getByRole('button', { name: /^local$/i })).toHaveAttribute('title', expect.stringContaining('Europe/Prague'))
     expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-07 00:08 (UTC+1)')
     expect(screen.getByRole('columnheader', { name: /^date and time/i })).toHaveTextContent('Europe/Prague')
   })
@@ -179,7 +195,7 @@ describe('EventsView', () => {
   it('plays forward by beats until the end of the data or until paused', () => {
     vi.useFakeTimers()
     try {
-      render(<EventsView catalog={catalog} initialAnchor={utc('2022-12-08T00:00')} now={utc('2023-02-01T12:00')} />)
+      render(<EventsView catalog={catalog} initialAnchor={utc('2022-12-08T00:00')} clock={() => utc('2023-02-01T12:00')} />)
       fireEvent.click(screen.getByRole('button', { name: /play/i }))
       expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument()
       act(() => void vi.advanceTimersByTime(100))
@@ -195,12 +211,54 @@ describe('EventsView', () => {
   it('plays forward by 6 hours', () => {
     vi.useFakeTimers()
     try {
-      render(<EventsView catalog={catalog} initialAnchor={utc('2023-01-21T00:00')} now={utc('2023-02-01T12:00')} />)
+      render(<EventsView catalog={catalog} initialAnchor={utc('2023-01-21T00:00')} clock={() => utc('2023-02-01T12:00')} />)
       fireEvent.change(screen.getByRole('combobox', { name: /play step/i }), { target: { value: 'hours' } })
       fireEvent.click(screen.getByRole('button', { name: /play/i }))
       act(() => void vi.advanceTimersByTime(100))
       act(() => void vi.advanceTimersByTime(100))
       expect(screen.getByRole('textbox', { name: /date and time/i })).toHaveValue('2023-01-21 12:00')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('has keys for now, the views, the date, play and a list of them', async () => {
+    const user = setup()
+    await user.keyboard('n')
+    expect(screen.getByRole('textbox', { name: /date and time/i })).toHaveValue('2023-02-01 12:00')
+    await user.keyboard('3')
+    expect(screen.getByRole('tab', { name: /orbit/i })).toHaveAttribute('aria-selected', 'true')
+    await user.keyboard('?')
+    expect(screen.getByRole('dialog', { name: 'Keyboard shortcuts' })).toHaveTextContent('play / pause')
+    await user.keyboard('x')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    await user.keyboard('?')
+    await user.click(screen.getByRole('dialog'))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    await user.keyboard(' ')
+    expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument()
+    await user.keyboard('k')
+    expect(screen.getByRole('button', { name: /^play$/i })).toBeInTheDocument()
+    await user.keyboard(']')
+    expect(screen.getByRole('combobox', { name: /play step/i })).toHaveValue('beat')
+    await user.keyboard('[[[[') // '[[' types one '['
+    expect(screen.getByRole('combobox', { name: /play step/i })).toHaveValue('week')
+    await user.keyboard('d')
+    expect(screen.getByRole('textbox', { name: /date and time/i })).toHaveFocus()
+  })
+
+  it('follows the clock when playing live', () => {
+    vi.useFakeTimers()
+    try {
+      let clockTime = utc('2023-02-01T12:00')
+      render(<EventsView catalog={catalog} initialAnchor={utc('2023-01-10T00:00')} clock={() => clockTime} />)
+      fireEvent.change(screen.getByRole('combobox', { name: /play step/i }), { target: { value: 'live' } })
+      fireEvent.click(screen.getByRole('button', { name: /play/i }))
+      const date = () => screen.getByRole('textbox', { name: /date and time/i })
+      expect(date()).toHaveValue('2023-02-01 12:00')
+      clockTime += 60_000
+      act(() => void vi.advanceTimersByTime(60_000))
+      expect(date()).toHaveValue('2023-02-01 12:01')
     } finally {
       vi.useRealTimers()
     }

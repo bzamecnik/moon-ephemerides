@@ -3,7 +3,7 @@
  * the Sun: the Sun stays in one direction (angle 0), the Moon goes round once
  * per synodic month, the line of apsides once per beat (411.8 days) and the
  * line of nodes once per eclipse year (346.6 days). See docs/astronomy.md
- * ("Looking from above: the frame of the Sun").
+ * ("Looking from above: turning with the Earth–Sun line").
  *
  * Positions come from astronomy-engine (Don Cross, MIT); the mean perigee and
  * node from Meeus, Astronomical Algorithms, ch. 47.
@@ -111,4 +111,105 @@ const PHASE_NAMES = [
 /** The usual name of the phase at a given elongation (eight 45° sectors centred on 0°, 45°, …). */
 export function phaseName(elongation: number): string {
   return PHASE_NAMES[Math.round(wrap360(elongation) / 45) % 8]
+}
+
+/** days of the Moon's path drawn before and after the moment */
+const TRAIL_PAST_DAYS = 14
+const TRAIL_COMING_DAYS = 15
+
+/**
+ * The span of the Moon's path to draw, sliding with the moment: 29 days, just
+ * under one round in the frame turning with the Earth–Sun line (a synodic month, 29.53 days), so
+ * that the path doesn't overlap itself, and over half of it ahead, so that the
+ * next New or Full Moon is always on it.
+ */
+export function trailWindow(anchor: number): { t0: number; t1: number } {
+  return { t0: anchor - TRAIL_PAST_DAYS * DAY_MS, t1: anchor + TRAIL_COMING_DAYS * DAY_MS }
+}
+
+/** Where the path crosses the plane of the Earth's orbit (the nodes), interpolated linearly between samples. */
+export function planeCrossings(track: readonly MoonPlace[]): (Omit<MoonPlace, 'latitude'> & { ascending: boolean })[] {
+  const out: (Omit<MoonPlace, 'latitude'> & { ascending: boolean })[] = []
+  for (let i = 1; i < track.length; i++) {
+    const [a, b] = [track[i - 1], track[i]]
+    if (a.latitude < 0 === b.latitude < 0) continue
+    const f = a.latitude / (a.latitude - b.latitude)
+    const lerp = (x: number, y: number) => x + f * (y - x)
+    // elongation wraps at 360°: interpolate across the wrap
+    const de = wrap180(b.elongation - a.elongation)
+    out.push({
+      time: lerp(a.time, b.time),
+      ascending: b.latitude > a.latitude,
+      elongation: wrap360(a.elongation + f * de),
+      distanceKm: lerp(a.distanceKm, b.distanceKm),
+    })
+  }
+  return out
+}
+
+/**
+ * How close to the plane of the Earth's orbit (degrees of latitude) a New or
+ * Full Moon must be for some eclipse: in 1850–2149 every eclipse came within
+ * 1.6°, and every New or Full Moon farther than 1.4° had none.
+ */
+export const ECLIPSE_LATITUDE = 1.5
+
+/** the mean tilt of the Moon's orbit to the plane of the Earth's orbit, degrees */
+export const INCLINATION = 5.145
+
+/**
+ * How far (degrees along the orbit) either side of a node the Moon stays within
+ * ECLIPSE_LATITUDE of the plane: its height is about INCLINATION · sin(angle from the node).
+ */
+export const ECLIPSE_NODE_DISTANCE = (Math.asin(ECLIPSE_LATITUDE / INCLINATION) * 180) / Math.PI
+
+/**
+ * The direction (elongation, degrees) of the true perigee or apogee at `time`,
+ * turning evenly from one of the given apsides (of one kind, sorted) to the
+ * next, so that the line passes through each when the Moon gets there.
+ * The mean perigee of `meanElements` is smoother but up to ±25° off (evection).
+ */
+export function apsisDirection(
+  places: readonly { time: number; elongation: number }[],
+  time: number,
+): number | undefined {
+  const i = places.findIndex((p) => p.time >= time)
+  if (i < 0) return undefined
+  if (places[i].time === time) return wrap360(places[i].elongation)
+  if (i === 0) return undefined
+  const [a, b] = [places[i - 1], places[i]]
+  const f = (time - a.time) / (b.time - a.time)
+  return wrap360(a.elongation + f * wrap180(b.elongation - a.elongation))
+}
+
+/**
+ * How close (degrees) the node line must point to the Sun for New or Full Moons
+ * to be eclipses: in 1850–2149 every eclipse came within 18.6°, and no New or
+ * Full Moon closer than 16.6° missed one. Sometimes called the eclipse limit.
+ */
+export const ECLIPSE_SEASON_ANGLE = 18.6
+
+/**
+ * The eclipse seasons overlapping [t0, t1]: the spans when the node line points
+ * within ECLIPSE_SEASON_ANGLE of the Sun, about five weeks twice a year.
+ */
+export function eclipseSeasons(t0: number, t1: number): { start: number; end: number }[] {
+  const off = (t: number) => lineToSun(orbitFrame(t).node) - ECLIPSE_SEASON_ANGLE
+  // the edge between two samples, linearly
+  const edge = (ta: number, a: number, tb: number, b: number) => ta + ((tb - ta) * a) / (a - b)
+  const out: { start: number; end: number }[] = []
+  const from = t0 - 40 * DAY_MS
+  let [tPrev, prev] = [from, off(from)]
+  let start: number | undefined = prev < 0 ? from : undefined
+  for (let t = from + DAY_MS; t <= t1 + 40 * DAY_MS; t += DAY_MS) {
+    const cur = off(t)
+    if (prev >= 0 && cur < 0) start = edge(tPrev, prev, t, cur)
+    if (prev < 0 && cur >= 0 && start !== undefined) {
+      const end = edge(tPrev, prev, t, cur)
+      if (end >= t0 && start <= t1) out.push({ start, end })
+      start = undefined
+    }
+    ;[tPrev, prev] = [t, cur]
+  }
+  return out
 }

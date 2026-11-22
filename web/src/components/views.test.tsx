@@ -16,7 +16,7 @@ function setup(view?: string) {
       catalog={catalog}
       initialAnchor={utc('2023-01-10T00:00')}
       initialView={view}
-      now={utc('2023-02-01T12:00')}
+      clock={() => utc('2023-02-01T12:00')}
       onChange={(a, v) => changes.push([a, v])}
     />,
   )

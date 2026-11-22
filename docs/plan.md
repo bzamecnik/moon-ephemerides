@@ -17,10 +17,11 @@ tables for 1901–2100 (same events, times to the minute, Δ to 0.008 d), see
 `validation.md`. M3 done. M4: the table, the beat chart, the phase-vs-distance
 chart (linear interpolation between events) and the ranking of the best
 alignments are in, as tabs sharing the selected moment, plus a distance-vs-time
-chart with the Moon's height above the ecliptic, the orbit seen from above in
-the frame of the Sun, a long-term view (one event per half beat over decades)
+chart with the Moon's height above the ecliptic, the orbit seen from above,
+turning with the Earth–Sun line (true perigee/apogee, eclipse zones), a long-term view (one event per half beat over decades)
 and keyboard navigation by event and by beat. Solar and lunar eclipses are in
-the catalog and the views; `docs/astronomy.md` is shown as a learning page.
+the catalog and the views, with the eclipse seasons shaded; `docs/astronomy.md` is shown as a learning page
+(three rhythms, examples linking into the app); pages Explore / About / Learn in a sidebar.
 Positions between events come from astronomy-engine. Next: M5 envelopes.
 
 ## M1 – Compute and validate (Python, `compute/`) ✅
@@ -83,6 +84,9 @@ Positions between events come from astronomy-engine. Next: M5 envelopes.
 - [x] long-term view: light lines through the same kind in consecutive beats
 - [ ] fit the phase waves and the envelopes to periodic terms (see M5)
 - [ ] keyboard access to chart marks (now: the table is the accessible alternative)
+- [x] sidebar layout on wide screens, icon controls (Heroicons), Show pop-up
+      with eclipse filters, play steps from 6 hours to a beat and live,
+      keyboard shortcuts (? lists them), hover and focus states
 - [ ] smooth phases from astronomy-engine in the phase-vs-distance chart
       instead of linear interpolation
 - [x] eclipses in the table, the ranking and the charts; the Moon's height

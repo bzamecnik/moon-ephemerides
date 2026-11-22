@@ -7,11 +7,13 @@ import { Marked, type Tokens } from 'marked'
 
 export const LEARN_PREFIX = 'learn-'
 const DOCS_URL = 'https://github.com/bzamecnik/moon-ephemerides/blob/main/docs/'
+/** links to a moment in the published app (they work on GitHub too) open here instead */
+const APP_URL = 'https://bzamecnik.github.io/moon-ephemerides/'
 
 /** Sections of docs/astronomy.md that the views link to (a test checks they exist). */
 export const LEARN = {
-  rhythms: 'learn-two-rhythms',
-  frame: 'learn-looking-from-above-the-frame-of-the-sun',
+  rhythms: 'learn-three-rhythms',
+  frame: 'learn-looking-from-above-turning-with-the-earth-sun-line',
   inchworm: 'learn-why-the-alignments-wobble-the-inchworm',
   longView: 'learn-the-long-view-one-event-per-half-beat',
   phasePicture: 'learn-the-phase-vs-distance-picture',
@@ -55,9 +57,13 @@ export function renderLearning(markdown: string): LearningPage {
         return `<h${depth + 1} id="${id}">${this.parser.parseInline(tokens)}</h${depth + 1}>\n`
       },
       link({ href, title: linkTitle, tokens }: Tokens.Link) {
-        const url = /^[a-z]+:|^#/i.test(href) ? href : new URL(href, DOCS_URL).href
+        const url = href.startsWith(APP_URL + '#')
+          ? href.slice(APP_URL.length)
+          : /^[a-z]+:|^#/i.test(href)
+            ? href
+            : new URL(href, DOCS_URL).href
         const t = linkTitle ? ` title="${linkTitle}"` : ''
-        return `<a href="${url}"${t}>${this.parser.parseInline(tokens)}</a>`
+        return `<a href="${url.replace(/&/g, '&amp;')}"${t}>${this.parser.parseInline(tokens)}</a>`
       },
     },
   })

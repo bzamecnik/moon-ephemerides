@@ -6,7 +6,33 @@ explains how they fit together, why supermoons, micromoons and eclipses come
 in seasons, and what the views of the app show. The numbers come from the
 catalog computed for 1850–2149 unless said otherwise.
 
-## Two rhythms
+## Three rhythms
+
+**Phases.** The Sun always lights one half of the Moon. From the Earth we see
+that lit half at an angle that depends on where the Moon stands relative to
+the Sun. When the Moon is between the Earth and the Sun, its lit side faces
+away from us: New Moon. A quarter of a round later we see half of the lit
+side (first quarter), opposite the Sun all of it (Full Moon), then half again
+(last quarter). From New Moon to New Moon takes a **synodic month**, 29.53
+days, two days longer than one turn round the Earth against the stars (27.32
+days): meanwhile the Earth has moved on along its orbit, so the Moon has to go
+a bit farther to line up with the Sun again.
+
+**Distance.** The Moon's orbit is not a circle but close to an ellipse, with
+the Earth off its centre. So the Moon's distance swings, between about
+356 000 and 407 000 km: closest at **perigee**, farthest at **apogee**. From
+perigee to perigee takes an **anomalistic month**, 27.55 days; the ellipse
+itself slowly turns forwards, so it is a little longer than a turn against
+the stars.
+
+**Height.** The Moon's orbit is tilted by about 5.1° to the plane of the
+Earth's orbit round the Sun (the *ecliptic*). The two planes cross along a
+line through the Earth, the **line of nodes**. Twice a month the Moon crosses
+the plane, going north at the *ascending node* (☊) and south at the
+*descending node* (☋); in between it is up to 5.1° north or south. From one
+ascending node to the next takes a **draconic month**, 27.21 days: the node
+line slowly turns backwards, against the Moon, so it is a little shorter than
+a turn against the stars.
 
 | Month | From … to the same again | Mean length (days) |
 |---|---|---|
@@ -14,10 +40,15 @@ catalog computed for 1850–2149 unless said otherwise.
 | anomalistic | perigee (closest point of the orbit) | 27.554550 |
 | draconic | ascending node (Moon crossing the ecliptic) | 27.212221 |
 
+The phases and the distance together make supermoons and micromoons; the
+phases and the height make eclipses ([Nodes and eclipses](#learn-nodes-and-eclipses)
+below).
+
 A **syzygy** is a New or Full Moon (the Moon in line with Earth and Sun).
-An **apsis** is a perigee or an apogee. The events lie on two "clocks" that
-tick at different rates, so the time between a syzygy and the nearest apsis,
-**Δ = t(apsis) − t(syzygy)**, drifts by about two days every month:
+An **apsis** is a perigee or an apogee. The two kinds of events lie on two
+"clocks" that tick at different rates, so the time between a syzygy and the
+nearest apsis, **Δ = t(apsis) − t(syzygy)**, drifts by about two days every
+month:
 
 - half a synodic month (New → Full) is 14.765 d, half an anomalistic month
   (perigee → apogee) is 13.777 d, so Δ shifts by ≈ 0.99 d per half-month;
@@ -27,9 +58,10 @@ tick at different rates, so the time between a syzygy and the nearest apsis,
 
 When Δ ≈ 0 for one syzygy, the syzygies half a month before and after sit
 symmetrically at Δ ≈ ±1.4 d from the opposite apsis. Example (Jan 2023):
-Full Moon Jan 6, apogee +1.42 d → New Moon Jan 21, perigee +0.003 d → Full Moon
-Feb 5, apogee −1.40 d. So "small Δ" and "symmetric neighbours" are one and
-the same condition.
+[Full Moon Jan 6](https://bzamecnik.github.io/moon-ephemerides/#date=2023-01-06T23:07&view=table), apogee +1.42 d →
+[New Moon Jan 21](https://bzamecnik.github.io/moon-ephemerides/#date=2023-01-21T20:53&view=table), perigee +0.003 d →
+[Full Moon Feb 5](https://bzamecnik.github.io/moon-ephemerides/#date=2023-02-05T18:28&view=table), apogee −1.40 d. So "small
+Δ" and "symmetric neighbours" are one and the same condition.
 
 The drift is not uniform; see "Why the alignments wobble" below.
 
@@ -42,21 +74,24 @@ apogee. A **supermoon** has relative distance ≤ 0.1 (the astropixels tables
 print 1 − this value for supermoons), a **micromoon** ≥ 0.9. Our pairing
 reproduces Espenak's numbers to 0.001 (see [the validation](./validation.md)).
 
-## Looking from above: the frame of the Sun
+## Looking from above: turning with the Earth–Sun line
 
 The *Orbit from above* view looks down on the Earth from far above its north
-pole and turns with the Sun, so that the Sun always stays in the same
-direction. In this frame:
+pole. The picture is centred on the Earth and turns once a year, so that the
+line from the Earth to the Sun stays fixed, pointing to the right. (It is not
+the Sun's own frame: seen from the Sun, the Earth would go round it.) In this
+turning frame:
 
 - **the phases stay put**: New Moon is on the Sun's side, Full Moon opposite,
   first and last quarter at right angles. The Moon goes round once per
   synodic month (29.53 days), its lit half always facing the Sun;
-- **the line of apsides** (perigee–apogee) turns *backwards* once per
-  **411.8 days, the beat**. Seen from the stars it turns forwards once in
-  8.85 years, but the Sun goes round once a year, much faster, so relative to
-  the Sun it falls behind: 1 / (1/365.24 − 1/3231.5) = 411.8 days. This is
-  the same number as 1 / (1/27.5546 − 1/29.5306): both say how long it takes
-  the phases to go once round the distance cycle;
+- **the perigee and apogee directions** turn *backwards* once per
+  **411.8 days, the beat**. On average they lie on one line through the Earth,
+  the *line of apsides*. Seen from the stars it turns forwards once in 8.85
+  years, but the Sun goes round once a year, much faster, so relative to the
+  Sun it falls behind: 1 / (1/365.24 − 1/3231.5) = 411.8 days. This is the
+  same number as 1 / (1/27.5546 − 1/29.5306): both say how long it takes the
+  phases to go once round the distance cycle;
 - **the line of nodes** (where the orbit crosses the plane of the Earth's
   orbit) turns backwards once per **eclipse year, 346.6 days**: seen from the
   stars it turns backwards once in 18.6 years, the Sun forwards once a year,
@@ -68,14 +103,25 @@ and Full Moons fall near perigee and apogee: the season of supermoons and
 micromoons, and of the strongest evection (the orbit is stretched most, see
 "the inchworm" below). When the node line points at the Sun (twice per
 eclipse year, every 173.3 days), New and Full Moons happen close to the plane:
-an eclipse season.
+an [eclipse season](https://bzamecnik.github.io/moon-ephemerides/#date=2017-08-19T00:00&view=orbit).
 
-The lines drawn are the *mean* ones (Meeus, *Astronomical Algorithms*,
-ch. 47). The real perigee swings up to ± 25° around the mean one, because of
-evection, the real apogee only ± 6°, and the real node ± 2° (checked against
-the catalog, 1850–2149). The oval of the orbit is drawn four times more
-stretched than it is: at true scale (eccentricity 0.055, distance 356 000 to
-407 000 km) it looks like a circle.
+The real perigee and apogee don't keep to the average line. The view draws
+the line through them: each half points at the last real perigee (▼) or
+apogee (▲) and turns evenly to the next, so the Moon's path meets it at each
+mark. The perigee swings around the average direction (Meeus, *Astronomical
+Algorithms*, ch. 47) because of evection, the apogee much less, so the two
+halves form a bent line. In the catalog (1850–2149) the real perigee is within
+5° of the average when the line points at the Sun, and up to 25° off when it
+is 50–80° from the Sun; the apogee is always within 6°. So the perigee and
+apogee line up best just in the season of supermoons and micromoons. Playing
+the view by days, the perigee seems pulled towards the Sun line from both
+sides, and snaps across quickly when the line is near right angles to it.
+
+The node line is the average one; the real node is within ± 2° of it. The
+shaded zones around it, ± 17°, are where the Moon is within 1.5° of the plane,
+close enough for an eclipse (5.1° × sin 17° ≈ 1.5°). The oval of the orbit is
+drawn four times more stretched than it is: at true scale (eccentricity 0.055,
+distance 356 000 to 407 000 km) it looks like a circle.
 
 ## Why the alignments wobble (the "inchworm")
 
@@ -125,8 +171,8 @@ relative to the Sun it lines up every ≈ 411.8 days, the same beat as above.
 At those times a New or Full Moon is near an apsis *and* the orbit is most
 eccentric, so the perigee is especially close (and the apogee especially far).
 Near perihelion (early January) the Sun's pull is stronger still, which is
-why many of the extreme perigees fall in winter (e.g. 1912 Jan 4, 356 375 km;
-2023 Jan 21, 356 568 km).
+why many of the extreme perigees fall in winter (e.g. [1912 Jan 4](https://bzamecnik.github.io/moon-ephemerides/#date=1912-01-04T13:34&view=distance),
+356 375 km; [2023 Jan 21](https://bzamecnik.github.io/moon-ephemerides/#date=2023-01-21T20:57&view=distance), 356 568 km).
 
 ## The long view: one event per half beat
 
@@ -147,8 +193,8 @@ The *Long term* view keeps one event of each such stretch:
 Over decades Δ of the best-aligned events forms a sawtooth, one for New Moons
 and one for Full Moons: it drifts by about −0.05 days (an hour) per beat,
 from about +0.4 to −0.4 days, then the next stretch takes over and it jumps
-back. So each phase gets a near-perfect alignment every 18–20 years (Full Moon
-2012-05-06, New Moon 2023-01-21), and New and Full take turns. The pattern
+back. So each phase gets a near-perfect alignment every 18–20 years ([Full Moon
+2012-05-06](https://bzamecnik.github.io/moon-ephemerides/#date=2012-05-06T03:35&view=longterm), [New Moon 2023-01-21](https://bzamecnik.github.io/moon-ephemerides/#date=2023-01-21T20:53&view=longterm)), and New and Full take turns. The pattern
 repeats after 251 synodic ≈ 269 anomalistic months (20.29 years, they differ
 by only 0.01 day); the saros (223 ≈ 239 months, 18.03 years) is a worse fit
 (0.2 day). In the catalog Δ of the best alignments 20.29 years apart differs
@@ -185,6 +231,16 @@ descending node. A New Moon or a Full Moon that happens near a node is an
 eclipse: the Moon covers the Sun (solar eclipse, at New Moon) or the Earth's
 shadow covers the Moon (lunar eclipse, at Full Moon).
 
+That happens only when the node line points close to the Sun: in an
+**eclipse season**, about five weeks twice a year (every 173.3 days). In the
+catalog every eclipse came with the node line within 18.6° of the Sun line,
+and no New or Full Moon missed one when it was closer than 16.6°. A season is
+longer than a month, so each brings at least one solar eclipse, often a lunar
+one two weeks before or after. The *Distance* view shades the seasons, e.g.
+[August 2017](https://bzamecnik.github.io/moon-ephemerides/#date=2017-08-21T18:30&view=distance) with the total solar eclipse
+across the USA, or [February 2027](https://bzamecnik.github.io/moon-ephemerides/#date=2027-02-06T15:56&view=distance) with an
+annular eclipse at a New Micromoon and a penumbral lunar one two weeks later.
+
 From the catalog (1850–2149, the Moon's height from astronomy-engine): every
 eclipse happened with the Moon within 1.6° of the plane, every New or Full
 Moon without one was farther than 1.4°. In between it depends on the
@@ -193,7 +249,7 @@ eclipses less than 1.0°.
 
 The distance decides between a total and an annular solar eclipse: near
 perigee the Moon looks big enough to cover the whole Sun, near apogee a
-bright ring stays around it. In 1850–2149 all 218 total solar eclipses
+bright ring stays around it. In 1850–2149 all 218 total solar eclipses (like [2024 Apr 8](https://bzamecnik.github.io/moon-ephemerides/#date=2024-04-08T18:20&view=orbit))
 happened with the Moon closer than 381 440 km (151 of them were New
 Supermoons, none was a micromoon). All 220 annular ones happened farther
 than 372 750 km (89 were New Micromoons, none was a supermoon). In between,

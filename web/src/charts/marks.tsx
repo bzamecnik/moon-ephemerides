@@ -46,6 +46,39 @@ const LEGEND: { cls: string; label: string }[] = [
   { cls: 'mark mark-ordinary mark-full', label: 'other Full Moon' },
 ]
 
+/** ☊ where the Moon crosses the plane of the Earth's orbit going north, ☋ going south */
+export const nodeSymbol = (ascending: boolean) => (ascending ? '☊' : '☋')
+
+/** Where the Moon crosses the plane of the Earth's orbit: a violet dot with ☊ or ☋ at (dx, dy) from it. */
+export function NodeMark({
+  x,
+  y,
+  ascending,
+  dx,
+  dy,
+  title,
+}: {
+  x: number
+  y: number
+  ascending: boolean
+  /** offset of the symbol; none: the dot only */
+  dx?: number
+  dy?: number
+  title: string
+}) {
+  return (
+    <g class="node-mark">
+      <circle class="plane-crossing" cx={x} cy={y} r={3} />
+      {dx !== undefined && dy !== undefined && (
+        <text class="node-symbol" x={x + dx} y={y + dy} text-anchor="middle" dominant-baseline="central">
+          {nodeSymbol(ascending)}
+        </text>
+      )}
+      <title>{title}</title>
+    </g>
+  )
+}
+
 export function Legend({ ordinary = true, eclipses = true }: { ordinary?: boolean; eclipses?: boolean }) {
   return (
     <ul class="legend" aria-label="Legend">

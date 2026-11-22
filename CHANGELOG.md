@@ -18,6 +18,41 @@ One version for the whole repository (the Python `compute/` package and the
 - ▶ Play steps by beats or by 6 hours.
 - **Learn:** `docs/astronomy.md` as a page in the app (`#learn`), linked from
   the charts.
+- **Controls:** on wide screens the controls and the closest event sit in a
+  sidebar and the views take the rest; compact icon buttons (Heroicons) with
+  tooltips; a UTC | Local toggle; a *Show* pop-up replacing the checkboxes,
+  which can also list only eclipses of chosen kinds; hover and focus states
+  on all controls.
+- **Orbit from above:** the Moon's path two weeks back (fading with age) and
+  two weeks ahead (dashed), sliding with every step, the direction of the Sun drawn through
+  the Earth, the perigee–apogee line in the supermoon/micromoon colours, dots
+  where the Moon crosses the Earth's orbit plane, the Moon at the selected
+  moment ringed in yellow.
+- The same symbols for the same things: ▼ perigee and ▲ apogee, ☊ / ☋ where
+  the Moon crosses the plane of the Earth's orbit going north / south, on the
+  lines, along the Moon's path and in the legends; the height panel of
+  *Distance* marks the crossings and joins the New and the Full Moons by lines
+  as the distance panel does.
+- **Orbit from above:** zones around the node line (±17°) where the Moon is
+  close enough to the plane for an eclipse; the perigee–apogee line goes through
+  the true perigees and apogees (it was the mean line, up to 25° off); the readout groups the distance with the
+  perigee–apogee line and the height with the node line.
+- The closest event has a pale yellow halo in the charts (like its row in the
+  table); other New and Full Moons are a darker grey than the lines.
+- Fixed: Next event skipped the closest event when it was still ahead.
+- **Eclipse seasons** (the node line within 18.6° of the Sun) shaded in the
+  *Distance* view.
+- **Learn:** starts with the causes of the three rhythms (phases, distance,
+  height); the orbit view is explained as turning with the Earth–Sun line;
+  the examples open the app at their date.
+- The table's short Δ lines up on the decimal point; the Moon icon by the
+  title.
+- **Pages:** Explore, About (the introduction, data sources and credits) and
+  Learn, in the sidebar; Learn lists its sections there.
+- ▶ Play by 6 hours, a day, a week, a month, a beat, or live (following the
+  clock once a minute).
+- Keyboard shortcuts: Space / K play, N now, D date, 1–7 views, [ ] play step,
+  ? the list of keys.
 
 ## 0.1.0 – 2026-11-22
 

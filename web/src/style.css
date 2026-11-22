@@ -16,7 +16,7 @@
   /* chart marks (validated: categorical, CVD-safe on the light surface) */
   --mark-super: #b4432c;
   --mark-micro: #2c5fa8;
-  --mark-ordinary: #a3a5af;
+  --mark-ordinary: #7a7d88;
   --grid: #ebe9e3;
   --axis: #c9c6bd;
   --eclipse: #7b4fa6;
@@ -46,7 +46,7 @@
     /* validated separately for the dark surface */
     --mark-super: #d4664b;
     --mark-micro: #5a8bd4;
-    --mark-ordinary: #5c606e;
+    --mark-ordinary: #a9adb9;
     --grid: #23262f;
     --axis: #3c404d;
     --eclipse: #b28ddc;
@@ -55,26 +55,38 @@
 
 body {
   margin: 0 auto;
-  max-width: 1200px;
+  max-width: 1640px;
   padding: 0 16px 32px;
 }
 
-h1 {
-  margin: 24px 0 8px;
-  font-size: 1.6rem;
+.site-icon {
+  width: 22px;
+  height: 22px;
+  vertical-align: -3px;
+  margin-right: 7px;
 }
 
-header {
+h1 {
+  margin: 0;
+  font-size: 1.4rem;
+  white-space: nowrap;
+}
+
+/* the title and the pages, at the top of the sidebar */
+.site-header {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 24px;
+  align-items: center;
+  gap: 8px 20px;
+  padding-top: 14px;
 }
 
-.intro {
-  flex-basis: 100%;
-  max-width: 70ch;
-  margin-top: 0;
+.about-page {
+  max-width: 72ch;
+}
+
+.about-page h2 {
+  margin-top: 14px;
 }
 
 .pages {
@@ -146,13 +158,6 @@ header {
 
 .learn-more {
   white-space: nowrap;
-}
-
-footer {
-  margin-top: 24px;
-  color: var(--muted);
-  font-size: 0.85rem;
-  max-width: 90ch;
 }
 
 a {
@@ -251,12 +256,83 @@ input[aria-invalid='true'] {
   padding: 0;
 }
 
+.summary-when {
+  color: var(--muted);
+}
+
 .summary {
   padding: 8px 12px;
   border-left: 4px solid var(--anchor);
   background: var(--next-bg);
   border-radius: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin: 0 0 12px;
 }
+
+/* the sidebar (title, pages, controls, status) on the left on wide screens, above the content otherwise */
+.sidebar .controls {
+  margin: 12px 0;
+}
+
+@media (min-width: 1100px) {
+  .layout {
+    display: grid;
+    grid-template-columns: 252px minmax(0, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 0 4px 12px;
+  }
+
+  .site-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .pages {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* plenty of room in the sidebar: the Show options unfold in place */
+  .sidebar .menu-panel {
+    position: static;
+    box-shadow: none;
+    margin-top: 6px;
+  }
+
+  .sidebar .learn-toc {
+    margin-top: 20px;
+    font-size: 0.9rem;
+  }
+
+  .summary {
+    flex-direction: column;
+  }
+
+  .summary-title {
+    margin-bottom: 4px;
+  }
+
+  .workspace .tabs {
+    margin-top: 14px;
+  }
+
+  .workspace .chart > svg,
+  .workspace .chart > .orbit-layout {
+    max-width: 1100px;
+  }
+}
+
 
 /* table */
 
@@ -321,6 +397,13 @@ table.events {
   color: var(--muted);
   font-size: 0.8rem;
   padding-left: 0;
+}
+
+.delta-human .unit {
+  display: inline-block;
+  width: 2.2em;
+  padding-left: 0.25em;
+  text-align: left;
 }
 
 .icon {
@@ -399,6 +482,50 @@ select {
   border-radius: 6px;
   background: var(--bg);
   color: var(--fg);
+}
+
+/* every control answers the pointer and shows the keyboard focus */
+select,
+input[type='text'],
+.tabs [role='tab'] {
+  cursor: pointer;
+  transition:
+    background-color 0.1s,
+    border-color 0.1s,
+    color 0.1s;
+}
+
+input[type='text'] {
+  cursor: text;
+}
+
+select:hover,
+input[type='text']:hover {
+  border-color: var(--axis);
+  background: var(--row-hover);
+}
+
+input[type='text']:focus {
+  background: var(--bg);
+}
+
+.tabs [role='tab']:hover {
+  background: var(--row-hover);
+  color: var(--fg);
+}
+
+.tabs [role='tab'][aria-selected='true']:hover {
+  background: var(--bg);
+}
+
+button:active,
+.tabs [role='tab']:active {
+  background: var(--ordinary-bg);
+}
+
+:is(button, select, input, a, summary):focus-visible {
+  outline: 2px solid var(--anchor);
+  outline-offset: 1px;
 }
 
 .chart {
@@ -506,10 +633,11 @@ select {
   }
 }
 
+/* the event closest to the selected moment: a pale yellow halo, like its row in the table */
 .mark-highlight {
-  fill: none;
+  fill: var(--next-bg);
   stroke: var(--anchor);
-  stroke-width: 2;
+  stroke-width: 1;
 }
 
 .event-mark {
@@ -589,7 +717,7 @@ kbd {
   fill: none;
   stroke: var(--muted);
   stroke-width: 1.25;
-  opacity: 0.7;
+  opacity: 0.5;
 }
 
 .envelope {
@@ -642,7 +770,7 @@ kbd {
   stroke-dasharray: 4 3;
 }
 
-/* orbit seen from above, in the frame of the Sun */
+/* orbit seen from above, turning with the Earth–Sun line */
 .orbit-layout {
   display: flex;
   flex-wrap: wrap;
@@ -651,7 +779,7 @@ kbd {
 }
 
 .orbit-chart {
-  flex: 1 1 300px;
+  flex: 2 1 300px;
   min-width: 0;
   max-width: 600px;
   width: 100%;
@@ -664,8 +792,22 @@ kbd {
   margin: 0;
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 6px 12px;
+  gap: 10px 12px;
   font-size: 0.9rem;
+}
+
+.readout-group {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  gap: 6px 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--grid);
+}
+
+.readout-group:first-child {
+  padding-top: 0;
+  border-top: none;
 }
 
 .orbit-readout dt {
@@ -696,20 +838,54 @@ kbd {
 .moon-trail {
   fill: none;
   stroke: var(--fg);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
+  stroke-width: 1.75;
+  stroke-linecap: round;
 }
 
-.moon-trail.south {
-  stroke-dasharray: 4 3;
+.moon-coming {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.25;
+  stroke-dasharray: 3 4;
+}
+
+.plane-crossing {
+  fill: var(--eclipse);
+  stroke: var(--bg);
   stroke-width: 1;
 }
 
+/* the Moon at the selected moment: yellow like the moment's line in the other charts */
+.moment-ring {
+  fill: none;
+  stroke: var(--anchor);
+  stroke-width: 2.5;
+}
+
+.sun-line {
+  stroke: var(--fg);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.sun-label {
+  fill: var(--fg);
+}
+
+/* perigee half warm, apogee half cool, like supermoons and micromoons */
 .apse-line line {
-  stroke: var(--muted);
   stroke-width: 1.5;
 }
 
+.apse-line line.end-a {
+  stroke: var(--mark-super);
+}
+
+.apse-line line.end-b {
+  stroke: var(--mark-micro);
+}
+
+.node-line-legend,
 .node-line line {
   stroke: var(--eclipse);
   stroke-width: 1.5;
@@ -720,8 +896,26 @@ kbd {
   fill: var(--eclipse);
 }
 
-.orbit-label {
-  font-weight: 600;
+.apse-line text.end-a {
+  fill: var(--mark-super);
+}
+
+.apse-line text.end-b {
+  fill: var(--mark-micro);
+}
+
+.node-symbol {
+  fill: var(--eclipse);
+  color: var(--eclipse);
+  font-size: 12px;
+}
+
+.apsis-symbol.perigee {
+  color: var(--mark-super);
+}
+
+.apsis-symbol.apogee {
+  color: var(--mark-micro);
 }
 
 .earth .day {
@@ -747,16 +941,183 @@ kbd {
   stroke-width: 1;
 }
 
-.sun-pointer line {
-  stroke: var(--anchor);
-  stroke-width: 2;
+.sun-arrow-head {
+  fill: var(--fg);
+  opacity: 0.6;
 }
 
-.sun-arrow-head {
-  fill: var(--anchor);
+/* around the nodes: the Moon close enough to the plane for an eclipse */
+.eclipse-zone {
+  fill: var(--eclipse);
+  opacity: 0.12;
+}
+
+.eclipse-season {
+  fill: var(--eclipse);
+  opacity: 0.08;
 }
 
 .eclipse-band {
   fill: var(--eclipse);
   opacity: 0.1;
+}
+
+/* Heroicons inside buttons */
+.icon-svg {
+  display: inline-flex;
+  vertical-align: -0.2em;
+}
+
+.icon-svg svg {
+  width: 1.15em;
+  height: 1.15em;
+}
+
+button.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+.segmented {
+  display: inline-flex;
+}
+
+.segmented button {
+  border-radius: 0;
+}
+
+.segmented button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.segmented button:last-child {
+  border-radius: 0 6px 6px 0;
+  margin-left: -1px;
+}
+
+.segmented button[aria-pressed='true'],
+button.play[aria-pressed='true'] {
+  background: var(--ordinary-bg);
+  font-weight: 600;
+}
+
+/* pop-up with the keyboard shortcuts */
+.popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.25);
+}
+
+.popup {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.3);
+  padding: 16px 20px;
+  max-width: min(440px, calc(100vw - 32px));
+}
+
+.popup h2 {
+  margin: 0 0 12px;
+  font-size: 1.1rem;
+}
+
+.keys-list {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.keys-list div {
+  display: grid;
+  grid-template-columns: 9em 1fr;
+  gap: 8px;
+}
+
+.keys-list dt {
+  white-space: nowrap;
+}
+
+.keys-list dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* "Show ▾" pop-up */
+.menu {
+  position: relative;
+}
+
+.menu summary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.menu summary:hover,
+.menu[open] summary {
+  background: var(--row-hover);
+}
+
+.menu-panel {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  left: 0;
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
+  min-width: 220px;
+}
+
+.menu-panel fieldset {
+  display: grid;
+  gap: 4px;
+}
+
+.menu-panel legend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.menu-panel label {
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menu-panel label.indented {
+  padding-left: 1.4em;
+}
+
+.menu-panel input:disabled + * ,
+.menu-panel label:has(input:disabled) {
+  color: var(--muted);
+  cursor: default;
+}
+
+.menu-panel > button {
+  justify-self: start;
 }
