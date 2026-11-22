@@ -7,6 +7,8 @@ import { moonPlace, moonTrack } from '../orbit'
 import { firstIndexAtOrAfter } from '../timeline'
 import { EventMark, Legend } from './marks'
 import { linearScale, yearTicks } from './scale'
+import { LearnMore } from '../components/LearnPage'
+import { LEARN } from '../learn'
 
 const DAY_MS = 86_400_000
 const SPANS = [
@@ -237,7 +239,7 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
         Moon is north or south of the plane of the Earth's orbit (the ecliptic). Its orbit is tilted by about 5°, so
         it crosses the plane twice a month, at the nodes. Only a New or Full Moon inside the shaded band, close to
         the plane, can be an eclipse (ringed marks); that happens in two seasons a year, when the node line points
-        at the Sun.
+        at the Sun. <LearnMore id={LEARN.eclipses}>More about eclipses.</LearnMore>
       </figcaption>
     </figure>
   )

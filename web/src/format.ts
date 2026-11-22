@@ -131,6 +131,16 @@ export function parseHashView(hash: string): string | null {
   return new URLSearchParams(hash.replace(/^#/, '')).get('view')
 }
 
+export type Page = { page: 'explore' } | { page: 'learn'; section?: string }
+
+/** '#learn' or '#learn-<section>' open the learning page; anything else the explorer. */
+export function parseHashPage(hash: string): Page {
+  const h = hash.replace(/^#/, '')
+  if (h === 'learn') return { page: 'learn' }
+  if (h.startsWith('learn-')) return { page: 'learn', section: h }
+  return { page: 'explore' }
+}
+
 export function parseHash(hash: string): number | null {
   const text = new URLSearchParams(hash.replace(/^#/, '')).get('date')
   return text === null ? null : parseDateTime(text, 'utc')

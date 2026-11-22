@@ -9,6 +9,7 @@ import {
   formatZoned,
   parseDateTime,
   parseHash,
+  parseHashPage,
   parseHashView,
   formatHash,
 } from './format'
@@ -131,5 +132,12 @@ describe('URL hash', () => {
     expect(parseHashView('#date=2023-01-21&view=beat')).toBe('beat')
     expect(parseHash('#date=2023-01-21&view=beat')).toBe(utc('2023-01-21T00:00'))
     expect(parseHashView('#date=2023-01-21')).toBeNull()
+  })
+
+  it('tells the learning page from the explorer', () => {
+    expect(parseHashPage('#learn')).toEqual({ page: 'learn' })
+    expect(parseHashPage('#learn-nodes-and-eclipses')).toEqual({ page: 'learn', section: 'learn-nodes-and-eclipses' })
+    expect(parseHashPage('#date=2023-01-21&view=beat')).toEqual({ page: 'explore' })
+    expect(parseHashPage('')).toEqual({ page: 'explore' })
   })
 })

@@ -5,6 +5,8 @@ import { phaseAt, samplePhases, splitAtWraps, type PhaseMarks, type PhasePoint }
 import { firstIndexAtOrAfter } from '../timeline'
 import { EventMark, Legend } from './marks'
 import { linearScale } from './scale'
+import { LearnMore } from '../components/LearnPage'
+import { LEARN } from '../learn'
 
 const DAY_MS = 86_400_000
 const SPANS = [
@@ -133,7 +135,8 @@ export function PhaseChart({ events, synodic, anomalistic, anchor, closestTime, 
         a little steeper than 45° and its crossings of the New and Full Moon columns creep up month by month, round
         the whole square in ~412 days. Marks near the perigee lines (bottom, top) are supermoons, near the apogee
         line (middle) micromoons. The dot is the selected moment, the lighter line its past. Positions between
-        events are interpolated linearly in time, so they are approximate.
+        events are interpolated linearly in time, so they are approximate.{' '}
+        <LearnMore id={LEARN.phasePicture}>More about this picture.</LearnMore>
       </figcaption>
     </figure>
   )

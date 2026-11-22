@@ -64,9 +64,88 @@ h1 {
   font-size: 1.6rem;
 }
 
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 24px;
+}
+
 .intro {
+  flex-basis: 100%;
   max-width: 70ch;
   margin-top: 0;
+}
+
+.pages {
+  display: flex;
+  gap: 4px;
+}
+
+.pages a {
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.pages a:hover {
+  background: var(--row-hover);
+  color: var(--fg);
+}
+
+.pages a[aria-current='page'] {
+  background: var(--ordinary-bg);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* the learning page (docs/astronomy.md) */
+.learn {
+  max-width: 76ch;
+}
+
+.learn h2 {
+  font-size: 1.4rem;
+  margin: 16px 0 8px;
+}
+
+.learn-toc ol {
+  margin: 0 0 24px;
+  padding-left: 1.4em;
+  color: var(--muted);
+}
+
+.learn-text h3 {
+  margin: 32px 0 8px;
+  font-size: 1.15rem;
+  scroll-margin-top: 16px;
+}
+
+.learn-text table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin: 12px 0;
+  display: block;
+  overflow-x: auto;
+}
+
+.learn-text th,
+.learn-text td {
+  border-bottom: 1px solid var(--line);
+  padding: 4px 10px;
+  text-align: left;
+}
+
+.learn-text pre {
+  background: var(--row-hover);
+  padding: 8px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.learn-more {
+  white-space: nowrap;
 }
 
 footer {

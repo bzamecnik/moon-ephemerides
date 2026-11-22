@@ -5,6 +5,8 @@ import { formatZoned, type Zone } from '../format'
 import { lineToSun, moonPlace, moonTrack, orbitFrame, phaseName, wrap360, type MoonPlace } from '../orbit'
 import { firstIndexAtOrAfter } from '../timeline'
 import { EventMark, Legend } from './marks'
+import { LearnMore } from '../components/LearnPage'
+import { LEARN } from '../learn'
 
 const DAY_MS = 86_400_000
 /** a little under a month, so that last month's New or Full Moon doesn't sit under the Moon */
@@ -235,7 +237,8 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
         perigee and apogee (supermoons, micromoons), and the Sun stretches the orbit most (evection). The dashed violet
         node line, where the orbit crosses the plane, turns once per eclipse year: when it points at the Sun, New
         and Full Moons happen near the plane and can be eclipses. Use Play by days to watch a month, by beats to
-        watch the lines turn.
+        watch the lines turn.{' '}
+        <LearnMore id={LEARN.frame}>More about this frame.</LearnMore>
       </figcaption>
     </figure>
   )

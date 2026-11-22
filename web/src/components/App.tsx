@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'preact/hooks'
 import { loadCatalog, type Catalog } from '../data/catalog'
-import { formatHash, parseHash, parseHashView } from '../format'
+import { formatHash, parseHash, parseHashPage, parseHashView, type Page } from '../format'
 import { EventsView } from './EventsView'
+import { LearnPage } from './LearnPage'
 
 const DATA_URL = `${import.meta.env.BASE_URL}data/lunar-events.json`
 
@@ -10,14 +11,28 @@ function initialAnchor(now: number): number {
   return parseHash(window.location.hash) ?? now
 }
 
+/** the explorer's last URL, to come back to from the learning page */
+let exploreHash = ''
+
 function keepInUrl(anchor: number, view: string) {
-  window.history.replaceState(null, '', formatHash(anchor, view))
+  exploreHash = formatHash(anchor, view)
+  window.history.replaceState(null, '', exploreHash)
 }
 
 export function App() {
   const [catalog, setCatalog] = useState<Catalog | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [now] = useState(() => Date.now())
+  const [page, setPage] = useState<Page>(() => {
+    const p = parseHashPage(window.location.hash)
+    if (p.page === 'explore') exploreHash = window.location.hash
+    return p
+  })
+  useEffect(() => {
+    const onHash = () => setPage(parseHashPage(window.location.hash))
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
 
   useEffect(() => {
     loadCatalog(DATA_URL).then(setCatalog, (e: unknown) => setError(String(e)))
@@ -27,17 +42,29 @@ export function App() {
     <>
       <header>
         <h1>Moon Ephemerides</h1>
-        <p class="intro">
-          The Moon's phases repeat every 29.5 days, its closest approach to Earth (perigee) every 27.6 days. When a New
-          or Full Moon falls near perigee it is a <em>supermoon</em>; near the farthest point (apogee), a{' '}
-          <em>micromoon</em>. The two rhythms drift in and out of step every ~412 days. <strong>Δ</strong> is the time
-          from the New or Full Moon to the perigee or apogee: the closer to zero, the better the two rhythms line up.
-        </p>
+        <nav class="pages" aria-label="Pages">
+          <a href={exploreHash || '#'} aria-current={page.page === 'explore' ? 'page' : undefined}>
+            Explore
+          </a>
+          <a href="#learn" aria-current={page.page === 'learn' ? 'page' : undefined}>
+            Learn: the astronomy behind it
+          </a>
+        </nav>
+        {page.page === 'explore' && (
+          <p class="intro">
+            The Moon's phases repeat every 29.5 days, its closest approach to Earth (perigee) every 27.6 days. When a New
+            or Full Moon falls near perigee it is a <em>supermoon</em>; near the farthest point (apogee), a{' '}
+            <em>micromoon</em>. The two rhythms drift in and out of step every ~412 days. <strong>Δ</strong> is the time
+            from the New or Full Moon to the perigee or apogee: the closer to zero, the better the two rhythms line up.{' '}
+            <a href="#learn">More about the astronomy behind it.</a>
+          </p>
+        )}
       </header>
       <main>
-        {error && <p role="alert">Could not load the data: {error}</p>}
-        {!catalog && !error && <p>Loading…</p>}
-        {catalog && (
+        {page.page === 'learn' && <LearnPage section={page.section} />}
+        {page.page === 'explore' && error && <p role="alert">Could not load the data: {error}</p>}
+        {page.page === 'explore' && !catalog && !error && <p>Loading…</p>}
+        {page.page === 'explore' && catalog && (
           <EventsView
             catalog={catalog}
             initialAnchor={initialAnchor(now)}
