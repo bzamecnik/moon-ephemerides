@@ -43,8 +43,11 @@ lives in the sibling repo `../moon-earthquake-experiments/`.
 - Web: logic in plain TS modules (`src/events.ts`, `src/timeline.ts`,
   `src/format.ts`), components only render and handle input; tests next to the
   code as `*.test.ts(x)` (Vitest + Testing Library, TZ=Europe/Prague).
+- One version for the repo: `compute/pyproject.toml` and `web/package.json`
+  are kept equal (a test checks it), shown in the page footer. A release:
+  bump both, add a `CHANGELOG.md` entry, commit, tag `vX.Y.Z` on `main`.
 - The JSON format is versioned (`meta.format`); change `export.py` and
-  `web/src/data/catalog.ts` together and bump the version on breaking changes.
+  `web/src/data/catalog.ts` together and bump `meta.format` on breaking changes.
 - No ESLint yet: typescript-eslint doesn't support TypeScript 7; strict `tsc` instead.
 - The astropixels pages are copyrighted (all rights reserved): never commit
   them or rows copied from them. Tests that need them are skipped when the

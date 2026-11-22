@@ -2,6 +2,8 @@
 
 How the Moon's phases and its distance from Earth play together.
 
+**Live:** <https://bzamecnik.github.io/moon-ephemerides/> · [Changelog](./CHANGELOG.md)
+
 The Moon has two rhythms that almost, but not quite, keep step: New Moon to
 New Moon takes 29.53 days, closest approach (perigee) to closest approach takes
 27.55 days. Every ~412 days a New or Full Moon falls almost exactly on a perigee
