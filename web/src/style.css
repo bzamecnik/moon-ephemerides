@@ -16,7 +16,7 @@
   /* chart marks (validated: categorical, CVD-safe on the light surface) */
   --mark-super: #b4432c;
   --mark-micro: #2c5fa8;
-  --mark-ordinary: #a3a5af;
+  --mark-ordinary: #7a7d88;
   --grid: #ebe9e3;
   --axis: #c9c6bd;
   --eclipse: #7b4fa6;
@@ -46,7 +46,7 @@
     /* validated separately for the dark surface */
     --mark-super: #d4664b;
     --mark-micro: #5a8bd4;
-    --mark-ordinary: #5c606e;
+    --mark-ordinary: #a9adb9;
     --grid: #23262f;
     --axis: #3c404d;
     --eclipse: #b28ddc;
@@ -619,10 +619,11 @@ button:active,
   }
 }
 
+/* the event closest to the selected moment: a pale yellow halo, like its row in the table */
 .mark-highlight {
-  fill: none;
+  fill: var(--next-bg);
   stroke: var(--anchor);
-  stroke-width: 2;
+  stroke-width: 1;
 }
 
 .event-mark {
@@ -702,7 +703,7 @@ kbd {
   fill: none;
   stroke: var(--muted);
   stroke-width: 1.25;
-  opacity: 0.7;
+  opacity: 0.5;
 }
 
 .envelope {
@@ -809,20 +810,54 @@ kbd {
 .moon-trail {
   fill: none;
   stroke: var(--fg);
-  stroke-width: 1.5;
-  stroke-linejoin: round;
+  stroke-width: 1.75;
+  stroke-linecap: round;
 }
 
-.moon-trail.south {
-  stroke-dasharray: 4 3;
+.moon-coming {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.25;
+  stroke-dasharray: 3 4;
+}
+
+.plane-crossing {
+  fill: var(--eclipse);
+  stroke: var(--bg);
   stroke-width: 1;
 }
 
+/* the Moon at the selected moment: yellow like the moment's line in the other charts */
+.moment-ring {
+  fill: none;
+  stroke: var(--anchor);
+  stroke-width: 2.5;
+}
+
+.sun-line {
+  stroke: var(--fg);
+  stroke-width: 1;
+  opacity: 0.6;
+}
+
+.sun-label {
+  fill: var(--fg);
+}
+
+/* perigee half warm, apogee half cool, like supermoons and micromoons */
 .apse-line line {
-  stroke: var(--muted);
   stroke-width: 1.5;
 }
 
+.apse-line .end-a {
+  stroke: var(--mark-super);
+}
+
+.apse-line .end-b {
+  stroke: var(--mark-micro);
+}
+
+.node-line-legend,
 .node-line line {
   stroke: var(--eclipse);
   stroke-width: 1.5;
@@ -831,6 +866,14 @@ kbd {
 
 .node-line .orbit-label {
   fill: var(--eclipse);
+}
+
+.apse-line text.end-a {
+  fill: var(--mark-super);
+}
+
+.apse-line text.end-b {
+  fill: var(--mark-micro);
 }
 
 .orbit-label {
@@ -860,13 +903,9 @@ kbd {
   stroke-width: 1;
 }
 
-.sun-pointer line {
-  stroke: var(--anchor);
-  stroke-width: 2;
-}
-
 .sun-arrow-head {
-  fill: var(--anchor);
+  fill: var(--fg);
+  opacity: 0.6;
 }
 
 .eclipse-band {

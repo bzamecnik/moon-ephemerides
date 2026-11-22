@@ -23,6 +23,14 @@ One version for the whole repository (the Python `compute/` package and the
   tooltips; a UTC | Local toggle; a *Show* pop-up replacing the checkboxes,
   which can also list only eclipses of chosen kinds; hover and focus states
   on all controls.
+- **Orbit from above:** the coming days up to the next New or Full Moon
+  (dashed), the past fading with age, the direction of the Sun drawn through
+  the Earth, the perigee–apogee line in the supermoon/micromoon colours, dots
+  where the Moon crosses the Earth's orbit plane, the Moon at the selected
+  moment ringed in yellow.
+- The closest event has a pale yellow halo in the charts (like its row in the
+  table); other New and Full Moons are a darker grey than the lines.
+- Fixed: Next event skipped the closest event when it was still ahead.
 - **Pages:** Explore, About (the introduction, data sources and credits) and
   Learn, in the sidebar; Learn lists its sections there.
 - ▶ Play by 6 hours, a day, a week, a month, a beat, or live (following the

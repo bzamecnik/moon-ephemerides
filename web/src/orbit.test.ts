@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { RawCatalog } from './data/catalog'
-import { lineToSun, meanElements, phaseName, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
+import { lineToSun, meanElements, phaseName, planeCrossings, trailWindow, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
 import { utc } from './test/fixture'
 import { BEAT_DAYS } from './timeline'
 
@@ -39,6 +39,31 @@ describe('phaseName', () => {
       'last quarter',
       'waning crescent',
       'New Moon',
+    ])
+  })
+})
+
+describe('trailWindow', () => {
+  const D = DAY
+  it('reaches a day past the next New or Full Moon, and shows 27 days in all', () => {
+    const times = [0, 14 * D, 29 * D]
+    expect(trailWindow(10 * D, times)).toEqual({ t0: -12 * D, t1: 15 * D })
+    // just after an event: the next one is two weeks ahead
+    expect(trailWindow(14 * D + 1, times)).toEqual({ t0: 3 * D, t1: 30 * D })
+  })
+
+  it('stops at the selected moment after the last event', () => {
+    expect(trailWindow(40 * D, [0, 14 * D])).toEqual({ t0: 13 * D, t1: 40 * D })
+  })
+})
+
+describe('planeCrossings', () => {
+  it('finds where the latitude changes sign, interpolated', () => {
+    const p = (time: number, latitude: number) => ({ time, latitude, elongation: time, distanceKm: 380_000 })
+    const track = [p(0, -1), p(10, 1), p(20, 3), p(30, -1)]
+    expect(planeCrossings(track)).toEqual([
+      { time: 5, ascending: true, elongation: 5, distanceKm: 380_000 },
+      { time: 27.5, ascending: false, elongation: 27.5, distanceKm: 380_000 },
     ])
   })
 })

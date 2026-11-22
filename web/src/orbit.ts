@@ -112,3 +112,34 @@ const PHASE_NAMES = [
 export function phaseName(elongation: number): string {
   return PHASE_NAMES[Math.round(wrap360(elongation) / 45) % 8]
 }
+
+/**
+ * The span of the Moon's path to draw: up to a day past the next New or Full
+ * Moon (so that what comes next is visible), 27 days in all, less than a
+ * month so that the path doesn't overlap itself.
+ */
+export function trailWindow(anchor: number, eventTimes: readonly number[]): { t0: number; t1: number } {
+  const next = eventTimes.find((t) => t > anchor)
+  const t1 = next === undefined ? anchor : Math.min(next + DAY_MS, anchor + 16 * DAY_MS)
+  return { t0: t1 - 27 * DAY_MS, t1 }
+}
+
+/** Where the path crosses the plane of the Earth's orbit (the nodes), interpolated linearly between samples. */
+export function planeCrossings(track: readonly MoonPlace[]): (Omit<MoonPlace, 'latitude'> & { ascending: boolean })[] {
+  const out: (Omit<MoonPlace, 'latitude'> & { ascending: boolean })[] = []
+  for (let i = 1; i < track.length; i++) {
+    const [a, b] = [track[i - 1], track[i]]
+    if (a.latitude < 0 === b.latitude < 0) continue
+    const f = a.latitude / (a.latitude - b.latitude)
+    const lerp = (x: number, y: number) => x + f * (y - x)
+    // elongation wraps at 360°: interpolate across the wrap
+    const de = wrap180(b.elongation - a.elongation)
+    out.push({
+      time: lerp(a.time, b.time),
+      ascending: b.latitude > a.latitude,
+      elongation: wrap360(a.elongation + f * de),
+      distanceKm: lerp(a.distanceKm, b.distanceKm),
+    })
+  }
+  return out
+}
