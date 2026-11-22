@@ -3,6 +3,8 @@ import type { Apsis } from '../data/catalog'
 import type { MoonEvent } from '../events'
 import { formatZoned, type Zone } from '../format'
 import {
+  ECLIPSE_LATITUDE,
+  eclipseStretches,
   lineToSun,
   moonPlace,
   moonTrack,
@@ -132,15 +134,25 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
                 <line class="end-b" x1="13" x2="25" y1="7" y2="7" />
               </g>
             </svg>
-            <span class="apsis-symbol perigee">▼</span> perigee – <span class="apsis-symbol apogee">▲</span> apogee
-            line, and where the Moon passes them
+            <span>
+              <span class="apsis-symbol perigee">▼</span> perigee – <span class="apsis-symbol apogee">▲</span> apogee
+              line, and where the Moon passes them
+            </span>
           </li>
           <li>
             <svg width="26" height="14" viewBox="0 0 26 14" aria-hidden="true">
               <line class="node-line-legend" x1="1" x2="25" y1="7" y2="7" />
             </svg>
-            <span class="node-symbol">☊</span> ascending – <span class="node-symbol">☋</span> descending node line, and
-            where the Moon crosses the Earth's orbit plane
+            <span>
+              <span class="node-symbol">☊</span> ascending – <span class="node-symbol">☋</span> descending node line,
+              and where the Moon crosses the Earth's orbit plane
+            </span>
+          </li>
+          <li>
+            <svg width="26" height="14" viewBox="0 0 26 14" aria-hidden="true">
+              <line class="eclipse-zone" x1="5" x2="21" y1="7" y2="7" />
+            </svg>
+            close enough to the plane for an eclipse
           </li>
         </ul>
       </div>
@@ -180,6 +192,10 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
           <circle class="mean-orbit" cx={C} cy={C} r={R_MEAN} />
           <LineEnds deg={frame.node} labels={['☊ ascending', '☋ descending']} cls="node-line" />
           <LineEnds deg={frame.perigee} labels={['▼ perigee', '▲ apogee']} cls="apse-line" />
+          {/* where the Moon is close enough to the plane for an eclipse, under the path */}
+          {eclipseStretches([...past, ...coming.slice(1)]).map((run) => (
+            <polyline key={run[0].time} class="eclipse-zone" points={run.map((q) => pt(at(q))).join(' ')} />
+          ))}
           {/* the past fades with age; the coming days dashed */}
           {past.slice(1).map((q, i) => (
             <line
@@ -245,38 +261,48 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
           <LitDisc x={mx} y={my} r={7} cls="moon" />
         </svg>
         <dl class="orbit-readout" aria-live="polite">
-          <dt>Moment</dt>
-          <dd>{formatZoned(anchor, zone)}</dd>
-          <dt>Phase</dt>
-          <dd>
-            {phaseName(now.elongation)} ({deg(wrap360(now.elongation))} from the Sun)
-          </dd>
-          <dt>Distance</dt>
-          <dd>{Math.round(now.distanceKm).toLocaleString('en-US')} km</dd>
-          <dt>Height</dt>
-          <dd>
-            {Math.abs(now.latitude).toFixed(1)}° {now.latitude >= 0 ? 'north' : 'south'} of the Earth's orbit plane
-          </dd>
-          <dt>Perigee–apogee line</dt>
-          <dd>
-            {deg(apseOff)} from the Sun line
-            <span class="readout-note">
-              {apseOff < 20
-                ? 'season of supermoons and micromoons: the orbit is stretched most'
-                : apseOff > 70
-                  ? 'across the Sun line: the orbit is roundest, no extreme New or Full Moons'
-                  : 'turning, once per beat (411.8 days)'}
-            </span>
-          </dd>
-          <dt>Node line</dt>
-          <dd>
-            {deg(nodeOff)} from the Sun line
-            <span class="readout-note">
-              {nodeOff < 17
-                ? 'eclipse season: a New or Full Moon now can be an eclipse'
-                : 'no eclipses now; the line turns once per eclipse year (346.6 days)'}
-            </span>
-          </dd>
+          <div class="readout-group">
+            <dt>Time</dt>
+            <dd>{formatZoned(anchor, zone)}</dd>
+            <dt>Phase</dt>
+            <dd>
+              {phaseName(now.elongation)}
+              <span class="readout-note">{deg(wrap360(now.elongation))} from the Sun</span>
+            </dd>
+          </div>
+          <div class="readout-group">
+            <dt>Distance</dt>
+            <dd>{Math.round(now.distanceKm).toLocaleString('en-US')} km</dd>
+            <dt>Perigee–apogee line</dt>
+            <dd>
+              {deg(apseOff)} from the Sun line
+              <span class="readout-note">
+                {apseOff < 20
+                  ? 'season of supermoons and micromoons: the orbit is stretched most'
+                  : apseOff > 70
+                    ? 'across the Sun line: the orbit is roundest, no extreme New or Full Moons'
+                    : 'turning, once per beat (411.8 days)'}
+              </span>
+            </dd>
+          </div>
+          <div class="readout-group">
+            <dt>Height</dt>
+            <dd>
+              {Math.abs(now.latitude).toFixed(1)}° {now.latitude >= 0 ? 'north' : 'south'} of the Earth's orbit plane
+              {Math.abs(now.latitude) < ECLIPSE_LATITUDE && (
+                <span class="readout-note">close enough to the plane for an eclipse</span>
+              )}
+            </dd>
+            <dt>Node line</dt>
+            <dd>
+              {deg(nodeOff)} from the Sun line
+              <span class="readout-note">
+                {nodeOff < 17
+                  ? 'eclipse season: a New or Full Moon now can be an eclipse'
+                  : 'no eclipses now; the line turns once per eclipse year (346.6 days)'}
+              </span>
+            </dd>
+          </div>
         </dl>
       </div>
       <figcaption>
@@ -286,7 +312,7 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
         Sun. The Moon (ringed in yellow, at the selected moment) leaves a path fading with age; the dashed line is
         where it goes in the coming days, up to the next New or Full Moon. The triangles mark where it passes the perigee (▼)
         and the apogee (▲), the violet dots where it crosses the plane of the Earth's orbit going north (☊) or
-        south (☋): the ends of the two lines through the Earth point at the averages of these places. The oval is drawn four times more stretched than it is. The
+        south (☋), shaded where it is close enough to the plane for a New or Full Moon to be an eclipse: the ends of the two lines through the Earth point at the averages of these places. The oval is drawn four times more stretched than it is. The
         perigee–apogee line turns backwards once per beat: when it points at the Sun, New and Full Moons fall near
         perigee and apogee (supermoons, micromoons), and the Sun stretches the orbit most (evection). The dashed violet
         node line, where the orbit crosses the plane, turns once per eclipse year: when it points at the Sun, New

@@ -778,8 +778,22 @@ kbd {
   margin: 0;
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 6px 12px;
+  gap: 10px 12px;
   font-size: 0.9rem;
+}
+
+.readout-group {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  gap: 6px 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--grid);
+}
+
+.readout-group:first-child {
+  padding-top: 0;
+  border-top: none;
 }
 
 .orbit-readout dt {
@@ -849,11 +863,11 @@ kbd {
   stroke-width: 1.5;
 }
 
-.apse-line .end-a {
+.apse-line line.end-a {
   stroke: var(--mark-super);
 }
 
-.apse-line .end-b {
+.apse-line line.end-b {
   stroke: var(--mark-micro);
 }
 
@@ -916,6 +930,16 @@ kbd {
 .sun-arrow-head {
   fill: var(--fg);
   opacity: 0.6;
+}
+
+/* the stretches of the Moon's path close enough to the plane for an eclipse */
+.eclipse-zone {
+  fill: none;
+  stroke: var(--eclipse);
+  stroke-opacity: 0.2;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .eclipse-band {

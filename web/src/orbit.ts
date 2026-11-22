@@ -143,3 +143,25 @@ export function planeCrossings(track: readonly MoonPlace[]): (Omit<MoonPlace, 'l
   }
   return out
 }
+
+/**
+ * How close to the plane of the Earth's orbit (degrees of latitude) a New or
+ * Full Moon must be for some eclipse: in 1850–2149 every eclipse came within
+ * 1.6°, and every New or Full Moon farther than 1.4° had none.
+ */
+export const ECLIPSE_LATITUDE = 1.5
+
+/** The runs of consecutive points of the path within `limit` degrees of the plane. */
+export function eclipseStretches(track: readonly MoonPlace[], limit = ECLIPSE_LATITUDE): MoonPlace[][] {
+  const runs: MoonPlace[][] = []
+  let run: MoonPlace[] = []
+  for (const q of track) {
+    if (Math.abs(q.latitude) < limit) run.push(q)
+    else if (run.length) {
+      runs.push(run)
+      run = []
+    }
+  }
+  if (run.length) runs.push(run)
+  return runs
+}

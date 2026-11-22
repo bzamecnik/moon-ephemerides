@@ -3,7 +3,7 @@ import type { Apsis } from '../data/catalog'
 import { smoothThrough, type CurvePoint } from '../curves'
 import type { MoonEvent } from '../events'
 import { formatDate, formatZoned, type Zone } from '../format'
-import { moonPlace, moonTrack, planeCrossings } from '../orbit'
+import { ECLIPSE_LATITUDE, moonPlace, moonTrack, planeCrossings } from '../orbit'
 import { firstIndexAtOrAfter } from '../timeline'
 import { EventMark, Legend, NodeMark, nodeSymbol } from './marks'
 import { linearScale, yearTicks } from './scale'
@@ -23,8 +23,6 @@ const KM_DOMAIN: [number, number] = [354_000, 408_000]
 /** the panel below: the Moon's height above the plane of the Earth's orbit (ecliptic latitude) */
 const H2 = 190
 const LAT_DOMAIN: [number, number] = [-5.6, 5.6]
-/** about how close to the plane (degrees) a New or Full Moon must be for some eclipse */
-const ECLIPSE_LIMIT = 1.5
 
 interface Props {
   events: MoonEvent[]
@@ -187,8 +185,10 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
           <svg width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">
             <circle class="plane-crossing" r="3" />
           </svg>
-          crossing the Earth's orbit plane: <span class="node-symbol">☊</span> going north,{' '}
-          <span class="node-symbol">☋</span> going south
+          <span>
+            crossing the Earth's orbit plane: <span class="node-symbol">☊</span> going north,{' '}
+            <span class="node-symbol">☋</span> going south
+          </span>
         </li>
         <li>
           <svg width="20" height="14" viewBox="0 0 20 14" aria-hidden="true">
@@ -210,9 +210,9 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
         <rect
           class="eclipse-band"
           x={M.left}
-          y={y2(ECLIPSE_LIMIT)}
+          y={y2(ECLIPSE_LATITUDE)}
           width={W - M.left - M.right}
-          height={y2(-ECLIPSE_LIMIT) - y2(ECLIPSE_LIMIT)}
+          height={y2(-ECLIPSE_LATITUDE) - y2(ECLIPSE_LATITUDE)}
         >
           <title>New and Full Moons this close to the plane can be eclipses</title>
         </rect>

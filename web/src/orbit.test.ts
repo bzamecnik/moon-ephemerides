@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { RawCatalog } from './data/catalog'
-import { lineToSun, meanElements, phaseName, planeCrossings, trailWindow, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
+import { ECLIPSE_LATITUDE, eclipseStretches, lineToSun, meanElements, phaseName, planeCrossings, trailWindow, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
 import { utc } from './test/fixture'
 import { BEAT_DAYS } from './timeline'
 
@@ -54,6 +54,23 @@ describe('trailWindow', () => {
 
   it('stops at the selected moment after the last event', () => {
     expect(trailWindow(40 * D, [0, 14 * D])).toEqual({ t0: 13 * D, t1: 40 * D })
+  })
+})
+
+describe('eclipseStretches', () => {
+  const p = (time: number, latitude: number) => ({ time, latitude, elongation: time, distanceKm: 380_000 })
+  it('splits the path into the runs close to the plane', () => {
+    const track = [p(0, 3), p(1, 1), p(2, -1), p(3, -3), p(4, -1.4), p(5, 0.5)]
+    expect(eclipseStretches(track, 1.5).map((r) => r.map((q) => q.time))).toEqual([
+      [1, 2],
+      [4, 5],
+    ])
+  })
+
+  it('uses the band where all eclipses of 1850–2149 happened', () => {
+    // every eclipse had |latitude| < 1.6°, every New/Full Moon without one > 1.4°
+    expect(ECLIPSE_LATITUDE).toBeGreaterThan(1.4)
+    expect(ECLIPSE_LATITUDE).toBeLessThan(1.6)
   })
 })
 
