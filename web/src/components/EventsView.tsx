@@ -26,6 +26,7 @@ import { OrbitChart } from '../charts/OrbitChart'
 import { PhaseChart } from '../charts/PhaseChart'
 import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
+import { Icon } from './Icon'
 import { RankingView } from './RankingView'
 import { BEAT_DAYS, closestIndex, firstIndexAtOrAfter, stepAnchor, stepByTime, windowAround } from '../timeline'
 
@@ -145,42 +146,77 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
       <section class="controls" aria-label="Navigation and filters">
         <div class="control-row">
           <DateField anchor={anchor} zone={zone} onChange={setAnchor} />
-          <button type="button" onClick={() => setAnchor(now)}>
-            Now
-          </button>
+          <span class="segmented" role="group" aria-label="Time zone">
+            <button
+              type="button"
+              aria-pressed={zone === 'utc'}
+              onClick={() => setZone('utc')}
+              title="Show times in UTC (Coordinated Universal Time)"
+            >
+              UTC
+            </button>
+            <button
+              type="button"
+              aria-pressed={zone === 'local'}
+              onClick={() => setZone('local')}
+              title={`Show times in your local time: ${localZoneName()}, ${formatOffset(anchor)}`}
+            >
+              Local
+            </button>
+          </span>
+        </div>
+        <div class="control-row">
           <span class="button-group">
             <button
               type="button"
+              class="icon-button"
               onClick={() => stepBeat(-1)}
               aria-label="One beat earlier"
-              title="One beat (about 14 months) earlier (Shift+←)"
+              title="One beat earlier: the same phase about 14 months before (Shift+←)"
             >
-              ⏪
-            </button>
-            <button type="button" onClick={() => step(-1)} title="Previous event (← key)">
-              ◀ Previous event
-            </button>
-            <button type="button" onClick={() => step(1)} title="Next event (→ key)">
-              Next event ▶
+              <Icon name="backward" />
             </button>
             <button
               type="button"
+              class="icon-button"
+              onClick={() => step(-1)}
+              aria-label="Previous event"
+              title="Previous New or Full Moon (←)"
+            >
+              <Icon name="chevronLeft" />
+            </button>
+            <button type="button" class="icon-button" onClick={() => setAnchor(now)} aria-label="Now" title="Now (N)">
+              <Icon name="clock" />
+            </button>
+            <button
+              type="button"
+              class="icon-button"
+              onClick={() => step(1)}
+              aria-label="Next event"
+              title="Next New or Full Moon (→)"
+            >
+              <Icon name="chevronRight" />
+            </button>
+            <button
+              type="button"
+              class="icon-button"
               onClick={() => stepBeat(1)}
               aria-label="One beat later"
-              title="One beat (about 14 months) later (Shift+→)"
+              title="One beat later: the same phase about 14 months after (Shift+→)"
             >
-              ⏩
+              <Icon name="forward" />
             </button>
           </span>
           <span class="button-group">
             <button
               type="button"
-              class="play"
+              class="icon-button play"
               aria-pressed={playing}
+              aria-label={playing ? 'Pause' : 'Play'}
               onClick={() => setPlaying(!playing)}
-              title={playStep === 'beat' ? 'Step forward by one beat at a time' : 'Step forward by 6 hours at a time'}
+              title={playing ? 'Pause' : 'Play: step forward again and again'}
             >
-              {playing ? '⏸ Pause' : '▶ Play'}
+              <Icon name={playing ? 'pause' : 'play'} />
             </button>
             <select
               aria-label="Play step"
@@ -191,16 +227,6 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
               <option value="hours">by 6 hours</option>
             </select>
           </span>
-          <fieldset class="zone">
-            <legend class="visually-hidden">Time zone</legend>
-            <label>
-              <input type="radio" name="zone" checked={zone === 'utc'} onChange={() => setZone('utc')} /> UTC
-            </label>
-            <label>
-              <input type="radio" name="zone" checked={zone === 'local'} onChange={() => setZone('local')} /> Local
-              time ({localZoneName()}, {formatOffset(anchor)})
-            </label>
-          </fieldset>
         </div>
         <fieldset class="control-row kinds">
           <legend class="visually-hidden">Kinds of events</legend>
@@ -342,7 +368,7 @@ function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onC
   return (
     <span class="date-field">
       <label>
-        Date and time{' '}
+        <span class="visually-hidden">Date and time</span>
         <input
           type="text"
           inputMode="numeric"
@@ -372,11 +398,12 @@ function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onC
       </label>
       <button
         type="button"
+        class="icon-button"
         aria-label="Choose a date from a calendar"
         title="Choose a date from a calendar"
         onClick={() => picker.current?.showPicker?.()}
       >
-        📅
+        <Icon name="calendar" />
       </button>
       <input
         ref={picker}

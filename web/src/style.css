@@ -804,3 +804,45 @@ kbd {
   fill: var(--eclipse);
   opacity: 0.1;
 }
+
+/* Heroicons inside buttons */
+.icon-svg {
+  display: inline-flex;
+  vertical-align: -0.2em;
+}
+
+.icon-svg svg {
+  width: 1.15em;
+  height: 1.15em;
+}
+
+button.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 8px;
+}
+
+.segmented {
+  display: inline-flex;
+}
+
+.segmented button {
+  border-radius: 0;
+}
+
+.segmented button:first-child {
+  border-radius: 6px 0 0 6px;
+}
+
+.segmented button:last-child {
+  border-radius: 0 6px 6px 0;
+  margin-left: -1px;
+}
+
+.segmented button[aria-pressed='true'],
+button.play[aria-pressed='true'] {
+  background: var(--ordinary-bg);
+  font-weight: 600;
+}

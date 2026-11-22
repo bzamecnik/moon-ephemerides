@@ -141,9 +141,9 @@ describe('EventsView', () => {
 
   it('switches between UTC and local time', async () => {
     const user = setup()
-    await user.click(screen.getByRole('radio', { name: /local/i }))
+    await user.click(screen.getByRole('button', { name: /^local$/i }))
     // TZ=Europe/Prague in the tests
-    expect(screen.getByRole('radio', { name: /local/i }).parentElement).toHaveTextContent('Europe/Prague')
+    expect(screen.getByRole('button', { name: /^local$/i })).toHaveAttribute('title', expect.stringContaining('Europe/Prague'))
     expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-07 00:08 (UTC+1)')
     expect(screen.getByRole('columnheader', { name: /^date and time/i })).toHaveTextContent('Europe/Prague')
   })

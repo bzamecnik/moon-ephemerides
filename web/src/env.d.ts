@@ -6,3 +6,9 @@ declare module '*.md?raw' {
   const text: string
   export default text
 }
+
+/** SVG imported as text (the Heroicons). */
+declare module '*.svg?raw' {
+  const text: string
+  export default text
+}
