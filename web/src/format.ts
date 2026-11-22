@@ -59,7 +59,14 @@ export function parseDateTime(text: string, zone: Zone): number | null {
 
 /** Offset of local time from UTC at that moment, e.g. 'UTC+1', 'UTC+5:30', 'UTC−3' */
 export function formatOffset(ms: number): string {
-  const minutes = -new Date(ms).getTimezoneOffset()
+  // Computed from the local clock reading: before standard time zones (local
+  // mean time) the offset has seconds, which getTimezoneOffset() truncates or not
+  // depending on the browser.
+  const d = new Date(ms)
+  const local = new Date(0)
+  local.setUTCFullYear(d.getFullYear(), d.getMonth(), d.getDate())
+  local.setUTCHours(d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds())
+  const minutes = Math.round((local.getTime() - ms) / 60_000)
   const a = Math.abs(minutes)
   const hm = a % 60 === 0 ? `${a / 60}` : `${Math.floor(a / 60)}:${pad(a % 60)}`
   return `UTC${minutes < 0 ? MINUS : '+'}${hm}`
@@ -111,9 +118,17 @@ export function formatRelative(ms: number, anchor: number): string {
  * The selected moment in the URL, so that a view can be shared:
  * '#date=2023-01-21' or '#date=2023-01-21T13:45' (UTC).
  */
-export function formatHash(ms: number): string {
+export function formatHash(ms: number, view?: string): string {
   const time = formatDateTime(ms, 'utc')
-  return `#date=${time.endsWith(' 00:00') ? time.slice(0, 10) : time.replace(' ', 'T')}`
+  const date = `#date=${time.endsWith(' 00:00') ? time.slice(0, 10) : time.replace(' ', 'T')}`
+  return view && view !== DEFAULT_VIEW ? `${date}&view=${view}` : date
+}
+
+const DEFAULT_VIEW = 'table'
+
+/** The view named in the URL ('&view=beat'), or null. */
+export function parseHashView(hash: string): string | null {
+  return new URLSearchParams(hash.replace(/^#/, '')).get('view')
 }
 
 export function parseHash(hash: string): number | null {

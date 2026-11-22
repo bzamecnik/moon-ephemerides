@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, within } from '@testing-library/preact'
+import { act, fireEvent, render, screen, within } from '@testing-library/preact'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { decodeCatalog } from '../data/catalog'
 import { rawFixture, utc } from '../test/fixture'
+import { cellLabel } from './cells'
 import { EventsView } from './EventsView'
 
 const catalog = decodeCatalog(rawFixture)
@@ -19,13 +20,20 @@ function eventRows() {
 }
 
 function labels() {
-  return eventRows().map((r) => within(r).getByTestId('event').textContent)
+  return eventRows().map(cellLabel)
 }
 
 describe('EventsView', () => {
-  it('lists the four kinds of super- and micromoons together, in time order', () => {
+  it('lists all New and Full Moons in time order, telling super- and micromoons apart', () => {
     setup()
-    expect(labels()).toEqual(['New Supermoon', 'Full Micromoon', 'New Supermoon', 'Full Micromoon', 'New Supermoon'])
+    expect(labels()).toEqual([
+      'Full Moon',
+      'New Supermoon',
+      'Full Micromoon',
+      'New Supermoon',
+      'Full Micromoon',
+      'New Supermoon',
+    ])
   })
 
   it('marks the event closest to the selected moment and summarises it', () => {
@@ -46,7 +54,7 @@ describe('EventsView', () => {
 
   it('shows the time difference to the perigee or apogee', () => {
     setup()
-    const row = eventRows()[2]
+    const row = eventRows()[3]
     expect(within(row).getByTestId('delta')).toHaveTextContent('+0.003')
     expect(row).toHaveClass('close-alignment')
   })
@@ -85,7 +93,7 @@ describe('EventsView', () => {
     const user = setup()
     await user.clear(dateBox())
     await user.type(dateBox(), '2022-12-01')
-    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-08 04:08')
   })
 
   it('jumps to a typed year while keeping what is being typed', async () => {
@@ -93,8 +101,8 @@ describe('EventsView', () => {
     await user.clear(dateBox())
     await user.type(dateBox(), '1989')
     expect(dateBox()).toHaveValue('1989')
-    // the fixture has no events before Dec 2022, so the first one is next
-    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
+    // the fixture has no events before Dec 2022, so the first one is the closest
+    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-08 04:08')
     await user.type(dateBox(), '{Enter}')
     expect(dateBox()).toHaveValue('1989-01-01 00:00')
   })
@@ -111,16 +119,16 @@ describe('EventsView', () => {
   it('picks a date from the calendar', () => {
     setup()
     fireEvent.change(screen.getByTestId('date-picker'), { target: { value: '2022-12-01' } })
-    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-08 04:08')
     expect(dateBox()).toHaveValue('2022-12-01 00:00')
   })
 
   it('filters the kinds of events', async () => {
     const user = setup()
     await user.click(screen.getByRole('checkbox', { name: /full micromoon/i }))
-    expect(labels()).toEqual(['New Supermoon', 'New Supermoon', 'New Supermoon'])
+    expect(labels()).toEqual(['Full Moon', 'New Supermoon', 'New Supermoon', 'New Supermoon'])
     await user.click(screen.getByRole('checkbox', { name: /other new and full moons/i }))
-    expect(labels()).toContain('Full Moon')
+    expect(labels()).toEqual(['New Supermoon', 'New Supermoon', 'New Supermoon'])
   })
 
   it('switches between UTC and local time', async () => {
@@ -129,6 +137,50 @@ describe('EventsView', () => {
     // TZ=Europe/Prague in the tests
     expect(screen.getByRole('radio', { name: /local/i }).parentElement).toHaveTextContent('Europe/Prague')
     expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-07 00:08 (UTC+1)')
-    expect(screen.getByRole('columnheader', { name: /date and time/i })).toHaveTextContent('Europe/Prague')
+    expect(screen.getByRole('columnheader', { name: /^date and time/i })).toHaveTextContent('Europe/Prague')
+  })
+
+  it('steps by event with the arrow keys', async () => {
+    const user = setup() // closest: Full Micromoon 2023-01-06
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-21 20:53')
+    await user.keyboard('{ArrowLeft}{ArrowLeft}')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2022-12-23 10:17')
+    await user.keyboard('{Shift>}{ArrowRight}{/Shift}')
+    // one beat later, clipped to the last one
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-20 07:06')
+  })
+
+  it('leaves the arrow keys to the date field while typing', async () => {
+    const user = setup()
+    await user.click(dateBox())
+    await user.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('summary')).toHaveTextContent('2023-01-06 23:08')
+  })
+
+  it('selects a moment by clicking a date in the table', async () => {
+    const user = setup()
+    const row = eventRows().find((r) => r.dataset.time === String(utc('2023-02-05T18:28:34')))!
+    // the date of the nearest apogee, 08:54:40
+    await user.click(within(row).getByRole('button', { name: '2023-02-04 08:55' }))
+    expect(dateBox()).toHaveValue('2023-02-04 08:55')
+    await user.click(within(eventRows()[1]).getByRole('button', { name: '2022-12-23 10:17' }))
+    expect(screen.getByTestId('summary')).toHaveTextContent('Closest: New Supermoon on 2022-12-23 10:17')
+  })
+
+  it('plays forward by beats until the end of the data or until paused', () => {
+    vi.useFakeTimers()
+    try {
+      render(<EventsView catalog={catalog} initialAnchor={utc('2022-12-08T00:00')} now={utc('2023-02-01T12:00')} />)
+      fireEvent.click(screen.getByRole('button', { name: /play/i }))
+      expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument()
+      act(() => void vi.advanceTimersByTime(100))
+      // a beat later is past the end of the fixture: its last event
+      expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-20 07:06')
+      act(() => void vi.advanceTimersByTime(100))
+      expect(screen.getByRole('button', { name: /play/i })).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })

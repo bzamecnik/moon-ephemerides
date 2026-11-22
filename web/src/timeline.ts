@@ -35,3 +35,19 @@ export function stepAnchor(times: readonly number[], anchor: number, steps: numb
   const i = Math.min(Math.max(closestIndex(times, anchor) + steps, 0), times.length - 1)
   return times[i]
 }
+
+/** The ~412-day beat of the phases and the distance (1 / (1/anomalistic − 1/synodic)). */
+export const BEAT_DAYS = 1 / (1 / 27.55455 - 1 / 29.530589)
+
+/**
+ * A new anchor at the event nearest to `delta` after the closest one, moving
+ * at least one event in that direction (stepping by a beat lands on the same
+ * phase 14 months later).
+ */
+export function stepByTime(times: readonly number[], anchor: number, delta: number): number {
+  if (times.length === 0) return anchor
+  const from = closestIndex(times, anchor)
+  let to = closestIndex(times, times[from] + delta)
+  if (to === from) to = Math.min(Math.max(from + Math.sign(delta), 0), times.length - 1)
+  return times[to]
+}

@@ -9,6 +9,7 @@ import {
   formatZoned,
   parseDateTime,
   parseHash,
+  parseHashView,
   formatHash,
 } from './format'
 import { utc } from './test/fixture'
@@ -79,6 +80,11 @@ describe('time zones', () => {
     expect(formatOffset(utc('2023-07-21T12:00'))).toBe('UTC+2')
   })
 
+  it('rounds historical local mean time offsets to whole minutes', () => {
+    // Prague used its local mean time, UTC+0:57:44, until 1891
+    expect(formatOffset(utc('1850-06-01T12:00'))).toBe('UTC+0:58')
+  })
+
   it('formats a time with its zone', () => {
     expect(formatZoned(t, 'utc')).toBe('2023-01-21 20:53 UTC')
     expect(formatZoned(t, 'local')).toBe('2023-01-21 21:53 (UTC+1)')
@@ -117,5 +123,13 @@ describe('URL hash', () => {
     expect(parseHash('#date=2023-01-21T13:45')).toBe(utc('2023-01-21T13:45'))
     expect(parseHash('')).toBeNull()
     expect(parseHash('#date=garbage')).toBeNull()
+  })
+
+  it('also keeps the view, unless it is the default one', () => {
+    expect(formatHash(utc('2023-01-21T00:00'), 'beat')).toBe('#date=2023-01-21&view=beat')
+    expect(formatHash(utc('2023-01-21T00:00'), 'table')).toBe('#date=2023-01-21')
+    expect(parseHashView('#date=2023-01-21&view=beat')).toBe('beat')
+    expect(parseHash('#date=2023-01-21&view=beat')).toBe(utc('2023-01-21T00:00'))
+    expect(parseHashView('#date=2023-01-21')).toBeNull()
   })
 })

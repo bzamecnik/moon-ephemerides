@@ -1,18 +1,15 @@
-import { useMemo, useRef, useState } from 'preact/hooks'
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { Catalog } from '../data/catalog'
 import {
-  apparentDiameterArcmin,
   eventLabel,
   moonEvents,
   NOTABLE_KINDS,
-  notableKind,
   type MoonEvent,
   type NotableKind,
 } from '../events'
 import {
   formatDate,
   formatDateTime,
-  formatDelta,
   formatDuration,
   formatOffset,
   formatRelative,
@@ -21,13 +18,29 @@ import {
   parseDateTime,
   type Zone,
 } from '../format'
-import { closestIndex, firstIndexAtOrAfter, stepAnchor, windowAround } from '../timeline'
+import { BeatChart } from '../charts/BeatChart'
+import { DistanceChart } from '../charts/DistanceChart'
+import { LongTermChart } from '../charts/LongTermChart'
+import { PhaseChart } from '../charts/PhaseChart'
+import { anomalisticMarks, synodicMarks } from '../phase'
+import { EventTable } from './EventTable'
+import { RankingView } from './RankingView'
+import { BEAT_DAYS, closestIndex, firstIndexAtOrAfter, stepAnchor, stepByTime, windowAround } from '../timeline'
 
 const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
-const PAGE = 10
-/** Δ below this (days) counts as a close alignment of the two rhythms */
-export const CLOSE_ALIGNMENT_DAYS = 0.25
+const BEAT_MS = BEAT_DAYS * 86_400_000
+const PLAY_INTERVAL_MS = 100
+
+type View = 'table' | 'distance' | 'beat' | 'phase' | 'longterm' | 'ranking'
+const VIEWS: { id: View; label: string }[] = [
+  { id: 'table', label: 'Table' },
+  { id: 'distance', label: 'Distance' },
+  { id: 'beat', label: 'Beat of the rhythms' },
+  { id: 'phase', label: 'Phase vs. distance' },
+  { id: 'longterm', label: 'Long term' },
+  { id: 'ranking', label: 'Best alignments' },
+]
 
 const KIND_LABELS: Record<NotableKind, string> = {
   'new-super': 'New Supermoon',
@@ -39,17 +52,27 @@ const KIND_LABELS: Record<NotableKind, string> = {
 interface Props {
   catalog: Catalog
   initialAnchor: number
+  initialView?: string | null
   /** the current time, for the "Now" button */
   now: number
   /** called when the user picks a moment (to keep it in the URL) */
-  onAnchorChange?: (anchor: number) => void
+  onChange?: (anchor: number, view: string) => void
 }
 
-export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Props) {
+export function EventsView({ catalog, initialAnchor, initialView, now, onChange }: Props) {
   const [anchor, setAnchorState] = useState(initialAnchor)
   const [zone, setZone] = useState<Zone>('utc')
   const [kinds, setKinds] = useState<ReadonlySet<NotableKind>>(new Set(NOTABLE_KINDS))
-  const [includeOrdinary, setIncludeOrdinary] = useState(false)
+  const [includeOrdinary, setIncludeOrdinary] = useState(true)
+  const [view, setViewState] = useState<View>(VIEWS.find((v) => v.id === initialView)?.id ?? 'table')
+  const setView = (v: View) => {
+    setViewState(v)
+    onChange?.(anchor, v)
+  }
+  // the charts show every New and Full Moon, whatever the filters
+  const allEvents = useMemo(() => moonEvents(catalog.syzygies, { includeOrdinary: true }), [catalog])
+  const synodic = useMemo(() => synodicMarks(catalog.syzygies), [catalog])
+  const anomalistic = useMemo(() => anomalisticMarks(catalog.apsides), [catalog])
 
   const events = useMemo(
     () => moonEvents(catalog.syzygies, { kinds, includeOrdinary }),
@@ -64,16 +87,44 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
 
   const setAnchor = (a: number) => {
     setAnchorState(a)
-    onAnchorChange?.(a)
+    onChange?.(a, view)
   }
   const step = (n: number) => setAnchor(stepAnchor(times, anchor, n))
+  const stepBeat = (n: number) => setAnchor(stepByTime(times, anchor, n * BEAT_MS))
+
+  // ▶ Play: a beat forward every PLAY_INTERVAL_MS (as fast as a held key), stopping at the end of the data
+  const [playing, setPlaying] = useState(false)
+  useEffect(() => {
+    if (!playing) return
+    const timer = setTimeout(() => {
+      const next = stepByTime(times, anchor, BEAT_MS)
+      if (next === times[closestIndex(times, anchor)]) setPlaying(false)
+      else setAnchor(next)
+    }, PLAY_INTERVAL_MS)
+    return () => clearTimeout(timer)
+  }, [playing, anchor, times])
+
+  // ← / → step by one event, with Shift by one beat; not while typing in a field
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      if (e.altKey || e.ctrlKey || e.metaKey) return
+      const target = e.target as HTMLElement | null
+      if (target?.closest('input, select, textarea, [contenteditable]')) return
+      e.preventDefault()
+      const dir = e.key === 'ArrowRight' ? 1 : -1
+      if (e.shiftKey) stepBeat(dir)
+      else step(dir)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
   const toggleKind = (k: NotableKind) => {
     const s = new Set(kinds)
     if (s.has(k)) s.delete(k)
     else s.add(k)
     setKinds(s)
   }
-  const zoneName = zone === 'utc' ? 'UTC' : localZoneName()
 
   return (
     <div class="events-view">
@@ -84,19 +135,38 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
             Now
           </button>
           <span class="button-group">
-            <button type="button" onClick={() => step(-PAGE)} aria-label={`${PAGE} events earlier`}>
+            <button
+              type="button"
+              onClick={() => stepBeat(-1)}
+              aria-label="One beat earlier"
+              title="One beat (about 14 months) earlier (Shift+←)"
+            >
               ⏪
             </button>
-            <button type="button" onClick={() => step(-1)}>
+            <button type="button" onClick={() => step(-1)} title="Previous event (← key)">
               ◀ Previous event
             </button>
-            <button type="button" onClick={() => step(1)}>
+            <button type="button" onClick={() => step(1)} title="Next event (→ key)">
               Next event ▶
             </button>
-            <button type="button" onClick={() => step(PAGE)} aria-label={`${PAGE} events later`}>
+            <button
+              type="button"
+              onClick={() => stepBeat(1)}
+              aria-label="One beat later"
+              title="One beat (about 14 months) later (Shift+→)"
+            >
               ⏩
             </button>
           </span>
+          <button
+            type="button"
+            class="play"
+            aria-pressed={playing}
+            onClick={() => setPlaying(!playing)}
+            title="Step forward by one beat at a time"
+          >
+            {playing ? '⏸ Pause' : '▶ Play by beats'}
+          </button>
           <fieldset class="zone">
             <legend class="visually-hidden">Time zone</legend>
             <label>
@@ -120,6 +190,10 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
             Other New and Full Moons
           </label>
         </fieldset>
+        <p class="hint keys">
+          Tip: <kbd>←</kbd> and <kbd>→</kbd> step through the events, with <kbd>Shift</kbd> by one beat (about 14
+          months, the same phase at the same point of the distance cycle).
+        </p>
       </section>
 
       <p class="summary" data-testid="summary" aria-live="polite">
@@ -133,50 +207,84 @@ export function EventsView({ catalog, initialAnchor, now, onAnchorChange }: Prop
         )}
       </p>
 
-      <div class="table-wrap">
-        <table class="events">
-          <caption class="visually-hidden">New and Full Moons near perigee and apogee, times in {zoneName}</caption>
-          <thead>
-            <tr>
-              <th scope="col">When</th>
-              <th scope="col">Date and time ({zoneName})</th>
-              <th scope="col">Event</th>
-              <th scope="col" class="num" title="Distance between the centres of the Earth and the Moon">
-                Distance (km)
-              </th>
-              <th scope="col" class="num" title="Apparent diameter of the Moon in minutes of arc">
-                Size (′)
-              </th>
-              <th
-                scope="col"
-                class="num"
-                title="How close the Moon is to the perigee or apogee distance: 1 = exactly at it (Espenak's relative distance)"
-              >
-                Closeness
-              </th>
-              <th scope="col">Perigee / apogee</th>
-              <th scope="col" class="num" title="Time of the perigee or apogee minus time of the New or Full Moon">
-                Δ (days)
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {events.slice(start, end).map((e, i) => {
-              const index = start + i
-              return [
-                index === nextIndex && <AnchorRow key="anchor" anchor={anchor} zone={zone} />,
-                <EventRow
-                  key={e.syzygy.time}
-                  event={e}
-                  anchor={anchor}
-                  zone={zone}
-                  isClosest={index === closest}
-                />,
-              ]
-            })}
-            {nextIndex >= end && <AnchorRow anchor={anchor} zone={zone} />}
-          </tbody>
-        </table>
+      <div class="tabs" role="tablist" aria-label="Views">
+        {VIEWS.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            role="tab"
+            id={`tab-${v.id}`}
+            aria-selected={view === v.id}
+            aria-controls="view-panel"
+            onClick={() => setView(v.id)}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+      <div class="view-panel" id="view-panel" role="tabpanel" aria-labelledby={`tab-${view}`}>
+        {view === 'table' && (
+          <EventTable
+            events={events}
+            start={start}
+            end={end}
+            closest={closest}
+            nextIndex={nextIndex}
+            anchor={anchor}
+            zone={zone}
+            onSelect={setAnchor}
+          />
+        )}
+        {view === 'distance' && (
+          <DistanceChart
+            events={allEvents}
+            apsides={catalog.apsides}
+            anchor={anchor}
+            closestTime={closestEvent?.syzygy.time}
+            zone={zone}
+            onSelect={setAnchor}
+          />
+        )}
+        {view === 'beat' && (
+          <BeatChart
+            events={allEvents}
+            anchor={anchor}
+            closestTime={closestEvent?.syzygy.time}
+            zone={zone}
+            onSelect={setAnchor}
+          />
+        )}
+        {view === 'phase' && (
+          <PhaseChart
+            events={allEvents}
+            synodic={synodic}
+            anomalistic={anomalistic}
+            anchor={anchor}
+            closestTime={closestEvent?.syzygy.time}
+            zone={zone}
+            onSelect={setAnchor}
+          />
+        )}
+        {view === 'longterm' && (
+          <LongTermChart
+            events={allEvents}
+            anchor={anchor}
+            closestTime={closestEvent?.syzygy.time}
+            zone={zone}
+            onSelect={setAnchor}
+          />
+        )}
+        {view === 'ranking' && (
+          <RankingView
+            events={events}
+            zone={zone}
+            onSelect={(t) => {
+              setAnchorState(t)
+              setViewState('table')
+              onChange?.(t, 'table')
+            }}
+          />
+        )}
       </div>
     </div>
   )
@@ -258,53 +366,4 @@ function describeDelta(e: MoonEvent): string {
   const d = e.deltaDays
   const amount = formatDuration(d).replace(/^[+−]/, '')
   return `${amount} ${d >= 0 ? 'before' : 'after'} ${e.apsis}`
-}
-
-function AnchorRow({ anchor, zone }: { anchor: number; zone: Zone }) {
-  return (
-    <tr class="anchor-row">
-      <td colSpan={8}>▼ selected moment: {formatZoned(anchor, zone)}</td>
-    </tr>
-  )
-}
-
-function EventRow({
-  event: e,
-  anchor,
-  zone,
-  isClosest,
-}: {
-  event: MoonEvent
-  anchor: number
-  zone: Zone
-  isClosest: boolean
-}) {
-  const kind = notableKind(e) ?? 'ordinary'
-  const close = Math.abs(e.deltaDays) < CLOSE_ALIGNMENT_DAYS
-  const classes = [e.syzygy.time < anchor ? 'past' : '', isClosest ? 'closest' : '', close ? 'close-alignment' : '']
-  return (
-    <tr
-      class={classes.filter(Boolean).join(' ')}
-      data-time={e.syzygy.time}
-      aria-current={isClosest ? 'true' : undefined}
-    >
-      <td class="when">{formatRelative(e.syzygy.time, anchor)}</td>
-      <td class="time">{formatDateTime(e.syzygy.time, zone)}</td>
-      <td>
-        <span class={`badge kind-${kind}`} data-testid="event">
-          {eventLabel(e)}
-        </span>
-      </td>
-      <td class="num">{e.syzygy.distanceKm.toLocaleString('en-US')}</td>
-      <td class="num">{apparentDiameterArcmin(e.syzygy.distanceKm).toFixed(2)}</td>
-      <td class="num">{e.closeness.toFixed(3)}</td>
-      <td class="time">
-        {e.apsis} {formatDateTime(e.apsisTime, zone)}
-      </td>
-      <td class="num delta" data-testid="delta" title={formatDuration(e.deltaDays)}>
-        {formatDelta(e.deltaDays)}
-        <span class="delta-human"> ({formatDuration(e.deltaDays)})</span>
-      </td>
-    </tr>
-  )
 }

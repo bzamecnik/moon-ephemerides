@@ -62,6 +62,20 @@ def find_phases(eph: SpiceKernel, t0: Time, t1: Time) -> Events:
     return Events(t, kind, earth_moon_distance(eph)(t))
 
 
+def drop_repeats(tt: np.ndarray, kind: np.ndarray, min_gap_days: float = 1.0) -> np.ndarray:
+    """Mask keeping the first of events of the same kind closer than `min_gap_days`
+    (times sorted). skyfield's find_minima/maxima occasionally report an extremum
+    twice, a second apart, where it falls on the edge of a search step."""
+    keep = np.ones(len(tt), bool)
+    last: dict[int, float] = {}
+    for i, (t, k) in enumerate(zip(tt, kind)):
+        if k in last and t - last[k] < min_gap_days:
+            keep[i] = False
+        else:
+            last[k] = t
+    return keep
+
+
 def find_apsides(eph: SpiceKernel, t0: Time, t1: Time) -> Events:
     """Perigees and apogees; kind: 0 perigee, 1 apogee."""
     distance = earth_moon_distance(eph)
@@ -71,7 +85,9 @@ def find_apsides(eph: SpiceKernel, t0: Time, t1: Time) -> Events:
     order = np.argsort(tt)
     kind = np.concatenate([np.zeros(len(t_min), int), np.ones(len(t_max), int)])[order]
     d = np.concatenate([d_min, d_max])[order]
-    return Events(t0.ts.tt_jd(tt[order]), kind, d)
+    tt = tt[order]
+    keep = drop_repeats(tt, kind)
+    return Events(t0.ts.tt_jd(tt[keep]), kind[keep], d[keep])
 
 
 def find_nodes(eph: SpiceKernel, t0: Time, t1: Time) -> Events:

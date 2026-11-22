@@ -6,6 +6,7 @@ import pytest
 
 from moon_ephemerides.events import (
     apparent_diameter_arcmin,
+    drop_repeats,
     ephemeris_range_tt,
     find_apsides,
     find_lunar_eclipses,
@@ -91,3 +92,18 @@ def test_ephemeris_range(eph, ts):
     first, last = ephemeris_range_tt(eph)
     assert ts.tdb_jd(first).tdb_strftime("%Y-%m-%d %H:%M") == "1849-12-26 00:00"
     assert ts.tdb_jd(last).tdb_strftime("%Y-%m-%d %H:%M") == "2150-01-22 00:00"
+
+
+def test_apsides_alternate_over_the_whole_ephemeris(eph, ts):
+    # find_minima/maxima can report one extremum twice, a second apart, where it
+    # falls on the edge of a search step; this happened 3 times in 1850-2149
+    first, last = ephemeris_range_tt(eph)
+    aps = find_apsides(eph, ts.tt_jd(first + 1), ts.tt_jd(last - 1))
+    assert set(np.diff(aps.kind) ** 2) == {1}
+    assert np.diff(aps.t.tt).min() > 10
+
+
+def test_drop_repeats_keeps_the_first_of_a_close_pair_of_the_same_kind():
+    tt = np.array([0.0, 13.8, 13.8 + 1e-5, 27.5, 27.6])
+    kind = np.array([0, 1, 1, 0, 1])
+    assert drop_repeats(tt, kind).tolist() == [True, True, False, True, True]
