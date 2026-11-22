@@ -1,13 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { Catalog } from '../data/catalog'
-import {
-  eclipseLabel,
-  eventLabel,
-  moonEvents,
-  NOTABLE_KINDS,
-  type MoonEvent,
-  type NotableKind,
-} from '../events'
+import { eclipseLabel, eventLabel, moonEvents, type MoonEvent } from '../events'
+import { ALL, applyFilter, type Filter } from '../filters'
 import {
   formatDate,
   formatDateTime,
@@ -26,6 +20,7 @@ import { OrbitChart } from '../charts/OrbitChart'
 import { PhaseChart } from '../charts/PhaseChart'
 import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
+import { FilterMenu } from './FilterMenu'
 import { Icon } from './Icon'
 import { RankingView } from './RankingView'
 import { cycleStep, nextPlayAnchor, playInterval, PLAY_STEPS, type PlayStep } from '../playback'
@@ -49,13 +44,6 @@ const VIEWS: { id: View; label: string }[] = [
   { id: 'ranking', label: 'Best alignments' },
 ]
 
-const KIND_LABELS: Record<NotableKind, string> = {
-  'new-super': 'New Supermoon',
-  'full-super': 'Full Supermoon',
-  'new-micro': 'New Micromoon',
-  'full-micro': 'Full Micromoon',
-}
-
 interface Props {
   catalog: Catalog
   initialAnchor: number
@@ -69,8 +57,7 @@ interface Props {
 export function EventsView({ catalog, initialAnchor, initialView, clock = Date.now, onChange }: Props) {
   const [anchor, setAnchorState] = useState(initialAnchor)
   const [zone, setZone] = useState<Zone>('utc')
-  const [kinds, setKinds] = useState<ReadonlySet<NotableKind>>(new Set(NOTABLE_KINDS))
-  const [includeOrdinary, setIncludeOrdinary] = useState(true)
+  const [filter, setFilter] = useState<Filter>(ALL)
   const [view, setViewState] = useState<View>(VIEWS.find((v) => v.id === initialView)?.id ?? 'table')
   const setView = (v: View) => {
     setViewState(v)
@@ -81,10 +68,7 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
   const synodic = useMemo(() => synodicMarks(catalog.syzygies), [catalog])
   const anomalistic = useMemo(() => anomalisticMarks(catalog.apsides), [catalog])
 
-  const events = useMemo(
-    () => moonEvents(catalog.syzygies, { kinds, includeOrdinary }),
-    [catalog, kinds, includeOrdinary],
-  )
+  const events = useMemo(() => applyFilter(allEvents, filter), [allEvents, filter])
   const times = useMemo(() => events.map((e) => e.syzygy.time), [events])
   const closest = closestIndex(times, anchor)
   // the line marking the selected moment goes before this event
@@ -161,12 +145,6 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   })
-  const toggleKind = (k: NotableKind) => {
-    const s = new Set(kinds)
-    if (s.has(k)) s.delete(k)
-    else s.add(k)
-    setKinds(s)
-  }
 
   return (
     <div class="events-view">
@@ -269,18 +247,9 @@ export function EventsView({ catalog, initialAnchor, initialView, clock = Date.n
             <Icon name="question" />
           </button>
         </div>
-        <fieldset class="control-row kinds">
-          <legend class="visually-hidden">Kinds of events</legend>
-          {NOTABLE_KINDS.map((k) => (
-            <label key={k} class={`kind kind-${k}`}>
-              <input type="checkbox" checked={kinds.has(k)} onChange={() => toggleKind(k)} /> {KIND_LABELS[k]}
-            </label>
-          ))}
-          <label class="kind kind-ordinary">
-            <input type="checkbox" checked={includeOrdinary} onChange={() => setIncludeOrdinary(!includeOrdinary)} />{' '}
-            Other New and Full Moons
-          </label>
-        </fieldset>
+        <div class="control-row">
+          <FilterMenu filter={filter} onChange={setFilter} />
+        </div>
         {showKeys && (
           <dl class="keys-panel" aria-label="Keyboard shortcuts">
             {SHORTCUTS.map(([keys, what]) => (

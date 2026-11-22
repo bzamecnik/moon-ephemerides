@@ -133,10 +133,26 @@ describe('EventsView', () => {
 
   it('filters the kinds of events', async () => {
     const user = setup()
+    await user.click(screen.getByText(/show: all/i))
     await user.click(screen.getByRole('checkbox', { name: /full micromoon/i }))
     expect(labels()).toEqual(['Full Moon', 'New Supermoon', 'New Supermoon', 'New Supermoon'])
-    await user.click(screen.getByRole('checkbox', { name: /other new and full moons/i }))
+    await user.click(screen.getByRole('checkbox', { name: /other full moon/i }))
     expect(labels()).toEqual(['New Supermoon', 'New Supermoon', 'New Supermoon'])
+    expect(screen.getByText(/show: 4 of 6 kinds/i)).toBeInTheDocument()
+  })
+
+  it('can list only eclipses', async () => {
+    const raw = { ...rawFixture, syzygies: { ...rawFixture.syzygies, lunar_eclipse: [2, -1, -1, -1, -1, -1] } }
+    const user = userEvent.setup()
+    render(<EventsView catalog={decodeCatalog(raw)} initialAnchor={utc('2023-01-10T00:00')} />)
+    await user.click(screen.getByText(/show: all/i))
+    expect(screen.getByRole('checkbox', { name: /total lunar/i })).toBeDisabled()
+    await user.click(screen.getByRole('checkbox', { name: /only eclipses/i }))
+    expect(labels()).toEqual(['Full Moon'])
+    await user.click(screen.getByRole('checkbox', { name: /total lunar/i }))
+    expect(labels()).toEqual([])
+    await user.click(screen.getByRole('button', { name: /show all/i }))
+    expect(labels()).toHaveLength(6)
   })
 
   it('switches between UTC and local time', async () => {

@@ -872,3 +872,75 @@ button.play[aria-pressed='true'] {
   margin: 0;
   color: var(--muted);
 }
+
+/* "Show ▾" pop-up */
+.menu {
+  position: relative;
+}
+
+.menu summary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.menu summary:hover,
+.menu[open] summary {
+  background: var(--row-hover);
+}
+
+.menu-panel {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  left: 0;
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
+  min-width: 220px;
+}
+
+.menu-panel fieldset {
+  display: grid;
+  gap: 4px;
+}
+
+.menu-panel legend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.menu-panel label {
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.menu-panel label.indented {
+  padding-left: 1.4em;
+}
+
+.menu-panel input:disabled + * ,
+.menu-panel label:has(input:disabled) {
+  color: var(--muted);
+  cursor: default;
+}
+
+.menu-panel > button {
+  justify-self: start;
+}
