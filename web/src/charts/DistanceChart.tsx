@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'preact/hooks'
 import type { Apsis } from '../data/catalog'
 import { smoothThrough, type CurvePoint } from '../curves'
-import { sampleDistance } from '../distance'
 import type { MoonEvent } from '../events'
 import { formatDate, formatZoned, type Zone } from '../format'
+import { moonPlace, moonTrack } from '../orbit'
 import { firstIndexAtOrAfter } from '../timeline'
 import { EventMark, Legend } from './marks'
 import { linearScale, yearTicks } from './scale'
@@ -18,6 +18,11 @@ const SPANS = [
 const [W, H] = [900, 380]
 const M = { left: 76, right: 16, top: 16, bottom: 32 }
 const KM_DOMAIN: [number, number] = [354_000, 408_000]
+/** the panel below: the Moon's height above the plane of the Earth's orbit (ecliptic latitude) */
+const H2 = 190
+const LAT_DOMAIN: [number, number] = [-5.6, 5.6]
+/** about how close to the plane (degrees) a New or Full Moon must be for some eclipse */
+const ECLIPSE_LIMIT = 1.5
 
 interface Props {
   events: MoonEvent[]
@@ -33,8 +38,8 @@ const km = (d: number) => `${Math.round(d).toLocaleString('en-US')} km`
 export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSelect }: Props) {
   const [days, setDays] = useState(427)
   const [t0, t1] = [anchor - (days / 2) * DAY_MS, anchor + (days / 2) * DAY_MS]
-  const step = days <= 61 ? DAY_MS / 12 : days <= 427 ? DAY_MS / 4 : DAY_MS / 2
-  const curve = useMemo(() => sampleDistance(apsides, t0, t1, step), [apsides, t0, t1, step])
+  const stepHours = days <= 61 ? 2 : days <= 427 ? 6 : 12
+  const track = useMemo(() => moonTrack(t0, t1, stepHours), [t0, t1, stepHours])
 
   // the apsides in the span plus one on each side, so that the envelopes reach the edges
   const apsisTimes = apsides.map((a) => a.time)
@@ -47,7 +52,12 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
 
   const x = linearScale([t0, t1], [M.left, W - M.right])
   const y = linearScale(KM_DOMAIN, [H - M.bottom, M.top])
-  const line = (points: { time: number; km: number }[]) => points.map((p) => `${x(p.time)},${y(p.km)}`).join(' ')
+  const y2 = linearScale(LAT_DOMAIN, [H2 - M.bottom, M.top])
+  const line = (fy: (p: (typeof track)[number]) => number) => track.map((p) => `${x(p.time)},${fy(p)}`).join(' ')
+  const latitudes = new Map(shownEvents.map((e) => [e.syzygy.time, moonPlace(e.syzygy.time).latitude]))
+  const timeTicks = yearTicks(t0, t1, 10)
+  const tickLabel = (t: number) =>
+    formatDate(t, 'utc').endsWith('-01-01') ? formatDate(t, 'utc').slice(0, 4) : formatDate(t, 'utc').slice(0, 7)
   const smooth = (points: CurvePoint[]) =>
     smoothThrough(points, 8)
       .map((p) => `${x(p.time)},${y(p.value)}`)
@@ -113,20 +123,18 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
         >
           distance (km)
         </text>
-        {yearTicks(t0, t1, 10).map((t) => (
+        {timeTicks.map((t) => (
           <g key={t} class="grid">
             <line x1={x(t)} x2={x(t)} y1={M.top} y2={H - M.bottom} />
             <text class="tick" x={x(t)} y={H - M.bottom + 18} text-anchor="middle">
-              {formatDate(t, 'utc').endsWith('-01-01')
-                ? formatDate(t, 'utc').slice(0, 4)
-                : formatDate(t, 'utc').slice(0, 7)}
+              {tickLabel(t)}
             </text>
           </g>
         ))}
         <g clip-path="url(#distance-plot)">
           <polyline class="envelope" points={envelope('perigee')} />
           <polyline class="envelope" points={envelope('apogee')} />
-          <polyline class="distance-curve" points={line(curve)} />
+          <polyline class="distance-curve" points={line((p) => y(p.distanceKm))} />
           <polyline class="phase-line phase-line-new" points={phaseLine('new')} />
           <polyline class="phase-line phase-line-full" points={phaseLine('full')} />
           {shownApsides.map((a) => (
@@ -159,14 +167,77 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
           />
         ))}
       </svg>
+      <svg
+        viewBox={`0 0 ${W} ${H2}`}
+        role="img"
+        aria-label="Height of the Moon above or below the plane of the Earth's orbit over time"
+      >
+        <defs>
+          <clipPath id="latitude-plot">
+            <rect x={M.left} y={M.top} width={W - M.left - M.right} height={H2 - M.top - M.bottom} />
+          </clipPath>
+        </defs>
+        <rect
+          class="eclipse-band"
+          x={M.left}
+          y={y2(ECLIPSE_LIMIT)}
+          width={W - M.left - M.right}
+          height={y2(-ECLIPSE_LIMIT) - y2(ECLIPSE_LIMIT)}
+        >
+          <title>New and Full Moons this close to the plane can be eclipses</title>
+        </rect>
+        {[-5, 0, 5].map((d) => (
+          <g key={d} class={d === 0 ? 'reference' : 'grid'}>
+            <line x1={M.left} x2={W - M.right} y1={y2(d)} y2={y2(d)} />
+            <text class="tick" x={M.left - 6} y={y2(d)} text-anchor="end" dominant-baseline="middle">
+              {d > 0 ? `${d}° N` : d < 0 ? `${-d}° S` : '0°'}
+            </text>
+          </g>
+        ))}
+        <text
+          class="tick axis-title"
+          transform={`translate(14 ${(M.top + H2 - M.bottom) / 2}) rotate(-90)`}
+          text-anchor="middle"
+        >
+          height
+        </text>
+        {timeTicks.map((t) => (
+          <g key={t} class="grid">
+            <line x1={x(t)} x2={x(t)} y1={M.top} y2={H2 - M.bottom} />
+            <text class="tick" x={x(t)} y={H2 - M.bottom + 18} text-anchor="middle">
+              {tickLabel(t)}
+            </text>
+          </g>
+        ))}
+        <polyline
+          class="distance-curve"
+          clip-path="url(#latitude-plot)"
+          points={line((p) => y2(p.latitude))}
+        />
+        <line class="anchor-line" x1={x(anchor)} x2={x(anchor)} y1={M.top} y2={H2 - M.bottom} />
+        {shownEvents.map((e) => (
+          <EventMark
+            key={e.syzygy.time}
+            event={e}
+            x={x(e.syzygy.time)}
+            y={y2(latitudes.get(e.syzygy.time) ?? 0)}
+            zone={zone}
+            highlighted={e.syzygy.time === closestTime}
+            onSelect={onSelect}
+          />
+        ))}
+      </svg>
       <figcaption>
         The Moon's distance from Earth: closest at each perigee (bottom of the wave), farthest at each apogee (top),
         every 27.6 days. The dotted lines join the successive perigees and apogees: they swing in and out, most
         when the orbit lines up with the Sun. The New Moons (solid line) and the Full Moons (dashed) each lie on a
         slower wave, one beat (~14 months) long; where the top or bottom of such a wave meets the bottom of the
         perigee line or the top of the apogee line, the two rhythms line up best. The marks are the New and Full Moons at their true distance; a
-        supermoon is one near the bottom of a wave, a micromoon near the top. Between perigee and apogee the curve
-        is approximated by half a cosine wave (typically within a few hundred km).
+        supermoon is one near the bottom of a wave, a micromoon near the top. <strong>Below:</strong> how far the
+        Moon is north or south of the plane of the Earth's orbit (the ecliptic). Its orbit is tilted by about 5°, so
+        it crosses the plane twice a month, at the nodes. Only a New or Full Moon inside the shaded band, close to
+        the plane, can be an eclipse (ringed marks); that happens in two seasons a year, when the node line points
+        at the Sun.
       </figcaption>
     </figure>
   )

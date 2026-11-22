@@ -676,3 +676,8 @@ kbd {
 .sun-arrow-head {
   fill: var(--anchor);
 }
+
+.eclipse-band {
+  fill: var(--eclipse);
+  opacity: 0.1;
+}

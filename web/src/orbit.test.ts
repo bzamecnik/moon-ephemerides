@@ -129,4 +129,16 @@ describe.runIf(existsSync(realDataPath))('against the catalog (JPL DE440s), 1850
       expect(Math.abs(moonPlace(raw.syzygies.t[i] * 1000).distanceKm - raw.syzygies.distance_km[i])).toBeLessThan(30)
     }
   })
+
+  it('has eclipses only at New and Full Moons within about 1.5° of the plane', () => {
+    // 1850-2149: every eclipse within 1.6°, every New or Full Moon without one beyond 1.4°;
+    // between, it depends on the distances of the Moon and the Sun
+    const s = raw.syzygies
+    for (let i = 0; i < s.t.length; i++) {
+      const height = Math.abs(moonPlace(s.t[i] * 1000).latitude)
+      const eclipse = s.lunar_eclipse[i] >= 0 || s.solar_eclipse[i] >= 0
+      if (eclipse) expect(height).toBeLessThan(1.6)
+      else expect(height).toBeGreaterThan(1.4)
+    }
+  })
 })
