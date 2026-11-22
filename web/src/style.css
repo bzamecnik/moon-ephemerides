@@ -273,7 +273,7 @@ table.events {
 
 .events th,
 .events td {
-  padding: 5px 10px;
+  padding: 5px 8px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   white-space: nowrap;

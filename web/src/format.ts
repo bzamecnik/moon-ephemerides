@@ -94,7 +94,7 @@ export function formatDuration(days: number): string {
   const a = Math.abs(days)
   if (a < 1 / 24) return `${sign(days)}${Math.round(a * 24 * 60)} min`
   if (a < 2) return `${sign(days)}${(a * 24).toFixed(1)} h`
-  return `${sign(days)}${a.toFixed(1)} days`
+  return `${sign(days)}${a.toFixed(1)} d`
 }
 
 function plural(n: number, unit: string): string {

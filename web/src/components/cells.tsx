@@ -5,7 +5,9 @@ import { formatDateTime, formatDelta, formatDuration, formatZoned, type Zone } f
 import { markClass } from '../charts/marks'
 
 const PHASE_NAMES = { new: 'New', full: 'Full' }
-const KIND_NAMES = { super: 'Supermoon', micro: 'Micromoon', ordinary: '' }
+/** short, to keep the table narrow; the full name in a tooltip */
+const KIND_NAMES = { super: 'Super', micro: 'Micro', ordinary: '' }
+const KIND_TITLES = { super: 'Supermoon', micro: 'Micromoon', ordinary: undefined }
 
 /** The same symbol as in the charts: New Moon the darker disc, Full Moon the brighter; colour by kind. */
 export function PhaseIcon({ event }: { event: MoonEvent }) {
@@ -58,7 +60,7 @@ export function PhaseCell({ event }: { event: MoonEvent }) {
 
 export function KindCell({ event }: { event: MoonEvent }) {
   return (
-    <td class="kind-name" data-testid="kind">
+    <td class="kind-name" data-testid="kind" title={KIND_TITLES[event.kind]}>
       {KIND_NAMES[event.kind]}
     </td>
   )
@@ -109,5 +111,5 @@ export function DeltaCells({ event }: { event: MoonEvent }) {
 export function cellLabel(row: HTMLElement): string {
   const phase = row.querySelector('[data-testid=phase]')?.textContent?.trim()
   const kind = row.querySelector('[data-testid=kind]')?.textContent?.trim()
-  return `${phase} ${kind || 'Moon'}`
+  return `${phase} ${kind ? `${kind}moon` : 'Moon'}`
 }

@@ -102,7 +102,7 @@ describe('durations', () => {
     expect(formatDuration(0.0027)).toBe('+4 min')
     expect(formatDuration(-0.5)).toBe('−12.0 h')
     expect(formatDuration(1.4246)).toBe('+34.2 h')
-    expect(formatDuration(-3.25)).toBe('−3.3 days')
+    expect(formatDuration(-3.25)).toBe('−3.3 d')
   })
 
   it('says how far an event is from the selected moment', () => {

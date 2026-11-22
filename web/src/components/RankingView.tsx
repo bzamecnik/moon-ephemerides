@@ -43,13 +43,13 @@ export function RankingView({ events, zone, onSelect }: Props) {
               <th scope="col">Date and time ({zone === 'utc' ? 'UTC' : 'local'})</th>
               <th scope="col">Phase</th>
               <th scope="col">Kind</th>
-              <th scope="col">Eclipse</th>
               <th scope="col" class="num">
                 Δ (days)
               </th>
               <th scope="col">
                 <span class="visually-hidden">Δ in hours or minutes</span>
               </th>
+              <th scope="col">Eclipse</th>
               <th scope="col" class="num">
                 Distance (km)
               </th>
@@ -64,8 +64,8 @@ export function RankingView({ events, zone, onSelect }: Props) {
                 </td>
                 <PhaseCell event={e} />
                 <KindCell event={e} />
-                <EclipseCell event={e} />
                 <DeltaCells event={e} />
+                <EclipseCell event={e} />
                 <td class="num">{e.syzygy.distanceKm.toLocaleString('en-US')}</td>
               </tr>
             ))}

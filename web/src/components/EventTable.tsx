@@ -35,6 +35,14 @@ export function EventTable({ events, start, end, closest, nextIndex, anchor, zon
             <th scope="col">Date and time ({zoneName})</th>
             <th scope="col">Phase</th>
             <th scope="col">Kind</th>
+            <th scope="col">Nearest</th>
+            <th scope="col">Its date and time</th>
+            <th scope="col" class="num" title="Time of the perigee or apogee minus time of the New or Full Moon">
+              Δ (days)
+            </th>
+            <th scope="col">
+              <span class="visually-hidden">Δ in hours or minutes</span>
+            </th>
             <th scope="col" title="Solar eclipse at New Moon, lunar eclipse at Full Moon">
               Eclipse
             </th>
@@ -50,14 +58,6 @@ export function EventTable({ events, start, end, closest, nextIndex, anchor, zon
               title="How close the Moon is to the perigee or apogee distance: 1 = exactly at it (Espenak's relative distance)"
             >
               Closeness
-            </th>
-            <th scope="col">Nearest</th>
-            <th scope="col">Its date and time</th>
-            <th scope="col" class="num" title="Time of the perigee or apogee minus time of the New or Full Moon">
-              Δ (days)
-            </th>
-            <th scope="col">
-              <span class="visually-hidden">Δ in hours or minutes</span>
             </th>
           </tr>
         </thead>
@@ -118,15 +118,15 @@ function EventRow({
       </td>
       <PhaseCell event={e} />
       <KindCell event={e} />
-      <EclipseCell event={e} />
-      <td class="num">{e.syzygy.distanceKm.toLocaleString('en-US')}</td>
-      <td class="num">{apparentDiameterArcmin(e.syzygy.distanceKm).toFixed(2)}</td>
-      <td class="num">{e.closeness.toFixed(3)}</td>
       <ApsisCell event={e} />
       <td class="time">
         <TimeButton time={e.apsisTime} zone={zone} onSelect={onSelect} label={`the ${e.apsis}`} />
       </td>
       <DeltaCells event={e} />
+      <EclipseCell event={e} />
+      <td class="num">{e.syzygy.distanceKm.toLocaleString('en-US')}</td>
+      <td class="num">{apparentDiameterArcmin(e.syzygy.distanceKm).toFixed(2)}</td>
+      <td class="num">{e.closeness.toFixed(3)}</td>
     </tr>
   )
 }
