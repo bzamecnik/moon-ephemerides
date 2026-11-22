@@ -13,7 +13,7 @@ describe('renderLearning', () => {
   const md = [
     '# The title',
     '',
-    'Intro with a [link](./validation.md) and [another](https://example.org/).',
+    'Intro with a [link](./validation.md) and [another](https://example.org/), see [Jan 21](https://bzamecnik.github.io/moon-ephemerides/#date=2023-01-21T20:53&view=orbit).',
     '',
     '## First *part*',
     '',
@@ -50,7 +50,14 @@ describe('renderLearning', () => {
     const real = renderLearning(astronomy)
     expect(real.title).toBe('The astronomy behind it')
     expect(real.sections.map((s) => s.id)).toContain('learn-nodes-and-eclipses')
-    expect(real.sections.map((s) => s.id)).toContain('learn-looking-from-above-the-frame-of-the-sun')
+    expect(real.sections.map((s) => s.id)).toContain('learn-looking-from-above-turning-with-the-earth-sun-line')
+    // its examples open in the app, and no link to the app is left pointing outside
+    expect(real.html).toContain('href="#date=2023-01-21T20:53&amp;view=table"')
+    expect(real.html).not.toContain('href="https://bzamecnik.github.io')
+  })
+
+  it('opens links to the app in the app itself', () => {
+    expect(page.html).toContain('href="#date=2023-01-21T20:53&amp;view=orbit"')
   })
 
   it('has every section the views link to', () => {

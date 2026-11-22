@@ -40,6 +40,13 @@ One version for the whole repository (the Python `compute/` package and the
 - The closest event has a pale yellow halo in the charts (like its row in the
   table); other New and Full Moons are a darker grey than the lines.
 - Fixed: Next event skipped the closest event when it was still ahead.
+- **Eclipse seasons** (the node line within 18.6° of the Sun) shaded in the
+  *Distance* view.
+- **Learn:** starts with the causes of the three rhythms (phases, distance,
+  height); the orbit view is explained as turning with the Earth–Sun line;
+  the examples open the app at their date.
+- The table's short Δ lines up on the decimal point; the Moon icon by the
+  title.
 - **Pages:** Explore, About (the introduction, data sources and credits) and
   Learn, in the sidebar; Learn lists its sections there.
 - ▶ Play by 6 hours, a day, a week, a month, a beat, or live (following the

@@ -3,7 +3,7 @@
  * the Sun: the Sun stays in one direction (angle 0), the Moon goes round once
  * per synodic month, the line of apsides once per beat (411.8 days) and the
  * line of nodes once per eclipse year (346.6 days). See docs/astronomy.md
- * ("Looking from above: the frame of the Sun").
+ * ("Looking from above: turning with the Earth–Sun line").
  *
  * Positions come from astronomy-engine (Don Cross, MIT); the mean perigee and
  * node from Meeus, Astronomical Algorithms, ch. 47.
@@ -119,7 +119,7 @@ const TRAIL_COMING_DAYS = 15
 
 /**
  * The span of the Moon's path to draw, sliding with the moment: 29 days, just
- * under one round in the frame of the Sun (a synodic month, 29.53 days), so
+ * under one round in the frame turning with the Earth–Sun line (a synodic month, 29.53 days), so
  * that the path doesn't overlap itself, and over half of it ahead, so that the
  * next New or Full Moon is always on it.
  */

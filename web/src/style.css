@@ -770,7 +770,7 @@ kbd {
   stroke-dasharray: 4 3;
 }
 
-/* orbit seen from above, in the frame of the Sun */
+/* orbit seen from above, turning with the Earth–Sun line */
 .orbit-layout {
   display: flex;
   flex-wrap: wrap;

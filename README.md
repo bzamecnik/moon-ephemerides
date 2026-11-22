@@ -33,7 +33,7 @@ against which the calculations are checked (see [docs/validation.md](docs/valida
   - `public/data/lunar-events.json` – the exported catalog (generated, `npm run data`)
   - `src/data/catalog.ts` – decoding the JSON
   - `src/events.ts` – supermoon/micromoon classification, eclipse names
-  - `src/orbit.ts` – the Moon's place in the frame of the Sun (astronomy-engine), mean perigee and node
+  - `src/orbit.ts` – the Moon's place seen from the Earth with the Sun fixed (astronomy-engine), mean perigee and node
   - `src/timeline.ts`, `src/format.ts` – navigation around a date, formatting
   - `src/playback.ts`, `src/shortcuts.ts`, `src/filters.ts` – ▶ Play steps, keyboard shortcuts, the Show filter
   - `src/beat.ts`, `src/phase.ts`, `src/longterm.ts`, `src/ranking.ts` – data for the charts and the ranking

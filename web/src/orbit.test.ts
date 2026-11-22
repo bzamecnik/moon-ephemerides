@@ -52,7 +52,7 @@ describe('trailWindow', () => {
     expect(trailWindow(101 * DAY)).toEqual({ t0: t0 + DAY, t1: t1 + DAY })
   })
 
-  it('draws almost a whole round in the frame of the Sun without overlapping', () => {
+  it('draws almost a whole round in the turning Earth–Sun frame without overlapping', () => {
     const { t0, t1 } = trailWindow(0)
     expect((t1 - t0) / DAY).toBeLessThan(SYNODIC_DAYS)
     expect((t1 - t0) / DAY).toBeGreaterThan(SYNODIC_DAYS - 1)
@@ -167,7 +167,7 @@ describe('moonPlace', () => {
   })
 })
 
-describe('orbitFrame: the frame of the Sun', () => {
+describe('orbitFrame: turning with the Earth–Sun line', () => {
   const t = utc('2023-01-21T20:53:15')
   // the Sun's uneven motion (±2°) blurs the mean rates a little
 
