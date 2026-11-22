@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'preact/hooks'
 import type { Apsis } from '../data/catalog'
+import { smoothThrough, type CurvePoint } from '../curves'
 import { sampleDistance } from '../distance'
 import type { MoonEvent } from '../events'
 import { formatDate, formatZoned, type Zone } from '../format'
@@ -47,8 +48,20 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
   const x = linearScale([t0, t1], [M.left, W - M.right])
   const y = linearScale(KM_DOMAIN, [H - M.bottom, M.top])
   const line = (points: { time: number; km: number }[]) => points.map((p) => `${x(p.time)},${y(p.km)}`).join(' ')
+  const smooth = (points: CurvePoint[]) =>
+    smoothThrough(points, 8)
+      .map((p) => `${x(p.time)},${y(p.value)}`)
+      .join(' ')
   const envelope = (kind: Apsis['kind']) =>
-    line(shownApsides.filter((a) => a.kind === kind).map((a) => ({ time: a.time, km: a.distanceKm })))
+    smooth(shownApsides.filter((a) => a.kind === kind).map((a) => ({ time: a.time, value: a.distanceKm })))
+  // the New Moons and the Full Moons each lie on a slower wave (one beat long)
+  const margin = 2 * 30 * DAY_MS
+  const nearby = events.slice(
+    firstIndexAtOrAfter(eventTimes, t0 - margin),
+    firstIndexAtOrAfter(eventTimes, t1 + margin),
+  )
+  const phaseLine = (phase: 'new' | 'full') =>
+    smooth(nearby.filter((e) => e.syzygy.phase === phase).map((e) => ({ time: e.syzygy.time, value: e.syzygy.distanceKm })))
 
   return (
     <figure class="chart">
@@ -64,6 +77,20 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
           </select>
         </label>
         <Legend />
+        <ul class="legend line-legend" aria-label="Lines">
+          {[
+            ['phase-line phase-line-new', 'New Moons'],
+            ['phase-line phase-line-full', 'Full Moons'],
+            ['envelope', 'perigees, apogees'],
+          ].map(([cls, label]) => (
+            <li key={label}>
+              <svg width="26" height="14" viewBox="0 0 26 14" aria-hidden="true">
+                <line class={cls} x1="1" x2="25" y1="7" y2="7" />
+              </svg>
+              {label}
+            </li>
+          ))}
+        </ul>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Distance of the Moon from Earth over time">
         <defs>
@@ -100,6 +127,8 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
           <polyline class="envelope" points={envelope('perigee')} />
           <polyline class="envelope" points={envelope('apogee')} />
           <polyline class="distance-curve" points={line(curve)} />
+          <polyline class="phase-line phase-line-new" points={phaseLine('new')} />
+          <polyline class="phase-line phase-line-full" points={phaseLine('full')} />
           {shownApsides.map((a) => (
             <line
               key={a.time}
@@ -132,8 +161,10 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
       </svg>
       <figcaption>
         The Moon's distance from Earth: closest at each perigee (bottom of the wave), farthest at each apogee (top),
-        every 27.6 days. The dashed lines join the successive perigees and apogees: they swing in and out, most
-        when the orbit lines up with the Sun. The marks are the New and Full Moons at their true distance; a
+        every 27.6 days. The dotted lines join the successive perigees and apogees: they swing in and out, most
+        when the orbit lines up with the Sun. The New Moons (solid line) and the Full Moons (dashed) each lie on a
+        slower wave, one beat (~14 months) long; where the top or bottom of such a wave meets the bottom of the
+        perigee line or the top of the apogee line, the two rhythms line up best. The marks are the New and Full Moons at their true distance; a
         supermoon is one near the bottom of a wave, a micromoon near the top. Between perigee and apogee the curve
         is approximated by half a cosine wave (typically within a few hundred km).
       </figcaption>

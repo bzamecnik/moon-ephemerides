@@ -489,14 +489,31 @@ kbd {
 .distance-curve {
   fill: none;
   stroke: var(--muted);
-  stroke-width: 1.5;
+  stroke-width: 1.25;
+  opacity: 0.7;
 }
 
 .envelope {
   fill: none;
   stroke: var(--axis);
-  stroke-width: 1.5;
-  stroke-dasharray: 5 4;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 4;
+}
+
+.phase-line {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1.25;
+  opacity: 0.55;
+}
+
+.phase-line-full {
+  stroke-dasharray: 5 3;
+}
+
+.line-legend {
+  margin-left: 0;
 }
 
 .apsis-tick {
