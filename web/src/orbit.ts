@@ -151,17 +151,11 @@ export function planeCrossings(track: readonly MoonPlace[]): (Omit<MoonPlace, 'l
  */
 export const ECLIPSE_LATITUDE = 1.5
 
-/** The runs of consecutive points of the path within `limit` degrees of the plane. */
-export function eclipseStretches(track: readonly MoonPlace[], limit = ECLIPSE_LATITUDE): MoonPlace[][] {
-  const runs: MoonPlace[][] = []
-  let run: MoonPlace[] = []
-  for (const q of track) {
-    if (Math.abs(q.latitude) < limit) run.push(q)
-    else if (run.length) {
-      runs.push(run)
-      run = []
-    }
-  }
-  if (run.length) runs.push(run)
-  return runs
-}
+/** the mean tilt of the Moon's orbit to the plane of the Earth's orbit, degrees */
+export const INCLINATION = 5.145
+
+/**
+ * How far (degrees along the orbit) either side of a node the Moon stays within
+ * ECLIPSE_LATITUDE of the plane: its height is about INCLINATION · sin(angle from the node).
+ */
+export const ECLIPSE_NODE_DISTANCE = (Math.asin(ECLIPSE_LATITUDE / INCLINATION) * 180) / Math.PI

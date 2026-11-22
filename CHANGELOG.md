@@ -33,8 +33,8 @@ One version for the whole repository (the Python `compute/` package and the
   lines, along the Moon's path and in the legends; the height panel of
   *Distance* marks the crossings and joins the New and the Full Moons by lines
   as the distance panel does.
-- **Orbit from above:** the stretches of the path close enough to the plane for
-  an eclipse are shaded; the readout groups the distance with the
+- **Orbit from above:** zones around the node line (±17°) where the Moon is
+  close enough to the plane for an eclipse; the readout groups the distance with the
   perigee–apogee line and the height with the node line.
 - The closest event has a pale yellow halo in the charts (like its row in the
   table); other New and Full Moons are a darker grey than the lines.

@@ -224,6 +224,23 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
             </text>
           </g>
         ))}
+        {/* crossing upwards through 0° is ☊, downwards ☋ */}
+        {[
+          [2.5, '☊', 'crossing going north (☊)'],
+          [-2.5, '☋', 'crossing going south (☋)'],
+        ].map(([d, symbol, title]) => (
+          <text
+            key={symbol}
+            class="node-symbol"
+            x={M.left - 10}
+            y={y2(d as number)}
+            text-anchor="end"
+            dominant-baseline="central"
+          >
+            {symbol}
+            <title>{title}</title>
+          </text>
+        ))}
         <text
           class="tick axis-title"
           transform={`translate(14 ${(M.top + H2 - M.bottom) / 2}) rotate(-90)`}

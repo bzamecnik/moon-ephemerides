@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { RawCatalog } from './data/catalog'
-import { ECLIPSE_LATITUDE, eclipseStretches, lineToSun, meanElements, phaseName, planeCrossings, trailWindow, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
+import { ECLIPSE_LATITUDE, ECLIPSE_NODE_DISTANCE, lineToSun, meanElements, phaseName, planeCrossings, trailWindow, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
 import { utc } from './test/fixture'
 import { BEAT_DAYS } from './timeline'
 
@@ -57,20 +57,26 @@ describe('trailWindow', () => {
   })
 })
 
-describe('eclipseStretches', () => {
-  const p = (time: number, latitude: number) => ({ time, latitude, elongation: time, distanceKm: 380_000 })
-  it('splits the path into the runs close to the plane', () => {
-    const track = [p(0, 3), p(1, 1), p(2, -1), p(3, -3), p(4, -1.4), p(5, 0.5)]
-    expect(eclipseStretches(track, 1.5).map((r) => r.map((q) => q.time))).toEqual([
-      [1, 2],
-      [4, 5],
-    ])
-  })
-
+describe('eclipse zone', () => {
   it('uses the band where all eclipses of 1850–2149 happened', () => {
     // every eclipse had |latitude| < 1.6°, every New/Full Moon without one > 1.4°
     expect(ECLIPSE_LATITUDE).toBeGreaterThan(1.4)
     expect(ECLIPSE_LATITUDE).toBeLessThan(1.6)
+  })
+
+  it('reaches about 17° either side of a node (orbit tilted by 5.145°)', () => {
+    expect(ECLIPSE_NODE_DISTANCE).toBeCloseTo((Math.asin(1.5 / 5.145) * 180) / Math.PI, 6)
+    expect(ECLIPSE_NODE_DISTANCE).toBeCloseTo(16.95, 1)
+  })
+
+  it('matches the true height of the Moon near the nodes', () => {
+    // over two years, every place within the zone is within ~1.5° of the plane and vice versa
+    for (const p of moonTrack(Date.UTC(2026, 0, 1), Date.UTC(2028, 0, 1), 12)) {
+      const fromNode = Math.abs(wrap180(p.elongation - orbitFrame(p.time).node))
+      const nearNode = Math.min(fromNode, 180 - fromNode)
+      if (nearNode < ECLIPSE_NODE_DISTANCE - 3) expect(Math.abs(p.latitude)).toBeLessThan(1.7)
+      if (nearNode > ECLIPSE_NODE_DISTANCE + 3) expect(Math.abs(p.latitude)).toBeGreaterThan(1.3)
+    }
   })
 })
 

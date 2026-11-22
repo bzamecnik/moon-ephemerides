@@ -932,14 +932,10 @@ kbd {
   opacity: 0.6;
 }
 
-/* the stretches of the Moon's path close enough to the plane for an eclipse */
+/* around the nodes: the Moon close enough to the plane for an eclipse */
 .eclipse-zone {
-  fill: none;
-  stroke: var(--eclipse);
-  stroke-opacity: 0.2;
-  stroke-width: 10;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  fill: var(--eclipse);
+  opacity: 0.12;
 }
 
 .eclipse-band {
