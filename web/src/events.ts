@@ -2,7 +2,7 @@
  * Classification of New and Full Moons by their distance (Espenak's definitions,
  * see docs/astronomy.md): supermoon = relative distance ≤ 0.1, micromoon ≥ 0.9.
  */
-import type { ApsisKind, Phase, Syzygy } from './data/catalog'
+import type { ApsisKind, Eclipse, Phase, Syzygy } from './data/catalog'
 
 export const SUPERMOON_LIMIT = 0.1
 export const MICROMOON_LIMIT = 0.9
@@ -69,4 +69,9 @@ export function eventLabel(e: MoonEvent): string {
 
 export function apparentDiameterArcmin(distanceKm: number): number {
   return ((2 * Math.asin(MOON_RADIUS_KM / distanceKm) * 180) / Math.PI) * 60
+}
+
+/** "total solar eclipse", "penumbral lunar eclipse", ... */
+export function eclipseLabel(e: Eclipse): string {
+  return `${e.kind} ${e.body} eclipse`
 }

@@ -52,6 +52,14 @@ describe('EventsView', () => {
     expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-05 18:29 UTC (6 hours ago)')
   })
 
+  it('names the eclipses', () => {
+    const raw = { ...rawFixture, syzygies: { ...rawFixture.syzygies, solar_eclipse: [-1, -1, -1, 1, -1, -1] } }
+    render(<EventsView catalog={decodeCatalog(raw)} initialAnchor={utc('2023-01-21T00:00')} now={utc('2023-02-01T12:00')} />)
+    const cells = eventRows().map((r) => within(r).getByTestId('eclipse').textContent?.trim())
+    expect(cells).toEqual(['', '', '', 'Annular solar', '', ''])
+    expect(screen.getByTestId('summary')).toHaveTextContent(/perigee, with an annular solar eclipse\.$/)
+  })
+
   it('shows the time difference to the perigee or apogee', () => {
     setup()
     const row = eventRows()[3]
@@ -179,6 +187,20 @@ describe('EventsView', () => {
       expect(screen.getByTestId('summary')).toHaveTextContent('2023-02-20 07:06')
       act(() => void vi.advanceTimersByTime(100))
       expect(screen.getByRole('button', { name: /play/i })).toBeInTheDocument()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('plays forward by 6 hours', () => {
+    vi.useFakeTimers()
+    try {
+      render(<EventsView catalog={catalog} initialAnchor={utc('2023-01-21T00:00')} now={utc('2023-02-01T12:00')} />)
+      fireEvent.change(screen.getByRole('combobox', { name: /play step/i }), { target: { value: 'hours' } })
+      fireEvent.click(screen.getByRole('button', { name: /play/i }))
+      act(() => void vi.advanceTimersByTime(100))
+      act(() => void vi.advanceTimersByTime(100))
+      expect(screen.getByRole('textbox', { name: /date and time/i })).toHaveValue('2023-01-21 12:00')
     } finally {
       vi.useRealTimers()
     }

@@ -5,6 +5,8 @@ import { bestAligned, extremes, runs } from '../longterm'
 import { BEAT_DAYS } from '../timeline'
 import { EventMark, Legend } from './marks'
 import { linearScale, yearTicks } from './scale'
+import { LearnMore } from '../components/LearnPage'
+import { LEARN } from '../learn'
 
 const YEAR_MS = 365.25 * 86_400_000
 const SPANS = [
@@ -171,7 +173,7 @@ export function LongTermChart({ events, anchor, closestTime, zone, onSelect }: P
         closest supermoon and the farthest micromoon of each stretch. The light lines join the same kind of
         event (e.g. New Supermoons) in consecutive beats. The closest ones come closer in northern winter,
         when the Earth is nearest the Sun and the Sun stretches the Moon's orbit most; the farthest ones change
-        little. Click a mark to select it.
+        little. Click a mark to select it. <LearnMore id={LEARN.longView}>More about the long view.</LearnMore>
       </figcaption>
     </figure>
   )

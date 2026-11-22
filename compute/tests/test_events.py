@@ -12,6 +12,7 @@ from moon_ephemerides.events import (
     find_lunar_eclipses,
     find_nodes,
     find_phases,
+    find_solar_eclipses,
 )
 
 
@@ -81,6 +82,29 @@ def test_total_lunar_eclipse_2022_nov_08(eph, ts):
     assert ecl.kind.tolist() == [2]
     # greatest eclipse 10:59 UT (NASA)
     assert abs(ecl.t[0].tt - ts.utc(2022, 11, 8, 10, 59).tt) * 24 * 60 < 2
+
+
+@pytest.mark.parametrize(
+    ("date", "greatest", "kind"),
+    [
+        # greatest eclipse (NASA, Espenak); the hybrid eclipse of 2023-04-20 counts as total
+        ((2017, 8, 21), (2017, 8, 21, 18, 25), 2),
+        ((2024, 4, 8), (2024, 4, 8, 18, 17), 2),
+        ((2023, 10, 14), (2023, 10, 14, 17, 59), 1),
+        ((2023, 4, 20), (2023, 4, 20, 4, 17), 2),
+        ((2022, 10, 25), (2022, 10, 25, 11, 0), 0),
+    ],
+)
+def test_solar_eclipses(eph, ts, date, greatest, kind):
+    y, m, d = date
+    ecl = find_solar_eclipses(eph, ts.utc(y, m, d - 3), ts.utc(y, m, d + 3))
+    assert ecl.kind.tolist() == [kind]
+    assert abs(ecl.t[0].tt - ts.utc(*greatest).tt) * 24 * 60 < 2
+
+
+def test_solar_eclipses_of_the_21st_century(eph, ts):
+    # NASA's Five Millennium Canon: 224 solar eclipses in 2001-2100
+    assert len(find_solar_eclipses(eph, ts.utc(2001, 1, 1), ts.utc(2101, 1, 1)).kind) == 224
 
 
 def test_apparent_diameter():

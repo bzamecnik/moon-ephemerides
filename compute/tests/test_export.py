@@ -13,7 +13,7 @@ def data(eph, ts):
 
 
 def test_columns_have_equal_lengths(data):
-    for table in ("phases", "apsides", "nodes", "lunar_eclipses", "syzygies"):
+    for table in ("phases", "apsides", "nodes", "lunar_eclipses", "solar_eclipses", "syzygies"):
         lengths = {len(col) for col in data[table].values()}
         assert len(lengths) == 1, table
 
@@ -32,3 +32,8 @@ def test_json_roundtrip(eph, ts, tmp_path):
     loaded = json.loads(path.read_text())
     assert loaded["meta"]["ephemeris"] == "JPL DE440S"
     assert loaded["meta"]["kinds"]["apsides"] == ["perigee", "apogee"]
+
+
+def test_eclipse_kinds_are_named(eph, ts):
+    kinds = catalog_to_dict(build_catalog(eph, ts.utc(2023, 1, 1), ts.utc(2023, 2, 1)))["meta"]["kinds"]
+    assert kinds["solar_eclipses"] == ["partial", "annular", "total"]

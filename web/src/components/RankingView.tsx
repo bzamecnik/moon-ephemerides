@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks'
 import { eventLabel, type MoonEvent } from '../events'
 import type { Zone } from '../format'
-import { DeltaCells, KindCell, PhaseCell, TimeButton } from './cells'
+import { DeltaCells, EclipseCell, KindCell, PhaseCell, TimeButton } from './cells'
 import { bestAlignments, ERAS } from '../ranking'
 
 const LIMIT = 25
@@ -49,6 +49,7 @@ export function RankingView({ events, zone, onSelect }: Props) {
               <th scope="col">
                 <span class="visually-hidden">Δ in hours or minutes</span>
               </th>
+              <th scope="col">Eclipse</th>
               <th scope="col" class="num">
                 Distance (km)
               </th>
@@ -64,6 +65,7 @@ export function RankingView({ events, zone, onSelect }: Props) {
                 <PhaseCell event={e} />
                 <KindCell event={e} />
                 <DeltaCells event={e} />
+                <EclipseCell event={e} />
                 <td class="num">{e.syzygy.distanceKm.toLocaleString('en-US')}</td>
               </tr>
             ))}

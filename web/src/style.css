@@ -19,6 +19,7 @@
   --mark-ordinary: #a3a5af;
   --grid: #ebe9e3;
   --axis: #c9c6bd;
+  --eclipse: #7b4fa6;
   font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
   line-height: 1.45;
   color: var(--fg);
@@ -48,6 +49,7 @@
     --mark-ordinary: #5c606e;
     --grid: #23262f;
     --axis: #3c404d;
+    --eclipse: #b28ddc;
   }
 }
 
@@ -62,9 +64,88 @@ h1 {
   font-size: 1.6rem;
 }
 
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 24px;
+}
+
 .intro {
+  flex-basis: 100%;
   max-width: 70ch;
   margin-top: 0;
+}
+
+.pages {
+  display: flex;
+  gap: 4px;
+}
+
+.pages a {
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.pages a:hover {
+  background: var(--row-hover);
+  color: var(--fg);
+}
+
+.pages a[aria-current='page'] {
+  background: var(--ordinary-bg);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* the learning page (docs/astronomy.md) */
+.learn {
+  max-width: 76ch;
+}
+
+.learn h2 {
+  font-size: 1.4rem;
+  margin: 16px 0 8px;
+}
+
+.learn-toc ol {
+  margin: 0 0 24px;
+  padding-left: 1.4em;
+  color: var(--muted);
+}
+
+.learn-text h3 {
+  margin: 32px 0 8px;
+  font-size: 1.15rem;
+  scroll-margin-top: 16px;
+}
+
+.learn-text table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin: 12px 0;
+  display: block;
+  overflow-x: auto;
+}
+
+.learn-text th,
+.learn-text td {
+  border-bottom: 1px solid var(--line);
+  padding: 4px 10px;
+  text-align: left;
+}
+
+.learn-text pre {
+  background: var(--row-hover);
+  padding: 8px 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.learn-more {
+  white-space: nowrap;
 }
 
 footer {
@@ -192,7 +273,7 @@ table.events {
 
 .events th,
 .events td {
-  padding: 5px 10px;
+  padding: 5px 8px;
   border-bottom: 1px solid var(--line);
   text-align: left;
   white-space: nowrap;
@@ -435,6 +516,24 @@ select {
   cursor: pointer;
 }
 
+/* eclipses: violet, a hue the kinds don't use */
+.eclipse-ring {
+  fill: none;
+  stroke: var(--eclipse);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 1.5;
+}
+
+.eclipse-icon.eclipse-solar circle {
+  fill: var(--fg);
+  stroke: var(--eclipse);
+  stroke-width: 2;
+}
+
+.eclipse-icon.eclipse-lunar circle {
+  fill: var(--eclipse);
+}
+
 .event-mark .hit {
   fill: transparent;
 }
@@ -541,4 +640,123 @@ kbd {
 
 .run-full {
   stroke-dasharray: 4 3;
+}
+
+/* orbit seen from above, in the frame of the Sun */
+.orbit-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  align-items: flex-start;
+}
+
+.orbit-chart {
+  flex: 1 1 300px;
+  min-width: 0;
+  max-width: 600px;
+  width: 100%;
+  height: auto;
+}
+
+.orbit-readout {
+  flex: 1 1 260px;
+  max-width: 380px;
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 12px;
+  font-size: 0.9rem;
+}
+
+.orbit-readout dt {
+  color: var(--muted);
+}
+
+.orbit-readout dd {
+  margin: 0;
+}
+
+.readout-note {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.mean-orbit {
+  fill: none;
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.phase-ray line {
+  stroke: var(--grid);
+  stroke-width: 1;
+}
+
+.moon-trail {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.moon-trail.south {
+  stroke-dasharray: 4 3;
+  stroke-width: 1;
+}
+
+.apse-line line {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
+.node-line line {
+  stroke: var(--eclipse);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 4;
+}
+
+.node-line .orbit-label {
+  fill: var(--eclipse);
+}
+
+.orbit-label {
+  font-weight: 600;
+}
+
+.earth .day {
+  fill: #4a7fc1;
+}
+
+.earth .night {
+  fill: #1d3557;
+}
+
+.moon .day {
+  fill: #f2efe4;
+}
+
+.moon .night {
+  fill: #3a3d48;
+}
+
+.earth .outline,
+.moon .outline {
+  fill: none;
+  stroke: var(--fg);
+  stroke-width: 1;
+}
+
+.sun-pointer line {
+  stroke: var(--anchor);
+  stroke-width: 2;
+}
+
+.sun-arrow-head {
+  fill: var(--anchor);
+}
+
+.eclipse-band {
+  fill: var(--eclipse);
+  opacity: 0.1;
 }

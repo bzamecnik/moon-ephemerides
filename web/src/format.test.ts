@@ -9,6 +9,7 @@ import {
   formatZoned,
   parseDateTime,
   parseHash,
+  parseHashPage,
   parseHashView,
   formatHash,
 } from './format'
@@ -101,7 +102,7 @@ describe('durations', () => {
     expect(formatDuration(0.0027)).toBe('+4 min')
     expect(formatDuration(-0.5)).toBe('−12.0 h')
     expect(formatDuration(1.4246)).toBe('+34.2 h')
-    expect(formatDuration(-3.25)).toBe('−3.3 days')
+    expect(formatDuration(-3.25)).toBe('−3.3 d')
   })
 
   it('says how far an event is from the selected moment', () => {
@@ -131,5 +132,12 @@ describe('URL hash', () => {
     expect(parseHashView('#date=2023-01-21&view=beat')).toBe('beat')
     expect(parseHash('#date=2023-01-21&view=beat')).toBe(utc('2023-01-21T00:00'))
     expect(parseHashView('#date=2023-01-21')).toBeNull()
+  })
+
+  it('tells the learning page from the explorer', () => {
+    expect(parseHashPage('#learn')).toEqual({ page: 'learn' })
+    expect(parseHashPage('#learn-nodes-and-eclipses')).toEqual({ page: 'learn', section: 'learn-nodes-and-eclipses' })
+    expect(parseHashPage('#date=2023-01-21&view=beat')).toEqual({ page: 'explore' })
+    expect(parseHashPage('')).toEqual({ page: 'explore' })
   })
 })

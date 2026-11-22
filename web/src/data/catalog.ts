@@ -20,11 +20,21 @@ export interface RawCatalog {
     apogee_delta: number[]
     relative_distance: number[]
     lunar_eclipse: number[]
+    solar_eclipse: number[]
   }
 }
 
 export type Phase = 'new' | 'full'
 export type ApsisKind = 'perigee' | 'apogee'
+
+export type EclipseKind = 'penumbral' | 'partial' | 'annular' | 'total'
+export interface Eclipse {
+  /** solar at New Moon (the Moon covers the Sun), lunar at Full Moon (the Earth's shadow covers the Moon) */
+  body: 'solar' | 'lunar'
+  kind: EclipseKind
+}
+const LUNAR_KINDS: EclipseKind[] = ['penumbral', 'partial', 'total']
+const SOLAR_KINDS: EclipseKind[] = ['partial', 'annular', 'total']
 
 export interface Syzygy {
   /** milliseconds since the Unix epoch (UTC), as for `Date` */
@@ -38,6 +48,7 @@ export interface Syzygy {
   apogeeDeltaDays: number
   /** (D − D_perigee) / (D_apogee − D_perigee) of the nearest perigee and apogee: 0 at perigee, 1 at apogee */
   relativeDistance: number
+  eclipse: Eclipse | null
 }
 
 export interface Apsis {
@@ -67,6 +78,12 @@ export function decodeCatalog(raw: RawCatalog): Catalog {
     perigeeDeltaDays: s.perigee_delta[i],
     apogeeDeltaDays: s.apogee_delta[i],
     relativeDistance: s.relative_distance[i],
+    eclipse:
+      s.lunar_eclipse[i] >= 0
+        ? { body: 'lunar', kind: LUNAR_KINDS[s.lunar_eclipse[i]] }
+        : s.solar_eclipse[i] >= 0
+          ? { body: 'solar', kind: SOLAR_KINDS[s.solar_eclipse[i]] }
+          : null,
   }))
   const a = raw.apsides
   const apsides: Apsis[] = a.t.map((t, i) => ({

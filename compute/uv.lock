@@ -3,6 +3,15 @@ revision = 5
 requires-python = ">=3.14"
 
 [[package]]
+name = "astronomy-engine"
+version = "2.1.19"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/b4/612567031e5545377eeafa430cc94a226ba5f5704708caedaa0d1bcd6548/astronomy-engine-2.1.19.tar.gz", hash = "sha256:95b797b87b659adc0602a6a205143ce5a10451664e80650bb7cd8ba3c8f1f02b", size = 231990, upload-time = "2023-12-14T18:17:19.908Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/67/87/47c093c8ac29ee737de6d6a8957ff9e2dc3a36427b392fdca2d1b05bdab0/astronomy_engine-2.1.19-py3-none-any.whl", hash = "sha256:232ba7dd2bbf42225c48be6721b676e8c6c079dbd4588d2781dfa68adcb6f67f", size = 155449, upload-time = "2023-12-14T18:17:16.844Z" },
+]
+
+[[package]]
 name = "beautifulsoup4"
 version = "4.15.0"
 source = { registry = "https://pypi.org/simple" }
@@ -59,6 +68,7 @@ name = "moon-ephemerides"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "astronomy-engine" },
     { name = "beautifulsoup4" },
     { name = "numpy" },
     { name = "skyfield" },
@@ -72,6 +82,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "astronomy-engine", specifier = ">=2.1.19" },
     { name = "beautifulsoup4", specifier = ">=4.15.0" },
     { name = "numpy", specifier = ">=2.5.5" },
     { name = "skyfield", specifier = ">=1.55" },

@@ -20,6 +20,7 @@ export const rawFixture: RawCatalog = {
     apogee_delta: [3.8474, -11.4086, 1.4246, -13.4819, -1.3985, 11.4545],
     relative_distance: [0.8692, 0.017, 0.9861, 0.0, 0.9866, 0.0167],
     lunar_eclipse: [-1, -1, -1, -1, -1, -1],
+    solar_eclipse: [-1, -1, -1, -1, -1, -1],
   },
 }
 

@@ -94,7 +94,7 @@ export function formatDuration(days: number): string {
   const a = Math.abs(days)
   if (a < 1 / 24) return `${sign(days)}${Math.round(a * 24 * 60)} min`
   if (a < 2) return `${sign(days)}${(a * 24).toFixed(1)} h`
-  return `${sign(days)}${a.toFixed(1)} days`
+  return `${sign(days)}${a.toFixed(1)} d`
 }
 
 function plural(n: number, unit: string): string {
@@ -129,6 +129,16 @@ const DEFAULT_VIEW = 'table'
 /** The view named in the URL ('&view=beat'), or null. */
 export function parseHashView(hash: string): string | null {
   return new URLSearchParams(hash.replace(/^#/, '')).get('view')
+}
+
+export type Page = { page: 'explore' } | { page: 'learn'; section?: string }
+
+/** '#learn' or '#learn-<section>' open the learning page; anything else the explorer. */
+export function parseHashPage(hash: string): Page {
+  const h = hash.replace(/^#/, '')
+  if (h === 'learn') return { page: 'learn' }
+  if (h.startsWith('learn-')) return { page: 'learn', section: h }
+  return { page: 'explore' }
 }
 
 export function parseHash(hash: string): number | null {

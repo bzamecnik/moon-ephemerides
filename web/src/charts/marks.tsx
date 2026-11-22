@@ -1,5 +1,5 @@
 /** Shared marks of the charts: one symbol per New/Full Moon, a legend. */
-import { eventLabel, notableKind, type MoonEvent } from '../events'
+import { eclipseLabel, eventLabel, notableKind, type MoonEvent } from '../events'
 import { formatDelta, formatZoned, type Zone } from '../format'
 
 /** CSS class giving the colour: super- (warm), micro- (cool) or ordinary (grey) */
@@ -9,7 +9,8 @@ export function markClass(e: MoonEvent): string {
 
 export function describeEvent(e: MoonEvent, zone: Zone): string {
   const apsis = notableKind(e) ? `, Δ ${e.apsis} ${formatDelta(e.deltaDays)} d` : ''
-  return `${eventLabel(e)}, ${formatZoned(e.syzygy.time, zone)}${apsis}`
+  const eclipse = e.syzygy.eclipse ? `, ${eclipseLabel(e.syzygy.eclipse)}` : ''
+  return `${eventLabel(e)}, ${formatZoned(e.syzygy.time, zone)}${apsis}${eclipse}`
 }
 
 interface MarkProps {
@@ -27,6 +28,7 @@ export function EventMark({ event, x, y, zone, highlighted, onSelect }: MarkProp
   return (
     <g class="event-mark" onClick={onSelect && (() => onSelect(event.syzygy.time))}>
       {highlighted && <circle class="mark-highlight" cx={x} cy={y} r={r + 5} />}
+      {event.syzygy.eclipse && <circle class={`eclipse-ring eclipse-${event.syzygy.eclipse.body}`} cx={x} cy={y} r={r + 2.5} />}
       <circle class={markClass(event)} cx={x} cy={y} r={r} />
       <circle class="hit" cx={x} cy={y} r={9}>
         <title>{describeEvent(event, zone)}</title>
@@ -44,7 +46,7 @@ const LEGEND: { cls: string; label: string }[] = [
   { cls: 'mark mark-ordinary mark-full', label: 'other Full Moon' },
 ]
 
-export function Legend({ ordinary = true }: { ordinary?: boolean }) {
+export function Legend({ ordinary = true, eclipses = true }: { ordinary?: boolean; eclipses?: boolean }) {
   return (
     <ul class="legend" aria-label="Legend">
       {LEGEND.filter((l) => ordinary || !l.cls.includes('ordinary')).map(({ cls, label }) => (
@@ -55,6 +57,15 @@ export function Legend({ ordinary = true }: { ordinary?: boolean }) {
           {label}
         </li>
       ))}
+      {eclipses && (
+        <li>
+          <svg width="18" height="14" viewBox="-9 -7 18 14" aria-hidden="true">
+            <circle class="mark mark-ordinary mark-full" r={3} />
+            <circle class="eclipse-ring" r={5.5} />
+          </svg>
+          eclipse
+        </li>
+      )}
     </ul>
   )
 }

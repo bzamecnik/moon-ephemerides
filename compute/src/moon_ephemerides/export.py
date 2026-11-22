@@ -39,6 +39,7 @@ def catalog_to_dict(catalog: Catalog) -> dict:
                 "apsides": ["perigee", "apogee"],
                 "nodes": ["descending", "ascending"],
                 "lunar_eclipses": ["penumbral", "partial", "total"],
+                "solar_eclipses": ["partial", "annular", "total"],
             },
         },
         "phases": {
@@ -58,6 +59,10 @@ def catalog_to_dict(catalog: Catalog) -> dict:
             "t": unix_seconds(catalog.lunar_eclipses.t),
             "kind": catalog.lunar_eclipses.kind.tolist(),
         },
+        "solar_eclipses": {
+            "t": unix_seconds(catalog.solar_eclipses.t),
+            "kind": catalog.solar_eclipses.kind.tolist(),
+        },
         # New (kind 0) and Full (kind 2) Moons with their nearest perigee and apogee
         "syzygies": {
             "t": unix_seconds(catalog.syzygies.t),
@@ -67,6 +72,7 @@ def catalog_to_dict(catalog: Catalog) -> dict:
             "apogee_delta": _rounded(p.apogee_delta, 4),
             "relative_distance": _rounded(p.relative_distance, 4),
             "lunar_eclipse": catalog.lunar_eclipse_kind.tolist(),
+            "solar_eclipse": catalog.solar_eclipse_kind.tolist(),
         },
     }
 

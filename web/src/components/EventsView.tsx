@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type { Catalog } from '../data/catalog'
 import {
+  eclipseLabel,
   eventLabel,
   moonEvents,
   NOTABLE_KINDS,
@@ -21,6 +22,7 @@ import {
 import { BeatChart } from '../charts/BeatChart'
 import { DistanceChart } from '../charts/DistanceChart'
 import { LongTermChart } from '../charts/LongTermChart'
+import { OrbitChart } from '../charts/OrbitChart'
 import { PhaseChart } from '../charts/PhaseChart'
 import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
@@ -31,11 +33,16 @@ const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
 const BEAT_MS = BEAT_DAYS * 86_400_000
 const PLAY_INTERVAL_MS = 100
+/** ▶ Play by hours: a month in about 12 seconds */
+const PLAY_HOURS_MS = 6 * 3_600_000
 
-type View = 'table' | 'distance' | 'beat' | 'phase' | 'longterm' | 'ranking'
+type View = 'table' | 'distance' | 'orbit' | 'beat' | 'phase' | 'longterm' | 'ranking'
+const withArticle = (s: string) => `${/^[aeiou]/.test(s) ? 'an' : 'a'} ${s}`
+
 const VIEWS: { id: View; label: string }[] = [
   { id: 'table', label: 'Table' },
   { id: 'distance', label: 'Distance' },
+  { id: 'orbit', label: 'Orbit from above' },
   { id: 'beat', label: 'Beat of the rhythms' },
   { id: 'phase', label: 'Phase vs. distance' },
   { id: 'longterm', label: 'Long term' },
@@ -94,15 +101,22 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
 
   // ▶ Play: a beat forward every PLAY_INTERVAL_MS (as fast as a held key), stopping at the end of the data
   const [playing, setPlaying] = useState(false)
+  const [playStep, setPlayStep] = useState<'beat' | 'hours'>('beat')
   useEffect(() => {
     if (!playing) return
     const timer = setTimeout(() => {
+      if (playStep === 'hours') {
+        const next = anchor + PLAY_HOURS_MS
+        if (next > times.at(-1)!) setPlaying(false)
+        else setAnchor(next)
+        return
+      }
       const next = stepByTime(times, anchor, BEAT_MS)
       if (next === times[closestIndex(times, anchor)]) setPlaying(false)
       else setAnchor(next)
     }, PLAY_INTERVAL_MS)
     return () => clearTimeout(timer)
-  }, [playing, anchor, times])
+  }, [playing, playStep, anchor, times])
 
   // ← / → step by one event, with Shift by one beat; not while typing in a field
   useEffect(() => {
@@ -158,15 +172,25 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
               ⏩
             </button>
           </span>
-          <button
-            type="button"
-            class="play"
-            aria-pressed={playing}
-            onClick={() => setPlaying(!playing)}
-            title="Step forward by one beat at a time"
-          >
-            {playing ? '⏸ Pause' : '▶ Play by beats'}
-          </button>
+          <span class="button-group">
+            <button
+              type="button"
+              class="play"
+              aria-pressed={playing}
+              onClick={() => setPlaying(!playing)}
+              title={playStep === 'beat' ? 'Step forward by one beat at a time' : 'Step forward by 6 hours at a time'}
+            >
+              {playing ? '⏸ Pause' : '▶ Play'}
+            </button>
+            <select
+              aria-label="Play step"
+              value={playStep}
+              onChange={(e) => setPlayStep(e.currentTarget.value as 'beat' | 'hours')}
+            >
+              <option value="beat">by beats</option>
+              <option value="hours">by 6 hours</option>
+            </select>
+          </span>
           <fieldset class="zone">
             <legend class="visually-hidden">Time zone</legend>
             <label>
@@ -200,7 +224,8 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
         {closestEvent ? (
           <>
             Closest: <strong>{eventLabel(closestEvent)}</strong> on {formatZoned(closestEvent.syzygy.time, zone)} (
-            {formatRelative(closestEvent.syzygy.time, anchor)}), {describeDelta(closestEvent)}.
+            {formatRelative(closestEvent.syzygy.time, anchor)}), {describeDelta(closestEvent)}
+            {closestEvent.syzygy.eclipse && <>, with {withArticle(eclipseLabel(closestEvent.syzygy.eclipse))}</>}.
           </>
         ) : (
           'No events of the chosen kinds.'
@@ -237,6 +262,16 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
         )}
         {view === 'distance' && (
           <DistanceChart
+            events={allEvents}
+            apsides={catalog.apsides}
+            anchor={anchor}
+            closestTime={closestEvent?.syzygy.time}
+            zone={zone}
+            onSelect={setAnchor}
+          />
+        )}
+        {view === 'orbit' && (
+          <OrbitChart
             events={allEvents}
             apsides={catalog.apsides}
             anchor={anchor}

@@ -4,6 +4,8 @@ import type { MoonEvent } from '../events'
 import { formatDate, formatZoned, type Zone } from '../format'
 import { EventMark, Legend } from './marks'
 import { linearScale, yearTicks } from './scale'
+import { LearnMore } from '../components/LearnPage'
+import { LEARN } from '../learn'
 
 const YEAR_MS = 365.25 * 86_400_000
 const SPANS = [
@@ -116,7 +118,8 @@ export function BeatChart({ events, anchor, closestTime, zone, onSelect }: Props
         later). Supermoons sit on the perigee line, micromoons near the apogee lines half an orbit (13.8 days) away.
         The solid lines join consecutive New Moons, the dashed ones Full Moons: on average they drift by 2 days a
         month (29.5 − 27.6), which makes the ~412-day beat; near the perigee line more slowly, because the
-        distance cycle is longest when it is lined up with the Sun. Where a line crosses zero, the two rhythms line up. Click a mark to select it.
+        distance cycle is longest when it is lined up with the Sun. Where a line crosses zero, the two rhythms line up. Click a mark to select it.{' '}
+        <LearnMore id={LEARN.inchworm}>Why the lines wobble.</LearnMore>
       </figcaption>
     </figure>
   )

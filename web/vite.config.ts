@@ -8,6 +8,8 @@ export default defineConfig({
   base: './',
   plugins: [preact()],
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
+  // the learning page imports ../docs/astronomy.md
+  server: { fs: { allow: ['..'] } },
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],

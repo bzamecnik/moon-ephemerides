@@ -1,11 +1,13 @@
 /** Table cells shared by the event table and the ranking. */
-import type { ApsisKind } from '../data/catalog'
-import type { MoonEvent } from '../events'
+import type { ApsisKind, Eclipse } from '../data/catalog'
+import { eclipseLabel, type MoonEvent } from '../events'
 import { formatDateTime, formatDelta, formatDuration, formatZoned, type Zone } from '../format'
 import { markClass } from '../charts/marks'
 
 const PHASE_NAMES = { new: 'New', full: 'Full' }
-const KIND_NAMES = { super: 'Supermoon', micro: 'Micromoon', ordinary: '' }
+/** short, to keep the table narrow; the full name in a tooltip */
+const KIND_NAMES = { super: 'Super', micro: 'Micro', ordinary: '' }
+const KIND_TITLES = { super: 'Supermoon', micro: 'Micromoon', ordinary: undefined }
 
 /** The same symbol as in the charts: New Moon the darker disc, Full Moon the brighter; colour by kind. */
 export function PhaseIcon({ event }: { event: MoonEvent }) {
@@ -25,6 +27,29 @@ export function ApsisIcon({ kind }: { kind: ApsisKind }) {
   )
 }
 
+/** Solar eclipse: the dark Moon inside a bright ring; lunar eclipse: the Moon tinted by the Earth's shadow. */
+export function EclipseIcon({ eclipse }: { eclipse: Eclipse }) {
+  return (
+    <svg class={`icon eclipse-icon eclipse-${eclipse.body}`} width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">
+      <circle r={eclipse.body === 'solar' ? 3.5 : 4.5} />
+    </svg>
+  )
+}
+
+export function EclipseCell({ event }: { event: MoonEvent }) {
+  const e = event.syzygy.eclipse
+  const label = e && eclipseLabel(e)
+  return (
+    <td class="eclipse" data-testid="eclipse">
+      {e && label && (
+        <>
+          <EclipseIcon eclipse={e} /> {label[0].toUpperCase() + label.slice(1, -' eclipse'.length)}
+        </>
+      )}
+    </td>
+  )
+}
+
 export function PhaseCell({ event }: { event: MoonEvent }) {
   return (
     <td class="phase" data-testid="phase">
@@ -35,7 +60,7 @@ export function PhaseCell({ event }: { event: MoonEvent }) {
 
 export function KindCell({ event }: { event: MoonEvent }) {
   return (
-    <td class="kind-name" data-testid="kind">
+    <td class="kind-name" data-testid="kind" title={KIND_TITLES[event.kind]}>
       {KIND_NAMES[event.kind]}
     </td>
   )
@@ -86,5 +111,5 @@ export function DeltaCells({ event }: { event: MoonEvent }) {
 export function cellLabel(row: HTMLElement): string {
   const phase = row.querySelector('[data-testid=phase]')?.textContent?.trim()
   const kind = row.querySelector('[data-testid=kind]')?.textContent?.trim()
-  return `${phase} ${kind || 'Moon'}`
+  return `${phase} ${kind ? `${kind}moon` : 'Moon'}`
 }

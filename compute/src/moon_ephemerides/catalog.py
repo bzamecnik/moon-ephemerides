@@ -15,6 +15,7 @@ from .events import (
     find_lunar_eclipses,
     find_nodes,
     find_phases,
+    find_solar_eclipses,
 )
 from .pairing import Pairing, pair_syzygies_with_apsides
 
@@ -35,6 +36,9 @@ class Catalog:
     """for each syzygy"""
     lunar_eclipse_kind: np.ndarray
     """for each syzygy: -1 none, 0 penumbral, 1 partial, 2 total"""
+    solar_eclipses: Events
+    solar_eclipse_kind: np.ndarray
+    """for each syzygy: -1 none, 0 partial, 1 annular, 2 total"""
 
     @property
     def is_supermoon(self) -> np.ndarray:
@@ -69,13 +73,24 @@ def build_catalog(eph: SpiceKernel, t0: Time, t1: Time, margin_days: float = 20)
         syzygies.t.tt, syzygies.distance_km, apsides.t.tt, apsides.distance_km, apsides.kind == 1
     )
 
-    eclipse_kind = np.full(len(syzygies.kind), -1)
-    if len(eclipses.kind):
-        idx = np.searchsorted(syzygies.t.tt, eclipses.t.tt)
-        idx = np.clip(idx, 1, len(syzygies.kind) - 1)
-        idx = np.where(
-            np.abs(syzygies.t.tt[idx - 1] - eclipses.t.tt) < np.abs(syzygies.t.tt[idx] - eclipses.t.tt), idx - 1, idx
-        )
-        eclipse_kind[idx] = eclipses.kind
+    solar = find_solar_eclipses(eph, t0, t1)
+    return Catalog(
+        phases,
+        apsides,
+        nodes,
+        eclipses,
+        syzygies,
+        pairing,
+        attach_to_nearest(syzygies.t.tt, eclipses),
+        solar,
+        attach_to_nearest(syzygies.t.tt, solar),
+    )
 
-    return Catalog(phases, apsides, nodes, eclipses, syzygies, pairing, eclipse_kind)
+
+def attach_to_nearest(times_tt: np.ndarray, events: Events) -> np.ndarray:
+    """For each time, the kind of the event nearest to it, or -1 where none is."""
+    out = np.full(len(times_tt), -1)
+    if len(events.kind) and len(times_tt):
+        nearest = np.abs(times_tt[None, :] - events.t.tt[:, None]).argmin(axis=1)
+        out[nearest] = events.kind
+    return out
