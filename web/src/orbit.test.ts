@@ -44,16 +44,22 @@ describe('phaseName', () => {
 })
 
 describe('trailWindow', () => {
-  const D = DAY
-  it('reaches a day past the next New or Full Moon, and shows 27 days in all', () => {
-    const times = [0, 14 * D, 29 * D]
-    expect(trailWindow(10 * D, times)).toEqual({ t0: -12 * D, t1: 15 * D })
-    // just after an event: the next one is two weeks ahead
-    expect(trailWindow(14 * D + 1, times)).toEqual({ t0: 3 * D, t1: 30 * D })
+  const SYNODIC_DAYS = 29.530589
+  it('slides with the moment: some days back, some ahead', () => {
+    const { t0, t1 } = trailWindow(100 * DAY)
+    expect(t0).toBeLessThan(100 * DAY)
+    expect(t1).toBeGreaterThan(100 * DAY)
+    expect(trailWindow(101 * DAY)).toEqual({ t0: t0 + DAY, t1: t1 + DAY })
   })
 
-  it('stops at the selected moment after the last event', () => {
-    expect(trailWindow(40 * D, [0, 14 * D])).toEqual({ t0: 13 * D, t1: 40 * D })
+  it('draws almost a whole round in the frame of the Sun without overlapping', () => {
+    const { t0, t1 } = trailWindow(0)
+    expect((t1 - t0) / DAY).toBeLessThan(SYNODIC_DAYS)
+    expect((t1 - t0) / DAY).toBeGreaterThan(SYNODIC_DAYS - 1)
+  })
+
+  it('always reaches the next New or Full Moon (at most half a synodic month ahead)', () => {
+    expect(trailWindow(0).t1 / DAY).toBeGreaterThan(SYNODIC_DAYS / 2)
   })
 })
 

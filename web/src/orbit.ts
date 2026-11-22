@@ -113,15 +113,18 @@ export function phaseName(elongation: number): string {
   return PHASE_NAMES[Math.round(wrap360(elongation) / 45) % 8]
 }
 
+/** days of the Moon's path drawn before and after the moment */
+const TRAIL_PAST_DAYS = 14
+const TRAIL_COMING_DAYS = 15
+
 /**
- * The span of the Moon's path to draw: up to a day past the next New or Full
- * Moon (so that what comes next is visible), 27 days in all, less than a
- * month so that the path doesn't overlap itself.
+ * The span of the Moon's path to draw, sliding with the moment: 29 days, just
+ * under one round in the frame of the Sun (a synodic month, 29.53 days), so
+ * that the path doesn't overlap itself, and over half of it ahead, so that the
+ * next New or Full Moon is always on it.
  */
-export function trailWindow(anchor: number, eventTimes: readonly number[]): { t0: number; t1: number } {
-  const next = eventTimes.find((t) => t > anchor)
-  const t1 = next === undefined ? anchor : Math.min(next + DAY_MS, anchor + 16 * DAY_MS)
-  return { t0: t1 - 27 * DAY_MS, t1 }
+export function trailWindow(anchor: number): { t0: number; t1: number } {
+  return { t0: anchor - TRAIL_PAST_DAYS * DAY_MS, t1: anchor + TRAIL_COMING_DAYS * DAY_MS }
 }
 
 /** Where the path crosses the plane of the Earth's orbit (the nodes), interpolated linearly between samples. */

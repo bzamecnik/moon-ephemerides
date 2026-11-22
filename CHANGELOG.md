@@ -23,8 +23,8 @@ One version for the whole repository (the Python `compute/` package and the
   tooltips; a UTC | Local toggle; a *Show* pop-up replacing the checkboxes,
   which can also list only eclipses of chosen kinds; hover and focus states
   on all controls.
-- **Orbit from above:** the coming days up to the next New or Full Moon
-  (dashed), the past fading with age, the direction of the Sun drawn through
+- **Orbit from above:** the Moon's path two weeks back (fading with age) and
+  two weeks ahead (dashed), sliding with every step, the direction of the Sun drawn through
   the Earth, the perigee–apogee line in the supermoon/micromoon colours, dots
   where the Moon crosses the Earth's orbit plane, the Moon at the selected
   moment ringed in yellow.

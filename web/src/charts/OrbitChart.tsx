@@ -112,7 +112,7 @@ const deg = (d: number) => `${Math.round(d) % 360}°`
 
 export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelect }: Props) {
   const eventTimes = useMemo(() => events.map((e) => e.syzygy.time), [events])
-  const { t0, t1 } = trailWindow(anchor, eventTimes)
+  const { t0, t1 } = trailWindow(anchor)
   const past = useMemo(() => moonTrack(t0, anchor, TRAIL_STEP_HOURS), [t0, anchor])
   const coming = useMemo(() => (t1 > anchor ? moonTrack(anchor, t1, TRAIL_STEP_HOURS) : []), [anchor, t1])
   const now = past.at(-1)!
@@ -148,8 +148,8 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
         <Legend />
         <ul class="legend line-legend" aria-label="Lines">
           {[
-            ['moon-trail', 'the Moon: last weeks'],
-            ['moon-coming', 'coming days'],
+            ['moon-trail', 'the Moon: last two weeks'],
+            ['moon-coming', 'next two weeks'],
             ['sun-line', 'towards the Sun'],
           ].map(([cls, label]) => (
             <li key={label}>
@@ -342,7 +342,7 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
         Sun so that the Sun always stays to the right. In this frame the phases stay put: New Moon towards the Sun,
         Full Moon away from it; the Moon goes round once a month (anticlockwise), its lit half always facing the
         Sun. The Moon (ringed in yellow, at the selected moment) leaves a path fading with age; the dashed line is
-        where it goes in the coming days, up to the next New or Full Moon. The triangles mark where it passes the perigee (▼)
+        where it goes in the next two weeks, past the next New or Full Moon. The triangles mark where it passes the perigee (▼)
         and the apogee (▲), the violet dots where it crosses the plane of the Earth's orbit going north (☊) or
         south (☋), within the shaded zones around the node line the Moon is close enough to the plane for a New or Full Moon to be an eclipse: the perigee–apogee line goes through each perigee and apogee as the Moon gets there, turning evenly in
         between. The oval is drawn four times more stretched than it is. The
