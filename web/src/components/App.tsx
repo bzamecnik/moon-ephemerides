@@ -48,6 +48,10 @@ export function App() {
         )}
       </main>
       <footer>
+        <p>
+          Moon Ephemerides {__APP_VERSION__} ·{' '}
+          <a href="https://github.com/bzamecnik/moon-ephemerides">source code and documentation</a>
+        </p>
         {catalog && (
           <p>
             Computed with <a href="https://rhodesmill.org/skyfield/">Skyfield</a> from NASA's {catalog.ephemeris}{' '}
