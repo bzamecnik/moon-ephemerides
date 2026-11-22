@@ -181,3 +181,35 @@ export function apsisDirection(
   const f = (time - a.time) / (b.time - a.time)
   return wrap360(a.elongation + f * wrap180(b.elongation - a.elongation))
 }
+
+/**
+ * How close (degrees) the node line must point to the Sun for New or Full Moons
+ * to be eclipses: in 1850–2149 every eclipse came within 18.6°, and no New or
+ * Full Moon closer than 16.6° missed one. Sometimes called the eclipse limit.
+ */
+export const ECLIPSE_SEASON_ANGLE = 18.6
+
+/**
+ * The eclipse seasons overlapping [t0, t1]: the spans when the node line points
+ * within ECLIPSE_SEASON_ANGLE of the Sun, about five weeks twice a year.
+ */
+export function eclipseSeasons(t0: number, t1: number): { start: number; end: number }[] {
+  const off = (t: number) => lineToSun(orbitFrame(t).node) - ECLIPSE_SEASON_ANGLE
+  // the edge between two samples, linearly
+  const edge = (ta: number, a: number, tb: number, b: number) => ta + ((tb - ta) * a) / (a - b)
+  const out: { start: number; end: number }[] = []
+  const from = t0 - 40 * DAY_MS
+  let [tPrev, prev] = [from, off(from)]
+  let start: number | undefined = prev < 0 ? from : undefined
+  for (let t = from + DAY_MS; t <= t1 + 40 * DAY_MS; t += DAY_MS) {
+    const cur = off(t)
+    if (prev >= 0 && cur < 0) start = edge(tPrev, prev, t, cur)
+    if (prev < 0 && cur >= 0 && start !== undefined) {
+      const end = edge(tPrev, prev, t, cur)
+      if (end >= t0 && start <= t1) out.push({ start, end })
+      start = undefined
+    }
+    ;[tPrev, prev] = [t, cur]
+  }
+  return out
+}

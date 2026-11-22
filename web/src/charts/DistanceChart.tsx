@@ -3,7 +3,7 @@ import type { Apsis } from '../data/catalog'
 import { smoothThrough, type CurvePoint } from '../curves'
 import type { MoonEvent } from '../events'
 import { formatDate, formatZoned, type Zone } from '../format'
-import { ECLIPSE_LATITUDE, moonPlace, moonTrack, planeCrossings } from '../orbit'
+import { ECLIPSE_LATITUDE, eclipseSeasons, moonPlace, moonTrack, planeCrossings } from '../orbit'
 import { firstIndexAtOrAfter } from '../timeline'
 import { EventMark, Legend, NodeMark, nodeSymbol } from './marks'
 import { linearScale, yearTicks } from './scale'
@@ -54,6 +54,23 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
   const y = linearScale(KM_DOMAIN, [H - M.bottom, M.top])
   const y2 = linearScale(LAT_DOMAIN, [H2 - M.bottom, M.top])
   const line = (fy: (p: (typeof track)[number]) => number) => track.map((p) => `${x(p.time)},${fy(p)}`).join(' ')
+  const seasons = useMemo(() => eclipseSeasons(t0, t1), [t0, t1])
+  const seasonRects = (top: number, bottom: number) =>
+    seasons.map((s) => (
+      <rect
+        key={s.start}
+        class="eclipse-season"
+        x={Math.max(M.left, x(s.start))}
+        y={top}
+        width={Math.max(0, Math.min(W - M.right, x(s.end)) - Math.max(M.left, x(s.start)))}
+        height={bottom - top}
+      >
+        <title>
+          Eclipse season {formatDate(s.start, zone)} – {formatDate(s.end, zone)}: the node line points close to the
+          Sun, New and Full Moons can be eclipses
+        </title>
+      </rect>
+    ))
   const crossings = planeCrossings(track).filter((c) => c.time >= t0 && c.time <= t1)
   // the ☊ / ☋ symbols only when there is room for them
   const nodeSymbols = days <= 183
@@ -113,6 +130,12 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
               {label}
             </li>
           ))}
+          <li>
+            <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+              <rect class="eclipse-season" x="3" y="0" width="8" height="14" />
+            </svg>
+            eclipse season
+          </li>
         </ul>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Distance of the Moon from Earth over time">
@@ -144,6 +167,7 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
             </text>
           </g>
         ))}
+        {seasonRects(M.top, H - M.bottom)}
         <g clip-path="url(#distance-plot)">
           <polyline class="envelope" points={envelope('perigee')} />
           <polyline class="envelope" points={envelope('apogee')} />
@@ -207,6 +231,7 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
             <rect x={M.left} y={M.top} width={W - M.left - M.right} height={H2 - M.top - M.bottom} />
           </clipPath>
         </defs>
+        {seasonRects(M.top, H2 - M.bottom)}
         <rect
           class="eclipse-band"
           x={M.left}
@@ -299,8 +324,8 @@ export function DistanceChart({ events, apsides, anchor, closestTime, zone, onSe
         Moon is north or south of the plane of the Earth's orbit (the ecliptic). Its orbit is tilted by about 5°, so
         it crosses the plane twice a month, at the nodes (☊ going north, ☋ going south). The New Moons (solid
         line) and the Full Moons (dashed) drift through the plane slowly, once in about six months each. Only a New or Full Moon inside the shaded band, close to
-        the plane, can be an eclipse (ringed marks); that happens in two seasons a year, when the node line points
-        at the Sun. <LearnMore id={LEARN.eclipses}>More about eclipses.</LearnMore>
+        the plane, can be an eclipse (ringed marks); that happens in two eclipse seasons a year (shaded in both
+        panels), about five weeks each, when the node line points at the Sun. <LearnMore id={LEARN.eclipses}>More about eclipses.</LearnMore>
       </figcaption>
     </figure>
   )

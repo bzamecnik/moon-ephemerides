@@ -938,6 +938,11 @@ kbd {
   opacity: 0.12;
 }
 
+.eclipse-season {
+  fill: var(--eclipse);
+  opacity: 0.08;
+}
+
 .eclipse-band {
   fill: var(--eclipse);
   opacity: 0.1;

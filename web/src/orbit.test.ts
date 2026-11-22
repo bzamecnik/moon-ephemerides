@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { RawCatalog } from './data/catalog'
-import { ECLIPSE_LATITUDE, ECLIPSE_NODE_DISTANCE, apsisDirection, lineToSun, meanElements, phaseName, planeCrossings, trailWindow, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
+import { ECLIPSE_LATITUDE, ECLIPSE_NODE_DISTANCE, ECLIPSE_SEASON_ANGLE, apsisDirection, eclipseSeasons, lineToSun, meanElements, phaseName, planeCrossings, trailWindow, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
 import { utc } from './test/fixture'
 import { BEAT_DAYS } from './timeline'
 
@@ -107,6 +107,23 @@ describe('apsisDirection', () => {
   })
 })
 
+describe('eclipseSeasons', () => {
+  const seasons = eclipseSeasons(Date.UTC(2023, 0, 1), Date.UTC(2027, 0, 1))
+  const days = (ms: number) => ms / DAY
+
+  it('come twice per eclipse year (346.6 days) and last about five weeks', () => {
+    expect(seasons.length).toBeGreaterThanOrEqual(8)
+    for (const s of seasons) expect(days(s.end - s.start)).toBeCloseTo((2 * ECLIPSE_SEASON_ANGLE) / (360 / 346.62), -0.6)
+    for (let i = 1; i < seasons.length; i++) expect(days(seasons[i].start - seasons[i - 1].start)).toBeCloseTo(173.3, -1)
+  })
+
+  it('contain the eclipses of 2024', () => {
+    const eclipses = ['2024-03-25', '2024-04-08', '2024-09-18', '2024-10-02'].map((d) => Date.parse(d))
+    for (const t of eclipses) expect(seasons.some((s) => s.start <= t && t <= s.end)).toBe(true)
+    expect(seasons.some((s) => s.start <= Date.parse('2024-06-15') && Date.parse('2024-06-15') <= s.end)).toBe(false)
+  })
+})
+
 describe('planeCrossings', () => {
   it('finds where the latitude changes sign, interpolated', () => {
     const p = (time: number, latitude: number) => ({ time, latitude, elongation: time, distanceKm: 380_000 })
@@ -188,6 +205,23 @@ describe.runIf(existsSync(realDataPath))('against the catalog (JPL DE440s), 1850
       const ascending = raw.nodes.kind[i] === 1
       expect(Math.abs(wrap180(place.elongation - orbitFrame(time).node - (ascending ? 0 : 180)))).toBeLessThan(2)
     }
+  })
+
+  it('has every eclipse in an eclipse season, and a solar eclipse in every season', () => {
+    const s = raw.syzygies
+    const all = eclipseSeasons(s.t[0] * 1000, s.t.at(-1)! * 1000)
+    const inside = (t: number) => all.find((x) => x.start <= t && t <= x.end)
+    const solar = new Set<object>()
+    for (let i = 0; i < s.t.length; i++) {
+      const time = s.t[i] * 1000
+      if (s.lunar_eclipse[i] >= 0) expect(inside(time)).toBeDefined()
+      if (s.solar_eclipse[i] >= 0) {
+        expect(inside(time)).toBeDefined()
+        solar.add(inside(time)!)
+      }
+    }
+    // the seasons cut by the ends of the catalog may miss theirs
+    expect(solar.size).toBeGreaterThanOrEqual(all.length - 2)
   })
 
   it('reaches perigee within 26° of the mean perigee and apogee within 6° of the opposite', () => {

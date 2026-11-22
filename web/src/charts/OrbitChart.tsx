@@ -5,6 +5,7 @@ import { formatZoned, type Zone } from '../format'
 import {
   ECLIPSE_LATITUDE,
   ECLIPSE_NODE_DISTANCE,
+  ECLIPSE_SEASON_ANGLE,
   apsisDirection,
   lineToSun,
   moonPlace,
@@ -329,7 +330,7 @@ export function OrbitChart({ events, apsides, anchor, closestTime, zone, onSelec
             <dd>
               {deg(nodeOff)} from the Sun line
               <span class="readout-note">
-                {nodeOff < ECLIPSE_NODE_DISTANCE
+                {nodeOff < ECLIPSE_SEASON_ANGLE
                   ? 'eclipse season: a New or Full Moon now can be an eclipse'
                   : 'no eclipses now; the line turns once per eclipse year (346.6 days)'}
               </span>
