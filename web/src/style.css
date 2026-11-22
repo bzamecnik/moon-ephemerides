@@ -401,6 +401,50 @@ select {
   color: var(--fg);
 }
 
+/* every control answers the pointer and shows the keyboard focus */
+select,
+input[type='text'],
+.tabs [role='tab'] {
+  cursor: pointer;
+  transition:
+    background-color 0.1s,
+    border-color 0.1s,
+    color 0.1s;
+}
+
+input[type='text'] {
+  cursor: text;
+}
+
+select:hover,
+input[type='text']:hover {
+  border-color: var(--axis);
+  background: var(--row-hover);
+}
+
+input[type='text']:focus {
+  background: var(--bg);
+}
+
+.tabs [role='tab']:hover {
+  background: var(--row-hover);
+  color: var(--fg);
+}
+
+.tabs [role='tab'][aria-selected='true']:hover {
+  background: var(--bg);
+}
+
+button:active,
+.tabs [role='tab']:active {
+  background: var(--ordinary-bg);
+}
+
+:is(button, select, input, a, summary):focus-visible {
+  outline: 2px solid var(--anchor);
+  outline-offset: 1px;
+}
+
 .chart {
   margin: 0;
 }
