@@ -82,7 +82,9 @@ export function App() {
         {catalog && (
           <p>
             Computed with <a href="https://rhodesmill.org/skyfield/">Skyfield</a> from NASA's {catalog.ephemeris}{' '}
-            ephemeris (data generated {catalog.generated.slice(0, 10)}), years 1850–2149. Definitions after Fred
+            ephemeris (data generated {catalog.generated.slice(0, 10)}), years 1850–2149; solar eclipses and the
+            Moon's position between events with <a href="https://github.com/cosinekitty/astronomy">astronomy-engine</a>.
+            Definitions after Fred
             Espenak's tables at <a href="https://astropixels.com/ephemeris/moon/fullperigee2001.html">astropixels.com</a>
             : supermoon = within 10 % of the perigee distance, micromoon = within 10 % of the apogee distance (of the
             perigee–apogee span of that orbit).

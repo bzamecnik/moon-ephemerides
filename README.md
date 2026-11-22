@@ -12,8 +12,9 @@ drift apart again. This project computes these events from open data (NASA JPL
 ephemerides, via [skyfield](https://rhodesmill.org/skyfield/)) and shows
 them in a web page: all supermoons and micromoons (New and Full) in one table
 around any date, with the time Δ between each New/Full Moon and its perigee or
-apogee. Planned: visualisations of the beat of the two rhythms and of the
-moments where they line up best.
+apogee, eclipses, charts of the beat of the two rhythms, the orbit seen from
+above and the best alignments over centuries, and a page explaining the
+astronomy behind it (rendered from [docs/astronomy.md](docs/astronomy.md)).
 
 Inspired by Fred Espenak's tables at [astropixels.com](https://astropixels.com/ephemeris/moon/fullperigee2001.html),
 against which the calculations are checked (see [docs/validation.md](docs/validation.md)).
@@ -21,7 +22,8 @@ against which the calculations are checked (see [docs/validation.md](docs/valida
 ## Layout
 
 - `compute/` – Python package `moon_ephemerides`:
-  - `events.py` – phases, perigees/apogees, nodes, lunar eclipses (skyfield + DE440s)
+  - `events.py` – phases, perigees/apogees, nodes, lunar eclipses (skyfield + DE440s),
+    solar eclipses (astronomy-engine)
   - `pairing.py` – each New/Full Moon with its nearest perigee and apogee (Δ, relative distance)
   - `catalog.py` – everything together for a time span
   - `export.py` – columnar JSON for the web app
@@ -30,11 +32,13 @@ against which the calculations are checked (see [docs/validation.md](docs/valida
 - `web/` – the web app (Preact, TypeScript, Vite):
   - `public/data/lunar-events.json` – the exported catalog (generated, `npm run data`)
   - `src/data/catalog.ts` – decoding the JSON
-  - `src/events.ts` – supermoon/micromoon classification
+  - `src/events.ts` – supermoon/micromoon classification, eclipse names
+  - `src/orbit.ts` – the Moon's place in the frame of the Sun (astronomy-engine), mean perigee and node
   - `src/timeline.ts`, `src/format.ts` – navigation around a date, formatting
-  - `src/distance.ts`, `src/beat.ts`, `src/phase.ts`, `src/longterm.ts`, `src/ranking.ts` – data for the charts and the ranking
-  - `src/charts/` – SVG charts (distance, beat, phase vs. distance, long term), scales
-  - `src/components/` – the page: controls, tabs, table, ranking
+  - `src/beat.ts`, `src/phase.ts`, `src/longterm.ts`, `src/ranking.ts` – data for the charts and the ranking
+  - `src/charts/` – SVG charts (distance and height, orbit from above, beat, phase vs. distance, long term), scales
+  - `src/learn.ts` – the learning page from `docs/astronomy.md` (marked)
+  - `src/components/` – the page: controls, tabs, table, ranking, learning page
 
 ## Usage
 
@@ -50,9 +54,10 @@ npm run data         # regenerate public/data/lunar-events.json (needs uv and co
 ```
 
 A date and view can be linked directly: `…/#date=2023-01-21&view=beat`
-(views: `table`, `distance`, `beat`, `phase`, `longterm`, `ranking`). The arrow
-keys step through the events, with Shift by one beat (~14 months); ▶ Play
-steps by beats as an animation. Pushes to `main` are
+(views: `table`, `distance`, `orbit`, `beat`, `phase`, `longterm`, `ranking`),
+the learning page as `…/#learn`. The arrow keys step through the events, with
+Shift by one beat (~14 months); ▶ Play steps by beats or by 6 hours as an
+animation. Pushes to `main` are
 deployed to GitHub Pages (`.github/workflows/pages.yml`).
 
 The computation:
@@ -77,4 +82,6 @@ The JPL kernel `de440s.bsp` (32 MB, years 1850–2149) is downloaded to
 - Ideas and guidance: Bohumír Zámečník
 - Implementation: Claude Code (Opus 5.5)
 - Ephemeris data: NASA JPL (public domain)
+- [astronomy-engine](https://github.com/cosinekitty/astronomy) by Don Cross (MIT): solar eclipses, positions between events
+- [marked](https://marked.js.org/) (MIT): the learning page
 - The astropixels.com tables are © Fred Espenak and are not included.

@@ -4,6 +4,21 @@ One version for the whole repository (the Python `compute/` package and the
 `web/` app are released together). The JSON data format has its own number,
 `meta.format`, changed only when the format breaks.
 
+## Unreleased
+
+- **Solar eclipses** in the catalog (astronomy-engine; 224 in 2001–2100 as in
+  NASA's canon), and all eclipses shown in the table, the ranking and the
+  charts (a violet ring), with the kind (total, annular, partial, penumbral).
+- **Orbit from above:** a new view looking down on the Earth with the Sun
+  fixed to the right: the Moon's path over four weeks, the perigee–apogee line
+  turning once per beat and the node line once per eclipse year.
+- **Distance:** the true distance curve (astronomy-engine) instead of an
+  approximation, and a panel with the Moon's height above the plane of the
+  Earth's orbit, showing when eclipses are possible.
+- ▶ Play steps by beats or by 6 hours.
+- **Learn:** `docs/astronomy.md` as a page in the app (`#learn`), linked from
+  the charts.
+
 ## 0.1.0 – 2026-11-22
 
 The first release.
