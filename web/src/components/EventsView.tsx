@@ -28,14 +28,13 @@ import { anomalisticMarks, synodicMarks } from '../phase'
 import { EventTable } from './EventTable'
 import { Icon } from './Icon'
 import { RankingView } from './RankingView'
+import { cycleStep, nextPlayAnchor, playInterval, PLAY_STEPS, type PlayStep } from '../playback'
+import { shortcutAction, SHORTCUTS } from '../shortcuts'
 import { BEAT_DAYS, closestIndex, firstIndexAtOrAfter, stepAnchor, stepByTime, windowAround } from '../timeline'
 
 const ROWS_BEFORE = 6
 const ROWS_AFTER = 14
 const BEAT_MS = BEAT_DAYS * 86_400_000
-const PLAY_INTERVAL_MS = 100
-/** ▶ Play by hours: a month in about 12 seconds */
-const PLAY_HOURS_MS = 6 * 3_600_000
 
 type View = 'table' | 'distance' | 'orbit' | 'beat' | 'phase' | 'longterm' | 'ranking'
 const withArticle = (s: string) => `${/^[aeiou]/.test(s) ? 'an' : 'a'} ${s}`
@@ -61,13 +60,13 @@ interface Props {
   catalog: Catalog
   initialAnchor: number
   initialView?: string | null
-  /** the current time, for the "Now" button */
-  now: number
+  /** the current time, for "Now" and live play (replaceable in tests) */
+  clock?: () => number
   /** called when the user picks a moment (to keep it in the URL) */
   onChange?: (anchor: number, view: string) => void
 }
 
-export function EventsView({ catalog, initialAnchor, initialView, now, onChange }: Props) {
+export function EventsView({ catalog, initialAnchor, initialView, clock = Date.now, onChange }: Props) {
   const [anchor, setAnchorState] = useState(initialAnchor)
   const [zone, setZone] = useState<Zone>('utc')
   const [kinds, setKinds] = useState<ReadonlySet<NotableKind>>(new Set(NOTABLE_KINDS))
@@ -93,43 +92,71 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
   const { start, end } = windowAround(events.length, closest, ROWS_BEFORE, ROWS_AFTER)
   const closestEvent: MoonEvent | undefined = events[closest]
 
+  const allTimes = useMemo(() => allEvents.map((e) => e.syzygy.time), [allEvents])
   const setAnchor = (a: number) => {
     setAnchorState(a)
     onChange?.(a, view)
   }
-  const step = (n: number) => setAnchor(stepAnchor(times, anchor, n))
-  const stepBeat = (n: number) => setAnchor(stepByTime(times, anchor, n * BEAT_MS))
 
-  // ▶ Play: a beat forward every PLAY_INTERVAL_MS (as fast as a held key), stopping at the end of the data
+  // ▶ Play: the moment moves forward by the chosen step, until the end of the data or a pause
   const [playing, setPlaying] = useState(false)
-  const [playStep, setPlayStep] = useState<'beat' | 'hours'>('beat')
+  const [playStep, setPlayStep] = useState<PlayStep>('beat')
   useEffect(() => {
     if (!playing) return
-    const timer = setTimeout(() => {
-      if (playStep === 'hours') {
-        const next = anchor + PLAY_HOURS_MS
-        if (next > times.at(-1)!) setPlaying(false)
-        else setAnchor(next)
-        return
-      }
-      const next = stepByTime(times, anchor, BEAT_MS)
-      if (next === times[closestIndex(times, anchor)]) setPlaying(false)
+    const tick = () => {
+      const next = nextPlayAnchor(playStep, anchor, allTimes, clock())
+      if (next === null) setPlaying(false)
       else setAnchor(next)
-    }, PLAY_INTERVAL_MS)
+    }
+    // live starts at once, then follows the clock every minute
+    if (playStep === 'live' && Math.abs(anchor - clock()) > 60_000) {
+      tick()
+      return
+    }
+    const timer = setTimeout(tick, playInterval(playStep))
     return () => clearTimeout(timer)
-  }, [playing, playStep, anchor, times])
+  }, [playing, playStep, anchor, allTimes])
 
-  // ← / → step by one event, with Shift by one beat; not while typing in a field
+  // a step by hand stops the animation
+  const goTo = (a: number) => {
+    setPlaying(false)
+    setAnchor(a)
+  }
+  const step = (n: number) => goTo(stepAnchor(times, anchor, n))
+  // by a beat: the same phase, whatever the filters
+  const stepBeat = (n: number) => goTo(stepByTime(allTimes, anchor, n * BEAT_MS))
+
+  const dateInput = useRef<HTMLInputElement>(null)
+  const [showKeys, setShowKeys] = useState(false)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
-      if (e.altKey || e.ctrlKey || e.metaKey) return
       const target = e.target as HTMLElement | null
-      if (target?.closest('input, select, textarea, [contenteditable]')) return
+      const action = shortcutAction(e, {
+        inField: !!target?.closest('input, select, textarea, [contenteditable]'),
+        onButton: !!target?.closest('button, a, summary'),
+      })
+      if (e.key === 'Escape') setShowKeys(false)
+      if (!action) return
       e.preventDefault()
-      const dir = e.key === 'ArrowRight' ? 1 : -1
-      if (e.shiftKey) stepBeat(dir)
-      else step(dir)
+      switch (action.type) {
+        case 'step':
+          return step(action.n)
+        case 'beat':
+          return stepBeat(action.n)
+        case 'play':
+          return setPlaying(!playing)
+        case 'now':
+          return goTo(clock())
+        case 'date':
+          dateInput.current?.focus()
+          return dateInput.current?.select()
+        case 'view':
+          return setView(VIEWS[action.index].id)
+        case 'speed':
+          return setPlayStep(cycleStep(playStep, action.dir))
+        case 'help':
+          return setShowKeys(!showKeys)
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -145,7 +172,7 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
     <div class="events-view">
       <section class="controls" aria-label="Navigation and filters">
         <div class="control-row">
-          <DateField anchor={anchor} zone={zone} onChange={setAnchor} />
+          <DateField anchor={anchor} zone={zone} onChange={goTo} inputRef={dateInput} />
           <span class="segmented" role="group" aria-label="Time zone">
             <button
               type="button"
@@ -185,7 +212,7 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
             >
               <Icon name="chevronLeft" />
             </button>
-            <button type="button" class="icon-button" onClick={() => setAnchor(now)} aria-label="Now" title="Now (N)">
+            <button type="button" class="icon-button" onClick={() => goTo(clock())} aria-label="Now" title="Now (N)">
               <Icon name="clock" />
             </button>
             <button
@@ -214,19 +241,33 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
               aria-pressed={playing}
               aria-label={playing ? 'Pause' : 'Play'}
               onClick={() => setPlaying(!playing)}
-              title={playing ? 'Pause' : 'Play: step forward again and again'}
+              title={playing ? 'Pause (Space)' : 'Play: step forward again and again (Space)'}
             >
               <Icon name={playing ? 'pause' : 'play'} />
             </button>
             <select
               aria-label="Play step"
+              title="Play step ([ and ] keys)"
               value={playStep}
-              onChange={(e) => setPlayStep(e.currentTarget.value as 'beat' | 'hours')}
+              onChange={(e) => setPlayStep(e.currentTarget.value as PlayStep)}
             >
-              <option value="beat">by beats</option>
-              <option value="hours">by 6 hours</option>
+              {PLAY_STEPS.map((p) => (
+                <option key={p.id} value={p.id} title={p.title}>
+                  {p.id === 'live' ? 'live' : `by ${p.label}`}
+                </option>
+              ))}
             </select>
           </span>
+          <button
+            type="button"
+            class="icon-button"
+            aria-label="Keyboard shortcuts"
+            aria-expanded={showKeys}
+            title="Keyboard shortcuts (?)"
+            onClick={() => setShowKeys(!showKeys)}
+          >
+            <Icon name="question" />
+          </button>
         </div>
         <fieldset class="control-row kinds">
           <legend class="visually-hidden">Kinds of events</legend>
@@ -240,10 +281,18 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
             Other New and Full Moons
           </label>
         </fieldset>
-        <p class="hint keys">
-          Tip: <kbd>←</kbd> and <kbd>→</kbd> step through the events, with <kbd>Shift</kbd> by one beat (about 14
-          months, the same phase at the same point of the distance cycle).
-        </p>
+        {showKeys && (
+          <dl class="keys-panel" aria-label="Keyboard shortcuts">
+            {SHORTCUTS.map(([keys, what]) => (
+              <div key={what}>
+                <dt>
+                  {keys.map((k) => (k === '…' ? ' … ' : <kbd key={k}>{k}</kbd>))}
+                </dt>
+                <dd>{what}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </section>
 
       <p class="summary" data-testid="summary" aria-live="polite">
@@ -358,7 +407,17 @@ export function EventsView({ catalog, initialAnchor, initialView, now, onChange 
  * prefix ('1989', '1989-05', '1989-05-07', '1989-05-07 13:45') already moves
  * the selection.
  */
-function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onChange: (a: number) => void }) {
+function DateField({
+  anchor,
+  zone,
+  onChange,
+  inputRef,
+}: {
+  anchor: number
+  zone: Zone
+  onChange: (a: number) => void
+  inputRef?: preact.Ref<HTMLInputElement>
+}) {
   // the text being typed; null when not editing
   const [draft, setDraft] = useState<string | null>(null)
   const picker = useRef<HTMLInputElement>(null)
@@ -370,6 +429,7 @@ function DateField({ anchor, zone, onChange }: { anchor: number; zone: Zone; onC
       <label>
         <span class="visually-hidden">Date and time</span>
         <input
+          ref={inputRef}
           type="text"
           inputMode="numeric"
           placeholder="YYYY-MM-DD HH:MM"

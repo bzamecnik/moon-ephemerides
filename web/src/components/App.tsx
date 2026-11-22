@@ -69,7 +69,6 @@ export function App() {
             catalog={catalog}
             initialAnchor={initialAnchor(now)}
             initialView={parseHashView(window.location.hash)}
-            now={now}
             onChange={keepInUrl}
           />
         )}
