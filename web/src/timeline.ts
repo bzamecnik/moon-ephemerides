@@ -29,11 +29,16 @@ export function windowAround(count: number, center: number, before: number, afte
   return { start: Math.max(0, center - before), end: Math.min(count, center + after) }
 }
 
-/** A new anchor at the event `steps` places away from the closest one (it becomes the closest). */
+/**
+ * A new anchor `steps` events away: +1 is the first event after the moment,
+ * −1 the last one before it (an event exactly at the moment counts as neither).
+ */
 export function stepAnchor(times: readonly number[], anchor: number, steps: number): number {
-  if (times.length === 0) return anchor
-  const i = Math.min(Math.max(closestIndex(times, anchor) + steps, 0), times.length - 1)
-  return times[i]
+  if (times.length === 0 || steps === 0) return anchor
+  const after = firstIndexAtOrAfter(times, anchor + 1) // first event strictly after
+  const before = firstIndexAtOrAfter(times, anchor) - 1 // last event strictly before
+  const i = steps > 0 ? after + steps - 1 : before + steps + 1
+  return times[Math.min(Math.max(i, 0), times.length - 1)]
 }
 
 /** The ~412-day beat of the phases and the distance (1 / (1/anomalistic − 1/synodic)). */

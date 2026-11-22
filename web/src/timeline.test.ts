@@ -35,10 +35,19 @@ describe('closestIndex', () => {
 })
 
 describe('stepAnchor', () => {
-  it('moves to the event after or before the closest one', () => {
+  it('moves to the next event after the moment, or the last one before it', () => {
     expect(stepAnchor(times, 22, 1)).toBe(30)
-    expect(stepAnchor(times, 22, -1)).toBe(10)
-    expect(stepAnchor(times, 28, 1)).toBe(40)
+    expect(stepAnchor(times, 22, -1)).toBe(20)
+    // the closest event (30) is ahead: "next" is that one, not the one after
+    expect(stepAnchor(times, 28, 1)).toBe(30)
+    expect(stepAnchor(times, 28, -1)).toBe(20)
+    expect(stepAnchor(times, 25, 2)).toBe(40)
+    expect(stepAnchor(times, 25, -2)).toBe(10)
+  })
+
+  it('moves on from an event the moment is at', () => {
+    expect(stepAnchor(times, 30, 1)).toBe(40)
+    expect(stepAnchor(times, 30, -1)).toBe(20)
   })
 
   it('stops at the ends', () => {
