@@ -159,3 +159,22 @@ export const INCLINATION = 5.145
  * ECLIPSE_LATITUDE of the plane: its height is about INCLINATION · sin(angle from the node).
  */
 export const ECLIPSE_NODE_DISTANCE = (Math.asin(ECLIPSE_LATITUDE / INCLINATION) * 180) / Math.PI
+
+/**
+ * The direction (elongation, degrees) of the true perigee or apogee at `time`,
+ * turning evenly from one of the given apsides (of one kind, sorted) to the
+ * next, so that the line passes through each when the Moon gets there.
+ * The mean perigee of `meanElements` is smoother but up to ±25° off (evection).
+ */
+export function apsisDirection(
+  places: readonly { time: number; elongation: number }[],
+  time: number,
+): number | undefined {
+  const i = places.findIndex((p) => p.time >= time)
+  if (i < 0) return undefined
+  if (places[i].time === time) return wrap360(places[i].elongation)
+  if (i === 0) return undefined
+  const [a, b] = [places[i - 1], places[i]]
+  const f = (time - a.time) / (b.time - a.time)
+  return wrap360(a.elongation + f * wrap180(b.elongation - a.elongation))
+}

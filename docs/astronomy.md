@@ -70,10 +70,13 @@ micromoons, and of the strongest evection (the orbit is stretched most, see
 eclipse year, every 173.3 days), New and Full Moons happen close to the plane:
 an eclipse season.
 
-The lines drawn are the *mean* ones (Meeus, *Astronomical Algorithms*,
-ch. 47). The real perigee swings up to ± 25° around the mean one, because of
-evection, the real apogee only ± 6°, and the real node ± 2° (checked against
-the catalog, 1850–2149). The oval of the orbit is drawn four times more
+The perigee–apogee line goes through the real perigees and apogees: each half
+points at the last one and turns evenly to the next, so the Moon's path meets
+it at each ▼ and ▲. Its two halves are not always exactly opposite, because the
+real perigee swings up to ± 25° around the mean one (Meeus, *Astronomical
+Algorithms*, ch. 47), because of evection, and the real apogee only ± 6°
+(checked against the catalog, 1850–2149). The node line is the mean one; the
+real node is within ± 2° of it. The oval of the orbit is drawn four times more
 stretched than it is: at true scale (eccentricity 0.055, distance 356 000 to
 407 000 km) it looks like a circle.
 

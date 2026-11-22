@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { RawCatalog } from './data/catalog'
-import { ECLIPSE_LATITUDE, ECLIPSE_NODE_DISTANCE, lineToSun, meanElements, phaseName, planeCrossings, trailWindow, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
+import { ECLIPSE_LATITUDE, ECLIPSE_NODE_DISTANCE, apsisDirection, lineToSun, meanElements, phaseName, planeCrossings, trailWindow, moonPlace, moonTrack, orbitFrame, wrap180, wrap360 } from './orbit'
 import { utc } from './test/fixture'
 import { BEAT_DAYS } from './timeline'
 
@@ -77,6 +77,27 @@ describe('eclipse zone', () => {
       if (nearNode < ECLIPSE_NODE_DISTANCE - 3) expect(Math.abs(p.latitude)).toBeLessThan(1.7)
       if (nearNode > ECLIPSE_NODE_DISTANCE + 3) expect(Math.abs(p.latitude)).toBeGreaterThan(1.3)
     }
+  })
+})
+
+describe('apsisDirection', () => {
+  const places = [
+    { time: 0, elongation: 350 },
+    { time: 10, elongation: 10 },
+    { time: 30, elongation: 50 },
+  ]
+  it('points at each apsis at its time', () => {
+    expect(places.map((p) => apsisDirection(places, p.time))).toEqual([350, 10, 50])
+  })
+
+  it('turns evenly in between, also across 0°', () => {
+    expect(apsisDirection(places, 5)).toBeCloseTo(0)
+    expect(apsisDirection(places, 20)).toBeCloseTo(30)
+  })
+
+  it('is unknown outside the apsides given', () => {
+    expect(apsisDirection(places, -1)).toBeUndefined()
+    expect(apsisDirection(places, 31)).toBeUndefined()
   })
 })
 
